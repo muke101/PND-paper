@@ -143,46 +143,11 @@
 
 %%%%%% -- PAPER CONTENT STARTS-- %%%%%%%%
 
-notes:
-small CPUs struggle more with false dependencies because the predictors have to be simpler. larger predictors can use tagged associative entries, but this is larger and more power hungry
-small CPU trend: efficiency cores
-begin with small CPUs with MDP just to show lookup and power reductions. then present no mdp as icing on top. then talk about whatever the large results are.
-PGO analysis section showing how it generalises as well as how to play with the threshold to resist larger MDPs
-
-Introduction and motivation:
-memory disambiguation and MDP
-most loads independent (constable)
-trend towards small and efficient cores, they struggle with false deps and unnecessary predictor accesses
-zero cost hints are helpful for these cases 
-serverless workloads?
-PND loads (better name?)
-Contributions
-
-Related work - not sure if differences go here or elsewhere:
-store distances
-my work
-constable - do we want an analysis of how many PNDs load different data/at different address more than 10\% (and executed more than 30 times)
-store set
-phast
-
-Method:
-johan stuff
-
-Evaluation:
-CPI
-lookups
-power - runtime dynamic
-PGO analysis
-constable comparison
-store distances
 
 Problems I expect reviewers to have:
-MDP is such a tiny fraction of core energy
-impactful gains are with no MDP. but if its so small, why not just have one?
-
-
-
-
+MDP is a tiny fraction of core energy (~0.003%)
+arguably only impactful gains are with no MDP. but if its so small, why not just have one?
+- possible way around this is to center results on the A14 first then refer to the no mdp results as almost like a bonus 
 
 \begin{abstract}
 
@@ -251,14 +216,14 @@ This paper makes the following contributions:
 
 \section{Background \& Related Work}
 - LSQ, MDP, store sets, PHAST\\
-- ARCS paper\\
+- my original ARCS paper\\
 - store distances paper \& comparison to us\\
 - constable\\
 - LLVM store queue search skip paper\\
 - LSQ scalability labelling paper\\
 
 \section{Method}
-- how PGO is commonly used and static analysis doesn't work\\
+- how PGO is commonly used and static analysis (even SVF) doesn't work\\
 
 \section{Evaluation}
 - experimental design\\
@@ -333,7 +298,7 @@ Furthermore we examine how well our generated store distance profiles generalise
 %% The next two lines define the bibliography style to be used, and
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{sample-base}
+\bibliography{bibtex}
 
 \end{document}
 \endinput

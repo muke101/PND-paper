@@ -1,0 +1,441 @@
+
+
+@Misc{llvm::AAMDNodes,
+  author = 	 {LLVM},
+  title = 	 {\texttt{AAMDNodes Struct}},
+  howpublished = {\url{https://llvm.org/doxygen/structllvm_1_1AAMDNodes.html}},
+  year =         2024}
+  
+
+@Misc{AArch64MCCodeEmitter::encodeInstruction,
+  author = 	 {LLVM},
+  title = 	 {\texttt{AArch64MCCodeEmitter::encodeInstruction}},
+  howpublished = {\url{https://llvm.org/doxygen/AArch64MCCodeEmitter_8cpp_source.html}},
+  year = 	 2024}
+
+@InProceedings{arcs,
+author="Panayi, Luke
+and Gandhi, Rohan
+and Whittaker, Jim
+and Chouliaras, Vassilios
+and Berger, Martin
+and Kelly, Paul",
+editor="Fey, Dietmar
+and Stabernack, Benno
+and Lankes, Stefan
+and Pacher, Mathias
+and Pionteck, Thilo",
+title={{Improving Memory Dependence Prediction with Static Analysis}},
+booktitle="Architecture of Computing Systems",
+year="2024",
+publisher="Springer Nature Switzerland",
+address="Cham",
+pages="301--315",
+abstract="This paper explores the potential of communicating information gained by static analysis from compilers to Out-of-Order (OoO) machines, focusing on the memory dependence predictor (MDP). The MDP enables loads to issue without all in-flight store addresses being known, with minimal memory order violations. We use LLVM to find loads with no dependencies and label them via their opcode. These labelled loads skip making lookups into the MDP, improving prediction accuracy by reducing false dependencies. We communicate this information in a minimally intrusive way, i.e. without introducing additional hardware costs or instruction bandwidth, providing these improvements without any additional overhead in the CPU. We find that across pure C/++ Spec2017 workloads, a significant number of load instructions can skip interacting with the MDP and lead to a performance gain. These results point to greater possibilities for static analysis as a source of near zero cost performance gains in future CPU designs.",
+isbn="978-3-031-66146-4"
+}
+@InProceedings{phast,
+  author =       {Sebastian S. Kim and Alberto Ros},
+  title =        {{Effective Context-Sensitive Memory Dependence Prediction}},
+  booktitle =    {30th Symposium on High Performance Computer Architecture (HPCA)},
+  doi =          {},
+  pages =        {},
+  year =         {2024},
+  editor =       {},
+  address =      {Edinburgh, Scotland},
+  month =        mar,
+  publisher =    {IEEE Computer Society},
+  isbn =         {},
+  issn =         {},
+  url =          {}
+}
+@INPROCEEDINGS{storeset,
+
+  author={Chrysos, G.Z. and Emer, J.S.},
+
+  booktitle={Proc.~25th ISCA},
+
+  title={Memory dependence prediction using store sets},
+
+  year={1998},
+
+  volume={},
+
+  number={},
+
+  pages={142-153},
+
+  doi={10.1109/ISCA.1998.694770}}
+
+@InProceedings{llvm,
+    author    = {Chris Lattner and Vikram Adve},
+    title     = "{LLVM: A Compilation Framework for Lifelong Program Analysis \& Transformation}",
+    booktitle = "{Proc.~CGO'04}",
+    year      = {2004}
+}
+
+@article{mdp-tage-small,
+  title={A 256 kbits {{L-TAGE}} branch predictor},
+  author={Seznec, Andr{\'e}},
+  journal={Journal of Instruction-Level Parallelism},
+  volume={9},
+  pages={1--6},
+  year={2007}
+}
+
+@misc{gem5,
+      title={{The gem5 Simulator: Version 20.0+}},
+      author={Jason Lowe-Power et al.},
+      year={2020},
+      eprint={2007.03152},
+      archivePrefix={arXiv},
+      howpublished={\url{https://arxiv.org/abs/2007.03152}},
+      primaryClass={cs.AR}
+}
+@misc{valgrind,
+    title={Valgrind},
+    howpublished={\url{https://valgrind.org/}}
+}
+
+@misc{affine,
+    title={{MLIR Affine Dialect}},
+    howpublished={\url{https://mlir.llvm.org/docs/Dialects/Affine/}}
+}
+@misc{flang,
+    title={{Flang Spec2017 Compilation Status}},
+    howpublished={\url{https://github.com/flang-compiler/f18-llvm-project/issues/1476}}
+}
+@misc{cheatsheet,
+    title={{CPU micro-archiecture cheat sheet by Cardyak}},
+    howpublished={\url{https://x.com/Cardyak/status/1326107264252583936}}
+}
+@misc{ittage,
+    title={{Xiangshan Gem5 repo with original implementation of the ITTAGE algorithm in Gem5.}},
+    howpublished={\url{https://github.com/OpenXiangShan/GEM5}}
+}
+
+
+
+@MastersThesis{litsurvey,
+author = {López, Otto},
+year = {2011},
+month = {March},
+pages = {49},
+title = {{Memory Dependence Prediction Methods Study and Improvement Proposals}},
+school = 	 {Universitat Politècnica de Catalunya}
+}
+
+
+@inproceedings{storevectors,
+author = {Patel, Dhruv and Pandey, Shrey and Sharma, Abhishek},
+title = {{Efficient Vector Store System for Python using Shared Memory}},
+year = {2023},
+isbn = {9781450398473},
+url = {https://doi.org/10.1145/3564121.3564799},
+doi = {10.1145/3564121.3564799},
+abstract = {Many e-commerce companies use machine learning to make customer experience better. Even within a single company, there will be generally many independent services running, each specializing in some aspect of customer experience. Since machine learning models work on abstract vectors representing users and/or items, each such service needs a way to store these vectors. A common approach nowadays is to save them in in-memory caches like Memcached. As these caches run in their own processes, and Machine Learning services generally run as Python services, there is a communication overhead involved for each request that ML service serves. One can reduce this overhead by directly storing these vectors in a Python dictionary within the service. To support concurrency and scale, a single node runs multiple instances of the same service. Thus, we also want to avoid duplicating these vectors across multiple processes. In this paper, we propose a system to store vectors in shared memory and efficiently serve all concurrent instances of the service, without replicating the vectors themselves. We achieve up to 4.5x improvements in latency compared to Memcached. Additionally, due to availability of more memory, we can increase the number of server processes running in each node, translating into greater throughput. We also discuss the impact of the proposed method (towards increasing the throughput) in live production scenario.},
+booktitle = {Proc.~AIMLSystems '22} ,
+articleno = {22},
+numpages = {6},
+keywords = {vector data store, shared memory, embedding data store},
+location = {Bangalore, India}
+}
+@inproceedings{SVF,
+  title={{SVF: interprocedural static value-flow analysis in LLVM}},
+  author={Sui, Yulei and Xue, Jingling},
+  booktitle={Proceedings of the 25th International Conference on Compiler Construction},
+  pages={265--266},
+  year={2016},
+  organization={ACM}
+}
+@article{steens,
+url = {http://dx.doi.org/10.1561/2500000014},
+year = {2015},
+volume = {2},
+journal = {Foundations and Trends in Programming Languages},
+title = {{Pointer Analysis}},
+doi = {10.1561/2500000014},
+issn = {2325-1107},
+number = {1},
+pages = {1-69},
+author = {Yannis Smaragdakis and George Balatsouras}
+}
+
+@inproceedings{scev-aa,
+author = {Paisante, Vitor and Maalej, Maroua and Barbosa, Leonardo and Gonnord, Laure and Quint\~{a}o Pereira, Fernando Magno},
+title = {{Symbolic Range Analysis of Pointers}},
+year = {2016},
+isbn = {9781450337786},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/2854038.2854050},
+doi = {10.1145/2854038.2854050},
+abstract = {Alias analysis is one of the most fundamental techniques that compilers use to optimize languages with pointers. However, in spite of all the attention that this topic has received, the current state-of-the-art approaches inside compilers still face challenges regarding precision and speed. In particular, pointer arithmetic, a key feature in C and C++, is yet to be handled satisfactorily. This paper presents a new alias analysis algorithm to solve this problem. The key insight of our approach is to combine alias analysis with symbolic range analysis. This combination lets us disambiguate fields within arrays and structs, effectively achieving more precision than traditional algorithms. To validate our technique, we have implemented it on top of the LLVM compiler. Tests on a vast suite of benchmarks show that we can disambiguate several kinds of C idioms that current state-of-the-art analyses cannot deal with. In particular, we can disambiguate 1.35x more queries than the alias analysis currently available in LLVM. Furthermore, our analysis is very fast: we can go over one million assembly instructions in 10 seconds.},
+booktitle = {Proceedings of the 2016 International Symposium on Code Generation and Optimization},
+pages = {171–181},
+numpages = {11},
+keywords = {precision, speed, Alias analysis, range analysis},
+location = {Barcelona, Spain},
+series = {CGO '16}
+}
+
+@inproceedings{llvmdep,
+author = {Goff, Gina and Kennedy, Ken and Tseng, Chau-Wen},
+title = {{Practical Dependence Testing}},
+year = {1991},
+url = {https://doi.org/10.1145/113445.113448},
+doi = {10.1145/113445.113448},
+pages = {15–29},
+numpages = {15},
+location = {Toronto, Ontario, Canada},
+series = {PLDI '91}
+}
+@inproceedings{renaming-pred,
+author = {Tyson, Gary S. and Austin, Todd M.},
+title = {{Improving the Accuracy and Performance of Memory Communication through Renaming}},
+year = {1997},
+isbn = {0818679778},
+publisher = {IEEE Computer Society},
+address = {USA},
+abstract = {As processors continue to exploit more instruction-level parallelism, a greater demand is placed on reducing the effects of memory access latency. In this paper, we introduce a novel modification of the processor pipeline called memory renaming. Memory renaming applies register access techniques to load instructions, reducing the effect of delays caused by the need to calculate effective addresses for the load and all preceding stores before the data can be fetched. Memory renaming allows the processor to speculatively fetch values when the producer of the data can be reliably determined without the need for an effective address. This work extends previous studies of data value and dependence speculation. When memory renaming is added to the processor pipeline, renaming can be applied to 30\% to 50\% of all memory references, translating to an overall improvement in execution time of up to 41\%. Furthermore, this improvement is seen across all memory segments-including the heap segment, which has often been difficult to manage efficiently.},
+booktitle = {Proceedings of the 30th Annual ACM/IEEE International Symposium on Microarchitecture},
+pages = {218–227},
+numpages = {10},
+keywords = {performance, memory renaming, data value speculation, address calculation, heap segment, accuracy, instruction-level parallelism, processor pipeline, memory segments, memory communication, data dependence speculation, instruction loading, delays, storage allocation, memory access latency, register access techniques, memory references, data fetching, execution time, stores},
+location = {Research Triangle Park, North Carolina, USA},
+series = {MICRO 30}
+}
+@patent{intel-patent,
+author= {Morris Marden},
+title={{Memory Renaming Mechanism in Microarchitecture}},
+year = {2012},
+month={9},
+publisher={Intel},
+booktitle={Google Patent},
+url={https://patents.google.com/patent/US20140095814A1/en}
+}
+@INPROCEEDINGS{extendstoresets,
+
+  author={Park, I. and Chong Liang Ooi and Vijaykumar, T.N.},
+
+  booktitle={Proc.~MICRO-36},
+
+  title={Reducing design complexity of the load/store queue},
+
+  year={2003},
+
+  volume={},
+
+  number={},
+
+  pages={411-422},
+
+  doi={10.1109/MICRO.2003.1253245}}
+
+@INPROCEEDINGS{memoryssa,
+
+  author={D. Novillo and R. H. Canada},
+
+  booktitle={Proc of the GCC Developers' Summit},
+
+  title={{Memory SSA - A Unified Approach for Sparsely Representing Memory Operations}},
+
+  year={2007}}
+
+@INPROCEEDINGS{cooperative,
+
+  author={Huang, R. and Garg, A. and Huang, M.},
+
+  booktitle={Proc.~HPCA, 2006},
+
+  title={Software-hardware cooperative memory disambiguation},
+
+  year={2006},
+
+  volume={},
+
+  number={},
+
+  pages={244-253},
+
+  doi={10.1109/HPCA.2006.1598133}}
+
+@article{static-dependence,
+author={Jean-Michel Gorius},
+title={{Static Memory Dependence Analysis for Hardware Optimizations}},
+year={2020},
+month={6},
+url={https://jmgorius.com/pdf/ENS_Rennes_DIT_Prelab_2020_paper.pdf}
+}
+
+@interproceedings{storequeueskipping,
+author = {Jean-Michel Gorius},
+title = {Static Memory Dependence Analysis for Hardware Optimizations},
+year = {2020},
+url = {https://jmgorius.com/pdf/ENS_Rennes_DIT_Prelab_2020_paper.pdf},
+}
+
+
+@inproceedings{replacestoreset,
+author = {Fang, Changpeng and Carr, Steve and \"{O}nder, Soner and Wang, Zhenlin},
+title = {{Feedback-Directed Memory Disambiguation through Store Distance Analysis}},
+year = {2006},
+isbn = {1595932828},
+url = {https://doi.org/10.1145/1183401.1183440},
+doi = {10.1145/1183401.1183440},
+abstract = {Feedback-directed optimization has developed into an increasingly important tool in designing optimizing compilers. Based upon profiling, memory distance analysis has shown much promise in predicting data locality and memory dependences, and has seen use in locality based optimizations and memory disambiguation. In this paper, we apply a form of memory distance, called store distance, to the problem of memory disambiguation in out-of-order issue processors. Store distance is defined as the number of store references between a load and the previous store accessing the same memory location. By generating a representative store distance for each load instruction, we can apply a compiler/micro-architecture cooperative scheme to direct run-time load speculation. Using store distance, the processor can, in most cases, accurately determine on which specific store instruction a load depends according to its store distance annotation. Our experiments show that the proposed store distance method performs much better than the previous distance based memory disambiguation scheme, and yields a performance very close to perfect memory disambiguation. The store distance based scheme also outperforms the store set technique with a relatively small predictor space and achieves performance comparable to that of a 16K-entry store set implementation for both floating point and integer programs.},
+booktitle = {Proc.~ICS '06},
+numpages = {10},
+keywords = {store distance, memory disambiguation},
+location = {Cairns, Queensland, Australia},
+}
+
+@inproceedings{renaming,
+author = {Reinman, Glenn and Calder, Brad and Tullsen, Dean and Tyson, Gary and Austin, Todd},
+title = {{Classifying Load and Store Instructions for Memory Renaming}},
+year = {1999},
+isbn = {158113164X},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/305138.305218},
+doi = {10.1145/305138.305218},
+booktitle = {Proceedings of the 13th International Conference on Supercomputing},
+pages = {399–407},
+numpages = {9},
+location = {Rhodes, Greece},
+series = {ICS '99}
+}
+@inproceedings{FDO,
+author = {Chen, Dehao and Vachharajani, Neil and Hundt, Robert and Liao, Shih-wei and Ramasamy, Vinodha and Yuan, Paul and Chen, Wenguang and Zheng, Weimin},
+title = {{Taming Hardware Event Samples for FDO Compilation}},
+year = {2010},
+isbn = {9781605586359},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1772954.1772963},
+doi = {10.1145/1772954.1772963},
+abstract = {Feedback-directed optimization (FDO) is effective in improving application runtime performance, but has not been widely adopted due to the tedious dual-compilation model, the difficulties in generating representative training data sets, and the high runtime overhead of profile collection. The use of hardware-event sampling to generate estimated edge profiles overcomes these drawbacks. Yet, hardware event samples are typically not precise at the instruction or basic-block granularity. These inaccuracies lead to missed performance when compared to instrumentation-based FDO@. In this paper, we use multiple hardware event profiles and supervised learning techniques to generate heuristics for improved precision of basic-block-level sample profiles, and to further improve the smoothing algorithms used to construct edge profiles. We demonstrate that sampling-based FDO can achieve an average of 78\% of the performance gains obtained using instrumentation-based exact edge profiles for SPEC2000 benchmarks, matching or beating instrumentation-based FDO in many cases. The overhead of collection is only 0.74\% on average, while compiler based instrumentation incurs 6.8\%-53.5\% overhead (and 10x overhead on an industrial web search application), and dynamic instrumentation incurs 28.6\%-1639.2\% overhead.},
+booktitle = {Proceedings of the 8th Annual IEEE/ACM International Symposium on Code Generation and Optimization},
+pages = {42–52},
+numpages = {11},
+keywords = {feedback-directed optimization, performance counters, sampling profile},
+location = {Toronto, Ontario, Canada},
+series = {CGO '10}
+}
+@article{10.1145/2678373.2665740,
+author = {Woodruff, Jonathan and Watson, Robert N.M. and Chisnall, David and Moore, Simon W. and Anderson, Jonathan and Davis, Brooks and Laurie, Ben and Neumann, Peter G. and Norton, Robert and Roe, Michael},
+title = {{The CHERI Capability Model: Revisiting RISC in an Age of Risk}},
+year = {2014},
+issue_date = {June 2014},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {42},
+number = {3},
+issn = {0163-5964},
+url = {https://doi.org/10.1145/2678373.2665740},
+doi = {10.1145/2678373.2665740},
+abstract = {Motivated by contemporary security challenges, we reevaluate and refine capability-based addressing for the RISC era. We present CHERI, a hybrid capability model that extends the 64-bit MIPS ISA with byte-granularity memory protection. We demonstrate that CHERI enables language memory model enforcement and fault isolation in hardware rather than software, and that the CHERI mechanisms are easily adopted by existing programs for efficient in-program memory safety. In contrast to past capability models, CHERI complements, rather than replaces, the ubiquitous page-based protection mechanism, providing a migration path towards deconflating data-structure protection and OS memory management. Furthermore, CHERI adheres to a strict RISC philosophy: it maintains a load-store architecture and requires only singlecycle instructions, and supplies protection primitives to the compiler, language runtime, and operating system. We demonstrate a mature FPGA implementation that runs the FreeBSD operating system with a full range of software and an open-source application suite compiled with an extended LLVM to use CHERI memory protection. A limit study compares published memory safety mechanisms in terms of instruction count and memory overheads. The study illustrates that CHERI is performance-competitive even while providing assurance and greater flexibility with simpler hardware},
+journal = {SIGARCH Comput. Archit. News},
+month = {Jun},
+pages = {457–468},
+numpages = {12}
+}
+
+@inproceedings{CHERI,
+author = {Woodruff, Jonathan and Watson, Robert N.M. and Chisnall, David and Moore, Simon W. and Anderson, Jonathan and Davis, Brooks and Laurie, Ben and Neumann, Peter G. and Norton, Robert and Roe, Michael},
+title = {{The CHERI Capability Model: Revisiting RISC in an Age of Risk}},
+year = {2014},
+isbn = {9781479943944},
+publisher = {IEEE Press},
+abstract = {Motivated by contemporary security challenges, we reevaluate and refine capability-based addressing for the RISC era. We present CHERI, a hybrid capability model that extends the 64-bit MIPS ISA with byte-granularity memory protection. We demonstrate that CHERI enables language memory model enforcement and fault isolation in hardware rather than software, and that the CHERI mechanisms are easily adopted by existing programs for efficient in-program memory safety. In contrast to past capability models, CHERI complements, rather than replaces, the ubiquitous page-based protection mechanism, providing a migration path towards deconflating data-structure protection and OS memory management. Furthermore, CHERI adheres to a strict RISC philosophy: it maintains a load-store architecture and requires only singlecycle instructions, and supplies protection primitives to the compiler, language runtime, and operating system. We demonstrate a mature FPGA implementation that runs the FreeBSD operating system with a full range of software and an open-source application suite compiled with an extended LLVM to use CHERI memory protection. A limit study compares published memory safety mechanisms in terms of instruction count and memory overheads. The study illustrates that CHERI is performance-competitive even while providing assurance and greater flexibility with simpler hardware},
+booktitle = {Proceeding of the 41st Annual International Symposium on Computer Architecuture},
+pages = {457–468},
+numpages = {12},
+location = {Minneapolis, Minnesota, USA},
+series = {ISCA '14}
+}
+@inproceedings{scev,
+author = {Bachmann, Olaf and Wang, Paul S. and Zima, Eugene V.},
+title = {{Chains of Recurrences—a Method to Expedite the Evaluation of Closed-Form Functions}},
+year = {1994},
+isbn = {0897916387},
+url = {https://doi.org/10.1145/190347.190423},
+doi = {10.1145/190347.190423},
+booktitle = {Proc.~ISSAC '94},
+pages = {242–249},
+numpages = {8},
+location = {Oxford, United Kingdom}
+}
+@article{simpoints,
+author = {Perelman, Erez and Hamerly, Greg and Van Biesbrouck, Michael and Sherwood, Timothy and Calder, Brad},
+title = {{Using SimPoint for Accurate and Efficient Simulation}},
+year = {2003},
+issue_date = {June 2003},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {31},
+number = {1},
+issn = {0163-5999},
+url = {https://doi.org/10.1145/885651.781076},
+doi = {10.1145/885651.781076},
+abstract = {Modern architecture research relies heavily on detailed pipeline simulation. Simulating the full execution of a single industry standard benchmark at this level of detail takes on the order of months to complete. This problem is exacerbated by the fact that to properly perform an architectural evaluation requires multiple benchmarks to be evaluated across many separate runs. To address this issue we recently created a tool called SimPoint that automatically finds a small set of Simulation Points to represent the complete execution of a program for efficient and accurate simulation. In this paper we describe how to use the SimPoint tool, and introduce an improved SimPoint algorithm designed to significantly reduce the simulation time required when the simulation environment relies upon fast-forwarding.},
+journal = {SIGMETRICS Perform. Eval. Rev.},
+month = {Jun},
+pages = {318–319},
+numpages = {2},
+keywords = {SimPoint, simulation, clustering, sampling, fast-forwarding}
+}
+
+@inproceedings{simpoint,
+author = {Perelman, Erez and Hamerly, Greg and Van Biesbrouck, Michael and Sherwood, Timothy and Calder, Brad},
+title = {{Using SimPoint for Accurate and Efficient Simulation}},
+year = {2003},
+isbn = {1581136641},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/781027.781076},
+doi = {10.1145/781027.781076},
+abstract = {Modern architecture research relies heavily on detailed pipeline simulation. Simulating the full execution of a single industry standard benchmark at this level of detail takes on the order of months to complete. This problem is exacerbated by the fact that to properly perform an architectural evaluation requires multiple benchmarks to be evaluated across many separate runs. To address this issue we recently created a tool called SimPoint that automatically finds a small set of Simulation Points to represent the complete execution of a program for efficient and accurate simulation. In this paper we describe how to use the SimPoint tool, and introduce an improved SimPoint algorithm designed to significantly reduce the simulation time required when the simulation environment relies upon fast-forwarding.},
+booktitle = {Proceedings of the 2003 ACM SIGMETRICS International Conference on Measurement and Modeling of Computer Systems},
+pages = {318–319},
+numpages = {2},
+keywords = {simulation, SimPoint, sampling, clustering, fast-forwarding},
+location = {San Diego, CA, USA},
+series = {SIGMETRICS '03}
+}
+@inproceedings{limits,
+	doi = {10.1109/iiswc47752.2019.9042108},
+
+	url = {https://doi.org/10.1109%2Fiiswc47752.2019.9042108},
+
+	year = 2019,
+	month = {11},
+
+	publisher = {{IEEE}
+},
+
+	author = {Chit-Kwan Lin and Stephen J. Tarsa},
+
+	title = {{Branch Prediction Is Not A Solved Problem: Measurements, Opportunities, and Future Directions}},
+
+	booktitle = {2019 {IEEE} International Symposium on Workload Characterization ({IISWC})}
+}
+
+
+@inproceedings{mdp-tage,
+author = {Perais, Arthur and Seznec, Andr\'{e}},
+title = {Cost effective speculation with the omnipredictor},
+year = {2018},
+isbn = {9781450359863},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3243176.3243208},
+doi = {10.1145/3243176.3243208},
+abstract = {Modern superscalar processors heavily rely on out-of-order and speculative execution to achieve high performance. The conditional branch predictor, the indirect branch predictor and the memory dependency predictor are among the key structures that enable efficient speculative out-of-order execution. Therefore, processors implement these three predictors as distinct hardware components.In this paper, we propose the omnipredictor that predicts conditional branches, memory dependencies and indirect branches at state-of-the-art accuracies without paying the hardware cost of the memory dependency predictor and the indirect jump predictor.We first show that the TAGE prediction scheme based on global branch history can be used to concurrently predict both branch directions and memory dependencies. Thus, we unify these two predictors within a regular TAGE conditional branch predictor whose prediction is interpreted according to the type of the instruction accessing the predictor. Memory dependency prediction is provided at almost no hardware overhead.We further show that the TAGE conditional predictor can be used to accurately predict indirect branches through using TAGE entries as pointers to Branch Target Buffer entries. Indirect target prediction can be blended into the conditional predictor along with memory dependency prediction, forming the omnipredictor.},
+booktitle = {Proceedings of the 27th International Conference on Parallel Architectures and Compilation Techniques},
+articleno = {25},
+numpages = {13},
+location = {Limassol, Cyprus},
+series = {PACT '18}
+}
+

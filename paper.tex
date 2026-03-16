@@ -212,7 +212,7 @@ This paper makes the following contributions:
         \item[$\bullet$] Implements a modified Gem5 to simulate labelled loads against different MDP algorithms and CPU size configurations, as well as extends McPat to provide power usage estimations of the MDP unit.
         \item[$\bullet$] Demonstrates that across Spec2017 intspeed: 
         \item[$\bullet$] An average of 72\% (up to 96\%) of MDP load queries are either redundant or detrimental to performance,
-        \item[$\bullet$] Preventing these queries can yield an IPC gain between 0.47\% and 3.2\% on smaller cores, while maintaining performance on larger cores,
+        \item[$\bullet$] Preventing these queries can yield an average IPC gain by 0.47\% and on smaller cores, maintain performance on larger cores, and improve average IPC on highly-constrained cores lacking any memory dependence speculation by 3.1\%.
         \item[$\bullet$] Average MDP power usage can be reduced between 7\% and 42\% depending on core size.
 \end{itemize}
 
@@ -233,7 +233,7 @@ This paper makes the following contributions:
 - IPC\\
 - Lookups\\
 - Energy\\
-- False deps reduction?
+- False deps reduction?\\
 - PGO \& threshold distance scaling\\
 - Prior work comparison\\
 
@@ -241,7 +241,8 @@ This section presents the experimental results using our PGO technique. It highl
 
 \subsection{Experimental Design}
 
-We use Gem5 to simulate various CPU size configurations, using parameters from real-world CPUs. We examine the impact of PND load labels across small to large CPUs, as well as their interaction with different memory dependence predictor algorithms. Three MDP algorithms are employed: no speculation for the most constrained case, Store Sets for smaller cores, and PHAST for larger cores. While PHAST demonstrates greater accuracy, it is less suited to area-constrained cores due to several factors: it requires greater area overhead to perform well, consumes more power for the same area, and incurs increased pipeline complexity to provide predictions. Additionally, smaller cores have limited potential performance gains from enhanced memory dependence prediction. Thus, we consider Store Sets a reasonable choice for the A14 and A725, and use PHAST for the X925 and M4.
+We use Gem5 to simulate various CPU size configurations, using parameters from real-world CPUs. We examine the impact of PND load labels across small to large CPUs, as well as their interaction with different memory dependence predictor algorithms. Larger cores use the PHAST MDP, while smaller cores use Store Sets. While PHAST demonstrates greater accuracy, it is less suited to area-constrained cores due to several factors: it requires greater area overhead to perform well, consumes more power for the same area, and incurs increased pipeline complexity. Additionally, smaller cores have limited potential performance gains from enhanced memory dependence prediction. Thus, we consider Store Sets a reasonable choice for the A14 and A725, and use PHAST for the X925 and M4.\\
+We also evaluate a highly-constrained core using the S5 configuration. In this CPU, there is no memory dependence predictor, and all loads are stalled conservatively on unresolved stores. This analysis investigates the potential impact on very small cores that perform general-purpose computation, such as those found in smartwatches.
 
 \begin{table}[h!]
  \centering
@@ -271,12 +272,17 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 
 \subsection{IPC}
 
-%need to make the graph text bigger, probably want to separate out S5 from the rest of the results into its own section
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_main.pdf}
+\caption{IPC \% changes for each CPU model on each intspeed benchmark.}
+\label{fig:ipc}
+\end{figure}
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc.pdf}
-\caption{IPC \% changes for each CPU model on each intspeed benchmark.}
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_no_mdp.pdf}
+\caption{IPC \% changes for the no MDP S5 model on each intspeed benchmark.}
 \label{fig:ipc}
 \end{figure}
 
@@ -285,6 +291,7 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \subsection{Power}
 
 \section{Threats to Validity}
+- encoding space\\
 - intended for specific target compilation
 
 \section{Future Work}

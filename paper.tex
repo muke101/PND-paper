@@ -53,6 +53,8 @@
   \providecommand\BibTeX{{%
     Bib\TeX}}}
 
+\usepackage{makecell}
+
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
 %% values in them; it is your responsibility as an author to replace
@@ -223,7 +225,7 @@ This paper makes the following contributions:
 - LSQ scalability labelling paper\\
 
 \section{Method}
-- how PGO is commonly used and static analysis (even SVF) doesn't work\\
+- justifying PGO: how PGO is commonly used and static analysis (even SVF) doesn't work\\
 
 \section{Evaluation}
 - experimental design\\
@@ -234,63 +236,52 @@ This paper makes the following contributions:
 - PGO \& threshold distance scaling\\
 - Prior work comparison\\
 
-This section presents the experimental results using our PGO technique. It highlights the magnitude of redundant MDP queries found in general purpose workloads, and the impact on IPC and power usage. Our results demonstrate that a very large portion of predictor activity can be entirely avoided, performance and power usage can be improved, and PND load labels can even act as a partial replacement for the MDP unit altogether, all with zero hardware overhead.
-Furthermore we examine how well our generated store distance profiles generalise to unseen inputs, and provide a comparison to similar prior work \cite{store-distances}.
+This section presents the experimental results using our PGO technique. It highlights the extent of redundant memory dependence predictor queries found in general-purpose workloads and their impact on IPC and power usage. Our results demonstrate that a large portion of predictor activity can be avoided, leading to improvements in performance, power usage, and even that PND load labels can serve as a partial replacement for the memory dependence predictor unit, all with zero hardware overhead. Furthermore, we examine the generalisability of our generated store distance profiles to unseen inputs and provide a comparison to similar prior work \cite{store-distances}.
 
 \subsection{Experimental Design}
 
+We use Gem5 to simulate various CPU size configurations, using parameters from real-world CPUs. We examine the impact of PND load labels across small to large CPUs, as well as their interaction with different memory dependence predictor algorithms. Three MDP algorithms are employed: no speculation for the most constrained case, Store Sets for smaller cores, and PHAST for larger cores. While PHAST demonstrates greater accuracy, it is less suited to area-constrained cores due to several factors: it requires greater area overhead to perform well, consumes more power for the same area, and incurs increased pipeline complexity to provide predictions. Additionally, smaller cores have limited potential performance gains from enhanced memory dependence prediction. Thus, we consider Store Sets a reasonable choice for the A14 and A725, and use PHAST for the X925 and M4.
+
+\begin{table}[h!]
+ \centering
+ \caption{Parameters of processor components for each simulated model}
+ \label{table:cpu-models}
+ \begin{tabular}{|l|l|l|l|l|}
+   \hline
+   \hline
+   & & \textbf{S5} & \textbf{A14} & \textbf{M4}\\
+   \hline
+   \makecell{Instruction\\ Window} & \makecell{\textbf{ROB:}\\\textbf{IQ:}\\\textbf{LQ:}\\\textbf{SQ:}} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
+   \hline
+   \makecell{Pipeline\\ Width} & \makecell{\textbf{Fetch:}\\\textbf{Decode:}\\\textbf{Issue:}\\\textbf{Commit:}} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
+   \hline
+   \makecell{Cache} & \makecell{\textbf{L1D:}\\\textbf{L1I:}\\\textbf{L2:}} & \makecell{90\\60\\30} & \makecell{198\\90\\42} & \makecell{986\\456\\128}\\  
+   \hline
+   \makecell{Store Sets} & \makecell{\textbf{SSIT:}\\\textbf{LFST:}\\\textbf{Clear Period:}} & N/A & \makecell{198\\90\\42} & N/A\\  
+   \hline
+   \makecell{PHAST} & \makecell{\textbf{Rows}\\\textbf{Assoc:}\\\textbf{Tag Bits:}\\\textbf{Counter Bits:}} & N/A & \makecell{198\\90\\42} & \makecell{192\\90\\42}\\  
+   \hline
+   \hline
+ \end{tabular}
+
+\end{table}
+
+The full configuration for each model is detailed in Table \ref{table:cpu-models}. All CPUs except the S5 utilise a 64KB TAGE-SC-L for branch prediction. To more accurately model the constrained size of the S5, it employs a tournament predictor with 2k local and 8k global entries. We evaluate the Spec2017 intspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the S5).
+
+\subsection{IPC}
+
+\subsection{MDP Queries}
+
+\subsection{Power}
+
 \section{Threats to Validity}
+- intended for specific target compilation
 
 \section{Future Work}
+-serverless workloads\\
+-JITs
 
 \section{Conclusion}
-
-%\begin{table}[h!]
-%  \centering
-%  \caption{Formatting guidelines for submission.}
-%  \label{table:formatting}
-%  \begin{tabular}{|l|l|}
-%    \hline
-%    \textbf{Field} & \textbf{Value}\\
-%    \hline
-%    \hline
-%    File format & PDF \\
-%    \hline
-%    Page limit & 11 pages, {\bf not including}\\
-%               & {\bf references}\\
-%    \hline
-%    Paper size & US Letter 8.5in $\times$ 11in\\
-%    \hline
-%    Top margin & 1in\\
-%    \hline
-%    Bottom margin & 1in\\
-%    \hline
-%    Left margin & 0.75in\\
-%    \hline
-%    Right margin & 0.75in\\
-%    \hline
-%    Body & 2-column, single-spaced\\
-%    \hline
-%    Space between columns & 0.25in\\
-%    \hline
-%    Line spacing (leading) & 11pt \\
-%    \hline
-%    Body font & 9pt, Times\\
-%    \hline
-%    Abstract font & 9pt, Times\\
-%    \hline
-%    Section heading font & 12pt\\
-%    \hline
-%    Subsection heading font & 10pt\\
-%    \hline
-%    Caption font & 9pt (minimum)\\
-%    \hline
-%    References & 8pt, no page limit, list \\
-%               & all authors' names\\
-%    \hline
-%  \end{tabular}
-% 
-%\end{table}
 
 %%%%%%% -- PAPER CONTENT ENDS -- %%%%%%%%
 

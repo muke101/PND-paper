@@ -233,6 +233,7 @@ This paper makes the following contributions:
 - IPC\\
 - Lookups\\
 - Energy\\
+- False deps reduction?
 - PGO \& threshold distance scaling\\
 - Prior work comparison\\
 
@@ -269,6 +270,15 @@ We use Gem5 to simulate various CPU size configurations, using parameters from r
 The full configuration for each model is detailed in Table \ref{table:cpu-models}. All CPUs except the S5 utilise a 64KB TAGE-SC-L for branch prediction. To more accurately model the constrained size of the S5, it employs a tournament predictor with 2k local and 8k global entries. We evaluate the Spec2017 intspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the S5).
 
 \subsection{IPC}
+
+%need to make the graph text bigger, probably want to separate out S5 from the rest of the results into its own section
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc.pdf}
+\caption{IPC \% changes for each CPU model on each intspeed benchmark.}
+\label{fig:ipc}
+\end{figure}
 
 \subsection{MDP Queries}
 

@@ -26,7 +26,8 @@
    (TeX-add-symbols
     "BibTeX")
    (LaTeX-add-labels
-    "table:cpu-models")
+    "table:cpu-models"
+    "fig:ipc")
    (LaTeX-add-bibliographies
     "bibtex"))
  :latex)

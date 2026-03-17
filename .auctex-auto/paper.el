@@ -24,6 +24,7 @@
     "acmart10"
     "makecell")
    (TeX-add-symbols
+    '("aj" 1)
     "BibTeX")
    (LaTeX-add-labels
     "table:cpu-models"

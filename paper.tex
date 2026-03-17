@@ -111,6 +111,8 @@
 %%\citestyle{acmauthoryear}
 \settopmatter{printfolios=true}
 \settopmatter{printacmref=false}
+
+\newcommand{\aj}[1]{{\color{cyan} AJ: {#1}}}
 %\pagestyle{plain}
 
 %%
@@ -204,7 +206,8 @@ Modern processors increasingly deploy heterogeneous and efficiency-oriented core
 Load instructions exemplify this problem. Prior work demonstrates that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. Memory dependence prediction (MDP) is a speculative technique used by CPUs to stall loads that have memory dependencies on the appropriate store, while allowing memory-independent loads to schedule as soon as possible \cite{storesets,phast}. Despite the ability of most loads to always issue immediately, they all query the MDP on every execution. This is not only inefficient but can also lead to false dependencies due to hash collisions, limiting performance.
 
 We demonstrate that this observation can be exploited to greatly enhance the energy efficiency of the Memory Dependence Predictor (MDP). We implement a profile-guided optimisation technique that labels frequently memory-independent loads by their opcode and simulate the modified binaries using Gem5. These labelled load instructions bypass MDP queries and are always scheduled as early as possible. We show that preventing unnecessary predictions greatly reduces predictor activity while maintaining or even improving IPC.
-
+\aj{Insight on the correctness of this technique.}
+\aj{What about the static analysis? Fully replaced by profiling?}
 \subsection{Contributions}
 This paper makes the following contributions:
 \begin{itemize}
@@ -287,6 +290,8 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \end{figure}
 
 \subsection{MDP Queries}
+
+Average of loads dispatched and hence accessing the predicor per cycle. Mention consequences: Number of ports used, and hence energy; limit in the number of loads per cycle being able to be dispatched.
 
 \subsection{Power}
 

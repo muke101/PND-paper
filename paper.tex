@@ -209,11 +209,17 @@ We demonstrate that this observation can be exploited to greatly enhance the ene
 This paper makes the following contributions:
 \begin{itemize}
         \item[$\bullet$] Implements a PGO technique to label memory independent loads to the OoO core at no-cost communication or hardware overhead.
-        \item[$\bullet$] Implements a modified Gem5 to simulate labelled loads against different MDP algorithms and CPU size configurations, as well as extends McPat to provide power usage estimations of the MDP unit.
-        \item[$\bullet$] Demonstrates that across Spec2017 intspeed: 
-        \item[$\bullet$] An average of 72\% (up to 96\%) of MDP load queries are either redundant or detrimental to performance,
-        \item[$\bullet$] Preventing these queries can yield an average IPC gain by 0.47\% and on smaller cores, maintain performance on larger cores, and improve average IPC on highly-constrained cores lacking any memory dependence speculation by 3.1\%.
-        \item[$\bullet$] Average MDP power usage can be reduced between 7\% and 42\% depending on core size.
+        \item[$\bullet$] Implements a modified Gem5 to simulate labelled loads against different MDP algorithms and core size configurations, as well as extends McPat to provide power usage estimations of the MDP unit.
+        \item[$\bullet$] Evaluates Spec2017 IntSpeed and demonstrates on average: 72\% of MDP load queries are redundant, IPC improves by 0.47\% \& MDP power reduces by 7\% on the smallest core, whereas the largest core maintains IPC and reduces MDP power by 42\%. 
+        \begin{itemize}
+        \item[$\bullet$] Additionally demonstrates a 3.2\% IPC gain on highly constrained cores that lack any memory dependence prediction.
+        \item[$\bullet$] Additionally demonstrates a x\% IPC gain when modelling a limited number of MDP read ports.
+        \end{itemize}
+        \item[$\bullet$] (currently only includes 2 benchmarks) Evaluates Spec2017 FloatSpeed and demonstrates on average: 87\% of MDP load queries are redundant, IPC improves by 0.1\% \& MDP power reduces by 6.5\% on the smallest core, whereas the largest core maintains IPC and reduces MDP power by x\%. 
+        \begin{itemize}
+        \item[$\bullet$] Additionally demonstrates a 16.5\% IPC gain on highly constrained cores that lack any memory dependence prediction.
+        \item[$\bullet$] Additionally demonstrates a x\% IPC gain when modelling a limited number of MDP read ports.
+        \end{itemize}
 \end{itemize}
 
 \section{Background \& Related Work}
@@ -231,18 +237,20 @@ This paper makes the following contributions:
 - experimental design\\
 -- cpu size selection reasoning\\
 - IPC\\
+- False deps \\
 - Lookups\\
 - Energy\\
-- False deps reduction?\\
+- Violations\\
+- Read ports
 - PGO \& threshold distance scaling\\
-- Prior work comparison\\
+- Prior store distance work comparison\\
+- Constable coverage comparison
 
 This section presents the experimental results using our PGO technique. It highlights the extent of redundant memory dependence predictor queries found in general-purpose workloads and their impact on IPC and power usage. Our results demonstrate that a large portion of predictor activity can be avoided, leading to improvements in performance, power usage, and even that PND load labels can serve as a partial replacement for the memory dependence predictor unit, all with zero hardware overhead. Furthermore, we examine the generalisability of our generated store distance profiles to unseen inputs and provide a comparison to similar prior work \cite{store-distances}.
 
 \subsection{Experimental Design}
 
-We use Gem5 to simulate various CPU size configurations, using parameters from real-world CPUs. We examine the impact of PND load labels across small to large CPUs, as well as their interaction with different memory dependence predictor algorithms. Larger cores use the PHAST MDP, while smaller cores use Store Sets. While PHAST demonstrates greater accuracy, it is less suited to area-constrained cores due to several factors: it requires greater area overhead to perform well, consumes more power for the same area, and incurs increased pipeline complexity. Additionally, smaller cores have limited potential performance gains from enhanced memory dependence prediction. Thus, we consider Store Sets a reasonable choice for the A14 and A725, and use PHAST for the X925 and M4.\\
-We also evaluate a highly-constrained core using the S5 configuration. In this CPU, there is no memory dependence predictor, and all loads are stalled conservatively on unresolved stores. This analysis investigates the potential impact on very small cores that perform general-purpose computation, such as those found in smartwatches.
+We use Gem5 to simulate various CPU size configurations, using parameters from real-world CPUs. Each CPU uses either the Store Sets or PHAST predictor depending on which performs best for that size configuration's area budget. We find Store Sets performs best with smaller areas whereas PHAST is better when allowed a larger area.  We also evaluate a highly-constrained core using the S5 configuration. In this CPU, there is no memory dependence predictor, and all loads are stalled conservatively on unresolved stores. This analysis investigates the potential impact on very small cores that perform general-purpose computation, such as those found in smartwatches.
 
 \begin{table}[h!]
  \centering
@@ -253,22 +261,25 @@ We also evaluate a highly-constrained core using the S5 configuration. In this C
    \hline
    & & \textbf{S5} & \textbf{A14} & \textbf{M4}\\
    \hline
-   \makecell{Instruction\\ Window} & \makecell{\textbf{ROB:}\\\textbf{IQ:}\\\textbf{LQ:}\\\textbf{SQ:}} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
+   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
    \hline
-   \makecell{Pipeline\\ Width} & \makecell{\textbf{Fetch:}\\\textbf{Decode:}\\\textbf{Issue:}\\\textbf{Commit:}} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
+   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Decode:\\Issue:\\Commit:} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\ 
    \hline
-   \makecell{Cache} & \makecell{\textbf{L1D:}\\\textbf{L1I:}\\\textbf{L2:}} & \makecell{90\\60\\30} & \makecell{198\\90\\42} & \makecell{986\\456\\128}\\  
+   \textbf{\makecell{L1 Cache}} & \makecell{L1D:\\L1I:\\MSHRs:\\Ports:} & \makecell{90\\60\\4\\1} & \makecell{198\\90\\8\\1} & \makecell{986\\456\\32\\1}\\  
    \hline
-   \makecell{Store Sets} & \makecell{\textbf{SSIT:}\\\textbf{LFST:}\\\textbf{Clear Period:}} & N/A & \makecell{198\\90\\42} & N/A\\  
+   \textbf{\makecell{L2 Cache}} & \makecell{L2:\\MSHRs:} & \makecell{60\\20} & \makecell{90\\32} & \makecell{456\\96}\\  
    \hline
-   \makecell{PHAST} & \makecell{\textbf{Rows}\\\textbf{Assoc:}\\\textbf{Tag Bits:}\\\textbf{Counter Bits:}} & N/A & \makecell{198\\90\\42} & \makecell{192\\90\\42}\\  
+   \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear Period:\\} & \makecell{N/A} & \makecell{198\\90\\42} & \makecell{N/A}\\  
    \hline
+   \textbf{\makecell{PHAST}} & \makecell{Rows\\Assoc:\\Tag Bits:\\Counter Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{192\\90\\42\\10}\\  
+   \hline
+   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{4}\\  
    \hline
  \end{tabular}
 
 \end{table}
 
-The full configuration for each model is detailed in Table \ref{table:cpu-models}. All CPUs except the S5 utilise a 64KB TAGE-SC-L for branch prediction. To more accurately model the constrained size of the S5, it employs a tournament predictor with 2k local and 8k global entries. We evaluate the Spec2017 intspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the S5).
+The full configuration for each model is detailed in Table \ref{table:cpu-models}. All CPUs except the S5 utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the S5, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the S5).
 
 \subsection{IPC}
 
@@ -289,6 +300,16 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \subsection{MDP Queries}
 
 \subsection{Power}
+
+\subsection{Violations}
+
+\subsection{Read Port Impact Estimation}
+Real processors have a limited number of read ports for each predictor component. If the MDP has two ports, up to two memory operations can be dispatched per cycle. Gem5 does not model this behaviour by default as it is a lower level detail that is hard to represent faithfully at the level of abstraction it simulates. Due to the relevance of this detail to our proposed technique, we provide an estimation of impact on IPC that load labels could potentially provide when read ports are constrained. We generously assume predictions always arrive in a single cycle for both Store Sets and PHAST.\\
+We model this by assigning a number of MDP read ports for each processor model, listed in Table \ref{table:cpu-models}. Dispatch is modelled to block should the number of relevant memory operations dispatched each cycle surpasses the number of read ports. This includes both loads and stores for Store Sets, and only loads for PHAST. The number of in-use ports results to zero on every cycle. This will provide a rough estimation of the impact of PND loads on workloads with a high density of memory operations.\\
+For clarity, \textbf{the number of read ports has no effect on any other results presented in this paper}.
+
+\subsection{Profile Analysis \& Threshold Sensitivity}
+
 
 \section{Threats to Validity}
 - encoding space\\

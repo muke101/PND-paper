@@ -220,7 +220,8 @@ This paper makes the following contributions:
 \end{itemize}
 
 \section{Background}
-- LSQ, MDP, store sets, PHAST\\
+
+This section outlines the fundamental concepts in memory-level parallelism for out-of-order execution. It then introduces Store Sets as a foundational memory dependence predictor algorithm, a more modern variation found in the XiangShan processor, and lastly the current state of the art in the PHAST predictor.
 
 \subsection{Loads in Out-of-Order Execution}
 The key structure in memory-level parallelism is the load-store queue (LSQ), used to hold in-flight memory operations and perform memory disamgibuation. When load instructions dispatch, they are inserted into the load queue (LQ), and query the memory dependence predictor (MDP) for a predicted store(s) to wait on before execution. Once their source operands are ready and all predicted dependent stores have executed, loads search backwards through the store queue (SQ) for store-forwarding opportunities. If no matching addresses are found, the loads access cache to get their data.\\
@@ -236,6 +237,8 @@ XiangShan is an open-source high-performance RISCV processor RTL implementation 
 The main optimisation over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple store sequence numbers at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. XS Store Sets also clears it's tables according to the number of elapsed cycles rather than observed memory operations. There are further optimisations on allocation policy which we omit here.
 
 \subsection{PHAST}
+PHAST is a newer predictor which achieves much greater accuracy than Store Sets and other previously proposed MDP algorithms \cite{phast}. PHAST uses a TAGE-like structure to record a geometric series of branch history lengths between dependent load-store pairs. On dispatch, load instructions search all history length tables in parallel and selects the dependencies on the longest path (or predicts no dependency if no tables hit). This scheme addresses the previous problems in Store Sets by using multi-way tagged associative entries to reduce hash collisions, and predicting dependencies based on branch context to capture more elaborate dependency patterns. At a storage budget of 14.5KB, PHAST is shown to achieve within 1.5\% accuracy of an ideal predictor.\\
+Although PHAST delivers much greater accuracy, it also comes with greater hardware overhead. Though PHAST greatly outperforms Store Sets for iso-area comparisons at larger budgets, it struggles with the smaller budgets most efficiency-focused cores allow for memory dependence prediction. Furthermore, PHAST incurs pipeline complexity by requiring global branch history be made available in the load-store unit, has greater prediction latency, and consumes more power for the same area. This makes PHAST better suited only for larger performance-focused cores that would benefit most from the greater MLP.
 
 \section{Related Work}
 - my original ARCS paper\\

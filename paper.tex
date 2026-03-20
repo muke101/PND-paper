@@ -207,7 +207,7 @@ Load instructions exemplify this problem. Prior work demonstrates that a conside
 
 We demonstrate that this observation can be exploited to greatly enhance the energy efficiency of the Memory Dependence Predictor (MDP). We implement a profile-guided optimisation technique that labels frequently memory-independent loads by their opcode and simulate the modified binaries using Gem5. These labelled load instructions bypass MDP queries and are always scheduled as early as possible. We show that preventing unnecessary predictions greatly reduces predictor activity while maintaining or even improving IPC.
 \aj{Insight on the correctness of this technique.}
-\aj{What about the static analysis? Fully replaced by profiling?}
+\aj{Correctness: PGO only bypasses prediction. Speculation is still checked, including when stemming from PGO.}
 \subsection{Contributions}
 This paper makes the following contributions:
 \begin{itemize}

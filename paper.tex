@@ -250,37 +250,65 @@ This section presents the experimental results using our PGO technique. It highl
 
 \subsection{Experimental Design}
 
-We use Gem5 to simulate various core size configurations based on parameters from real-world processors. Each core either utilises the Store Sets or PHAST predictor, depending on which provides optimal performance within the area budget for that configuration. Results indicate that Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate with larger areas. Additionally, we assess a highly constrained core using the S5 configuration which does not use a memory dependence predictor, and instead conservatively stalls loads on all unresolved stores. This analysis examines the potential impact on very small cores that still perform general-purpose computation, such as those in smartwatches.
+We use Gem5 to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for a realistic area budget at that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when allowed larger areas. Additionally, we model the v. small configuration to not use a memory dependence predictor at all, and instead conservatively stalls loads on all unresolved stores. This shows the impact on highly constrained cores that cannot spare the overhead of memory dependence predictor whatsoever.
 
 \begin{table}[h!]
  \centering
  \caption{Parameters of processor components for each simulated model}
  \label{table:cpu-models}
- \begin{tabular}{|l|l|l|l|l|l|l|}
+ \begin{tabular}{|l|l|l|l|l|l|}
    \hline
    \hline
-   & & \textbf{S5} & \textbf{A14} & \textbf{A725} & \textbf{X925} & \textbf{M4}\\
+   & & \textbf{V. Small} & \textbf{Small} & \textbf{Med.} & \textbf{Large}\\
    \hline
-   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\25\\15} & \makecell{112\\71\\30\\18} & \makecell{224\\184\\164\\67} & \makecell{786\\396\\245\\108} & \makecell{918\\559\\132\\72}\\  
+   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{64\\52\\21\\12} & \makecell{128\\77\\38\\22} & \makecell{256\\154\\77\\54} & \makecell{512\\308\\154\\108}\\
    \hline
-   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Issue:\\Commit:} & \makecell{3\\8\\3} & \makecell{4\\10\\4} & \makecell{5\\12\\5} & \makecell{10\\23\\16} & \makecell{10\\19\\10}\\ 
+   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{3\\6} & \makecell{4\\8} & \makecell{6\\8} & \makecell{8\\12}\\
    \hline
-   \textbf{\makecell{L1 Cache}} & \makecell{L1D (KB):\\L1I (KB):\\MSHRs:} & \makecell{32\\32\\4} & \makecell{64\\128\\8} & \makecell{64\\64\\8} & \makecell{64\\64\\32} & \makecell{128\\256\\32}\\  
+   \textbf{\makecell{L1 Cache}} & \makecell{L1D (KB):\\L1I (KB):\\MSHRs:} & \makecell{16\\16\\4} & \makecell{32\\32\\8} & \makecell{64\\32\\16} & \makecell{64\\64\\32}\\
    \hline
-   \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{2\\16} & \makecell{4\\20} & \makecell{1\\20} & \makecell{4\\64} & \makecell{16\\64}\\  
+   \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{1\\8} & \makecell{2\\16} & \makecell{4\\32} & \makecell{8\\64}\\
    \hline
-   \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear\\Period:\\} & \makecell{N/A} & \makecell{64\\64\\31232} & \makecell{128\\128\\31232} & \makecell{N/A} & \makecell{N/A}\\  
+   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{N/A} & \makecell{64\\32\\2\\31232} & \makecell{128\\32\\4\\31232} & \makecell{N/A}\\
    \hline
-   \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2} & \makecell{32\\2\\8\\2}\\  
+   \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2}\\
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{3} & \makecell{4} & \makecell{4}\\  
+   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{1} & \makecell{2} & \makecell{4}\\
    \hline
    \hline
  \end{tabular}
 
 \end{table}
 
-The full configuration for each model is detailed in Table \ref{table:cpu-models}. All CPUs except the S5 utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the S5, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the S5).
+% \begin{table}[h!]
+%  \centering
+%  \caption{Parameters of processor components for each simulated model}
+%  \label{table:cpu-models}
+%  \begin{tabular}{|l|l|l|l|l|l|l|}
+%    \hline
+%    \hline
+%    & & \textbf{S5} & \textbf{A14} & \textbf{A725} & \textbf{X925} & \textbf{M4}\\
+%    \hline
+%    \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\25\\15} & \makecell{112\\71\\30\\18} & \makecell{224\\184\\164\\67} & \makecell{786\\396\\245\\108} & \makecell{918\\559\\132\\72}\\  
+%    \hline
+%    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Issue:\\Commit:} & \makecell{3\\8\\3} & \makecell{4\\10\\4} & \makecell{5\\12\\5} & \makecell{10\\23\\16} & \makecell{10\\19\\10}\\ 
+%    \hline
+%    \textbf{\makecell{L1 Cache}} & \makecell{L1D (KB):\\L1I (KB):\\MSHRs:} & \makecell{32\\32\\4} & \makecell{64\\128\\8} & \makecell{64\\64\\8} & \makecell{64\\64\\32} & \makecell{128\\256\\32}\\  
+%    \hline
+%    \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{2\\16} & \makecell{4\\20} & \makecell{1\\20} & \makecell{4\\64} & \makecell{16\\64}\\  
+%    \hline
+%    \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear\\Period:\\} & \makecell{N/A} & \makecell{64\\64\\31232} & \makecell{128\\128\\31232} & \makecell{N/A} & \makecell{N/A}\\  
+%    \hline
+%    \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2} & \makecell{32\\2\\8\\2}\\  
+%    \hline
+%    \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{3} & \makecell{4} & \makecell{4}\\  
+%    \hline
+%    \hline
+%  \end{tabular}
+
+% \end{table}
+
+The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the v. small core, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
 
 \subsection{IPC}
 

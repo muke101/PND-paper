@@ -219,8 +219,25 @@ This paper makes the following contributions:
         \end{itemize}
 \end{itemize}
 
-\section{Background \& Related Work}
+\section{Background}
 - LSQ, MDP, store sets, PHAST\\
+
+\subsection{Loads in Out-of-Order Execution}
+The key structure in memory-level parallelism is the load-store queue (LSQ), used to hold in-flight memory operations and perform memory disamgibuation. When load instructions dispatch, they are inserted into the load queue (LQ), and query the memory dependence predictor (MDP) for a predicted store(s) to wait on before execution. Once their source operands are ready and all predicted dependent stores have executed, loads search backwards through the store queue (SQ) for store-forwarding opportunities. If no matching addresses are found, the loads access cache to get their data.\\
+When a load searches the SQ, not all earlier stores may have resolved their addresses. As the majority of the time the address will not match with the load, it is often profitable to speculatively ignore these stores and issue the load as soon as possible. When the unresolved store eventually receives it's address, it searches forward through the LQ to find loads with matching addresses which have already executed. If a match is found, the load has read stale data and a memory order violation has occured. The processor must flush all in-flight instructions from the load onwards and re-fetch.\\
+The goal of the MDP is to minimise violation events while maximising the available MLP, allowing memory independent loads to issue as soon as possible and dependent loads to wait only for the necessary stores. When a load is incorrectly stalled on a store that does not resolve to the same address this is called a false dependency. Simple MDP algorithms typically prioritise reducing the number of violations over the number of false dependencies.\\
+
+\subsection{Store Sets}
+A seminal paper in memory dependence prediction is 'Memory Dependence Prediction using Store Sets' \cite{storesets}. This is the MDP algorithm implemented in the open source Gem5 simulator \cite{gem5}. Store Sets works by using Store Set IDs (SSID) to track dependent load-store pairs, assigning each instruction the same ID value in the PC-indexed Store Set ID Table (SSIT). The SSIDs are then used to index the Last-Fetched Store Table (LFST), which holds the sequence number of the most recently issued store with an SSID mapping to that LFST entry. Newly issued loads then access the LFST via their SSID to find the store they're predicted to be dependent on. If a load PC does not map to a valid SSID entry, it is predicted to be memory independent. To forget old dependencies and reduce table pressure, the SSIT and LFST are cyclically cleared after a certain number of issued memory operations.\\
+Store Sets is extremely area efficient, delivering a large portion of available performance with a very small hardware budget. It's small size and simplicity make it well suited to area-constrained processors. However, especially at smaller sizes, Store Sets struggles with false dependencies due hash collisions. When a memory independent load hashes to an existing SSID entry, it is incorrectly made dependent on the corresponding store for that entry. The clear period can be made shorter to offset this, but this comes with the trade-off of a larger number of memory order violations as the predictor must re-learn true dependencies more often. Furthermore, many loads exhibit non-consistent memory dependencies. A load in a loop may be dependent on a store every even iteration, but not on odd iterations. Store Sets has no way to disambiguate these cases, and conservatively predicts the load as dependent on every iteration.
+
+\subsection{XiangShan Store Sets}
+XiangShan is an open-source high-performance RISCV processor RTL implementation \cite{xiangshan-paper}. XiangShan represents the cutting edge in open-source superscalar processor design, and comes with a Gem5 fork modified to closer model the RTL implementation \cite{xiangshan-gem5}. This Gem5 fork implements a variation of the Store Sets predictor that offers a closer representation to Store Sets implementations found in real processors. We henceforth refer to this as the XS Store Sets predictor.\\
+The main optimisation over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple store sequence numbers at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. XS Store Sets also clears it's tables according to the number of elapsed cycles rather than observed memory operations. There are further optimisations on allocation policy which we omit here.
+
+\subsection{PHAST}
+
+\section{Related Work}
 - my original ARCS paper\\
 - store distances paper \& comparison to us\\
 - constable\\
@@ -280,35 +297,7 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
 
 \end{table}
 
-% \begin{table}[h!]
-%  \centering
-%  \caption{Parameters of processor components for each simulated model}
-%  \label{table:cpu-models}
-%  \begin{tabular}{|l|l|l|l|l|l|l|}
-%    \hline
-%    \hline
-%    & & \textbf{S5} & \textbf{A14} & \textbf{A725} & \textbf{X925} & \textbf{M4}\\
-%    \hline
-%    \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\25\\15} & \makecell{112\\71\\30\\18} & \makecell{224\\184\\164\\67} & \makecell{786\\396\\245\\108} & \makecell{918\\559\\132\\72}\\  
-%    \hline
-%    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Issue:\\Commit:} & \makecell{3\\8\\3} & \makecell{4\\10\\4} & \makecell{5\\12\\5} & \makecell{10\\23\\16} & \makecell{10\\19\\10}\\ 
-%    \hline
-%    \textbf{\makecell{L1 Cache}} & \makecell{L1D (KB):\\L1I (KB):\\MSHRs:} & \makecell{32\\32\\4} & \makecell{64\\128\\8} & \makecell{64\\64\\8} & \makecell{64\\64\\32} & \makecell{128\\256\\32}\\  
-%    \hline
-%    \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{2\\16} & \makecell{4\\20} & \makecell{1\\20} & \makecell{4\\64} & \makecell{16\\64}\\  
-%    \hline
-%    \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear\\Period:\\} & \makecell{N/A} & \makecell{64\\64\\31232} & \makecell{128\\128\\31232} & \makecell{N/A} & \makecell{N/A}\\  
-%    \hline
-%    \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2} & \makecell{32\\2\\8\\2}\\  
-%    \hline
-%    \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{3} & \makecell{4} & \makecell{4}\\  
-%    \hline
-%    \hline
-%  \end{tabular}
-
-% \end{table}
-
-The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the v. small core, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
+The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the v. small core, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
 
 \subsection{IPC}
 
@@ -335,7 +324,7 @@ Average of loads dispatched and hence accessing the predicor per cycle. Mention 
 \subsection{Violations}
 
 \subsection{Read Port Impact Estimation}
-Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, it can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction it simulates. Given the importance of this aspect to our proposed technique, we estimate the potential impact on IPC when read ports are limited. We generously assume that predictions always arrive within a single cycle for both Store Sets and PHAST. We assign a number of read ports to the memory dependence predictor for each processor model, as listed in Table \ref{table:cpu-models}. Dispatch is modelled to block when the number of memory operations dispatched in a cycle exceeds the number maximum number of read ports. This includes both loads and stores for Store Sets and only loads for PHAST. The count of in-use ports resets to zero each cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, \textbf{the number of read ports does not affect any other results presented in this paper}.
+Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, it can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction it simulates. Given the importance of this aspect to our proposed technique, we estimate the potential impact on IPC when read ports are limited. We generously assume that predictions always arrive within a single cycle for both XS Store Sets and PHAST. We assign a number of read ports to the memory dependence predictor for each processor model, as listed in Table \ref{table:cpu-models}. Dispatch is modelled to block when the number of memory operations dispatched in a cycle exceeds the number maximum number of read ports. This includes both loads and stores for XS Store Sets and only loads for PHAST. The count of in-use ports resets to zero each cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, \textbf{the number of read ports does not affect any other results presented in this paper}.
 
 \subsection{Profile Analysis \& Threshold Sensitivity}
 

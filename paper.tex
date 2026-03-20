@@ -131,8 +131,8 @@
 %% Of note is the shared affiliation of the first two authors, and the
 %% "authornote" and "authornotemark" commands
 %% used to denote shared contribution to the research.
-%\author{\normalsize{MICRO 2026 Submission
- %   \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
+\author{\normalsize{MICRO 2026 Submission
+   \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
 
 %%
 %% By default, the full list of authors will be used in the page
@@ -147,11 +147,6 @@
 
 %%%%%% -- PAPER CONTENT STARTS-- %%%%%%%%
 
-
-Problems I expect reviewers to have:
-MDP is a tiny fraction of core energy (~0.003%)
-arguably only impactful gains are with no MDP. but if its so small, why not just have one?
-- possible way around this is to center results on the A14 first then refer to the no mdp results as almost like a bonus 
 
 \begin{abstract}
 
@@ -201,13 +196,12 @@ arguably only impactful gains are with no MDP. but if its so small, why not just
 
 \section{Introduction}
 
-Modern processors increasingly deploy heterogeneous and efficiency-oriented core designs. Contemporary systems commonly combine large high-performance cores with smaller, energy-efficient out-of-order cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are also widely used in power-constrained systems including smartphones, tablets, smartwatches and other edge systems. These platforms prioritise energy efficiency and area usage while still enabling aggressive speculation and out-of-order (OoO) execution. Despite these constraints, many speculation mechanisms in these cores operate unconditionally on every relevant instruction. To maximise the energy-efficiency of speculative techniques, predictors should ideally only be invoked for instructions that are known to benefit.
+Memory-level parallelism (MLP) is important for efficient out-of-order (OoO) execution and overcoming the memory wall in processor performance. Memory dependence prediction is a speculative technique used in OoO processors that aims to enhance total MLP by predicting the stores on which a given load instruction will depend, as well as identifying memory-independent loads. Smaller cores utilising smaller predictors can often struggle with a large number of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is often due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} is an example with both of these issues, and variations of the algorithm is found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the SotA to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on core design, which is often not viable in smaller cores. At the same time, while simply growing a Store Sets-like predictor would offset some of the hash collisions, this benefit struggles to outperform an iso-area comparison to scaling other components. As such, memory dependence predictors in small cores typically remain small and inefficient.\\
 
-Load instructions exemplify this problem. Prior work demonstrates that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. Memory dependence prediction (MDP) is a speculative technique used by CPUs to stall loads that have memory dependencies on the appropriate store, while allowing memory-independent loads to schedule as soon as possible \cite{storesets,phast}. Despite the ability of most loads to always issue immediately, they all query the MDP on every execution. This is not only inefficient but can also lead to false dependencies due to hash collisions, limiting performance.
+The role of such area-constrained cores has grown over time. Modern processors increasingly deploy heterogeneous and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are, of course, also found in power-constrained systems such as smartphones, tablets, smartwatches and other edge systems. These cores are more and more performing demanding general purpose computation while striving to consume as little energy as possible. As they grow more performance-sensitive, finding optimisations which don't also incur additional area, power or complexity costs becomes more pressing.\\
 
-We demonstrate that this observation can be exploited to greatly enhance the energy efficiency of the Memory Dependence Predictor (MDP). We implement a profile-guided optimisation technique that labels frequently memory-independent loads by their opcode and simulate the modified binaries using Gem5. These labelled load instructions bypass MDP queries and are always scheduled as early as possible. We show that preventing unnecessary predictions greatly reduces predictor activity while maintaining or even improving IPC.
-\aj{Insight on the correctness of this technique.}
-\aj{What about the static analysis? Fully replaced by profiling?}
+Prior work demonstrates that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. This paper uses this observation to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at zero hardware cost. Our technique labels frequently memory-independent loads by their opcode, which then bypass MDP queries and are always scheduled as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or even improving IPC, as well as providing a potential power saving.
+
 \subsection{Contributions}
 This paper makes the following contributions:
 \begin{itemize}
@@ -232,9 +226,12 @@ This paper makes the following contributions:
 - constable\\
 - LLVM store queue search skip paper\\
 - LSQ scalability labelling paper\\
+- software-hardware cooperative memory disamgibuation (much more overhead for much less gain, doesn't address multi-cores, only evaluates floatspeed)
 
 \section{Method}
 - justifying PGO: how PGO is commonly used and static analysis (even SVF) doesn't work\\
+- where we win (read only/likely stable, hash collisions, resolved stores, occasional dependence)
+
 
 \section{Evaluation}
 - experimental design\\
@@ -259,24 +256,25 @@ We use Gem5 to simulate various core size configurations based on parameters fro
  \centering
  \caption{Parameters of processor components for each simulated model}
  \label{table:cpu-models}
- \begin{tabular}{|l|l|l|l|l|}
+ \begin{tabular}{|l|l|l|l|l|l|l|}
    \hline
    \hline
-   & & \textbf{S5} & \textbf{A14} & \textbf{M4}\\
+   & & \textbf{S5} & \textbf{A14} & \textbf{A725} & \textbf{X925} & \textbf{M4}\\
    \hline
-   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\  
+   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{90\\60\\25\\15} & \makecell{112\\71\\30\\18} & \makecell{224\\184\\164\\67} & \makecell{786\\396\\245\\108} & \makecell{918\\559\\132\\72}\\  
    \hline
-   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Decode:\\Issue:\\Commit:} & \makecell{90\\60\\30\\15} & \makecell{198\\90\\42\\18} & \makecell{986\\456\\128\\72}\\ 
+   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch:\\Issue:\\Commit:} & \makecell{3\\8\\3} & \makecell{4\\10\\4} & \makecell{5\\12\\5} & \makecell{10\\23\\16} & \makecell{10\\19\\10}\\ 
    \hline
-   \textbf{\makecell{L1 Cache}} & \makecell{L1D:\\L1I:\\MSHRs:\\Ports:} & \makecell{90\\60\\4\\1} & \makecell{198\\90\\8\\1} & \makecell{986\\456\\32\\1}\\  
+   \textbf{\makecell{L1 Cache}} & \makecell{L1D (KB):\\L1I (KB):\\MSHRs:} & \makecell{32\\32\\4} & \makecell{64\\128\\8} & \makecell{64\\64\\8} & \makecell{64\\64\\32} & \makecell{128\\256\\32}\\  
    \hline
-   \textbf{\makecell{L2 Cache}} & \makecell{L2:\\MSHRs:} & \makecell{60\\20} & \makecell{90\\32} & \makecell{456\\96}\\  
+   \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{2\\16} & \makecell{4\\20} & \makecell{1\\20} & \makecell{4\\64} & \makecell{16\\64}\\  
    \hline
-   \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear Period:\\} & \makecell{N/A} & \makecell{198\\90\\42} & \makecell{N/A}\\  
+   \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear\\Period:\\} & \makecell{N/A} & \makecell{64\\64\\31232} & \makecell{128\\128\\31232} & \makecell{N/A} & \makecell{N/A}\\  
    \hline
-   \textbf{\makecell{PHAST}} & \makecell{Rows\\Assoc:\\Tag Bits:\\Counter Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{192\\90\\42\\10}\\  
+   \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2} & \makecell{32\\2\\8\\2}\\  
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{4}\\  
+   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{N/A} & \makecell{2} & \makecell{3} & \makecell{4} & \makecell{4}\\  
+   \hline
    \hline
  \end{tabular}
 
@@ -315,7 +313,7 @@ Real processors have a limited number of read ports for each predictor component
 
 
 \section{Threats to Validity}
-- encoding space\\
+- encoding space (cite cooperative memory disambig)\\
 - intended for specific target compilation
 
 \section{Future Work}

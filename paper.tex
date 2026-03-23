@@ -289,7 +289,7 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
    \hline
    \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{1\\8} & \makecell{2\\16} & \makecell{4\\32} & \makecell{8\\64}\\
    \hline
-   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{N/A} & \makecell{64\\32\\2\\31232} & \makecell{128\\32\\4\\31232} & \makecell{N/A}\\
+   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{N/A} & \makecell{64\\32\\2\\125k} & \makecell{128\\32\\4\\125k} & \makecell{N/A}\\
    \hline
    \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\Counter\\Bits:} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8\\2}\\
    \hline
@@ -300,7 +300,7 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
 
 \end{table}
 
-The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core utilise a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To more accurately model the constrained size of the v. small core, it employs a tournament predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
+The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core use a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To better model the constrained size of the v. small core, it employs a tournament branch predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
 
 \subsection{IPC}
 
@@ -311,20 +311,35 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \label{fig:ipc}
 \end{figure}
 
+Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed for each core configuration. The gmean IPC gain ranges from 1.4\%, 0.7\% and 0\% as core size grows. Examining the gains in the best case (small core size), the IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the percent reduction in false dependencies seen in Figure \ref{fig:falsedeps}. 
+
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_no_mdp.pdf}
-\caption{IPC \% changes for the no MDP S5 model on each intspeed benchmark.}
-\label{fig:ipc}
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_small.pdf}
+\caption{Percent change of false dependencies. Values roughly equal between core sizes.}
+\label{fig:falsedeps}
 \end{figure}
+
 
 \subsection{MDP Queries}
 
-Average of loads dispatched and hence accessing the predicor per cycle. Mention consequences: Number of ports used, and hence energy; limit in the number of loads per cycle being able to be dispatched.
-
-\subsection{Power}
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
+\caption{Percent change of MDP queries. Values roughly equal between core sizes.}
+\label{fig:lookups}
+\end{figure}
 
 \subsection{Violations}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_small.pdf}
+\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
+\label{fig:violations}
+\end{figure}
+
+\subsection{Power}
 
 \subsection{Read Port Impact Estimation}
 Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, it can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction it simulates. Given the importance of this aspect to our proposed technique, we estimate the potential impact on IPC when read ports are limited. We generously assume that predictions always arrive within a single cycle for both XS Store Sets and PHAST. We assign a number of read ports to the memory dependence predictor for each processor model, as listed in Table \ref{table:cpu-models}. Dispatch is modelled to block when the number of memory operations dispatched in a cycle exceeds the number maximum number of read ports. This includes both loads and stores for XS Store Sets and only loads for PHAST. The count of in-use ports resets to zero each cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, \textbf{the number of read ports does not affect any other results presented in this paper}.
@@ -337,6 +352,7 @@ Real processors have a limited number of read ports for each predictor component
 - intended for specific target compilation
 
 \section{Future Work}
+-per benchmark tuning
 -serverless workloads\\
 -JITs
 

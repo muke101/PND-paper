@@ -28,7 +28,10 @@
     "BibTeX")
    (LaTeX-add-labels
     "table:cpu-models"
-    "fig:ipc")
+    "fig:ipc"
+    "fig:falsedeps"
+    "fig:lookups"
+    "fig:violations")
    (LaTeX-add-bibliographies
     "bibtex"))
  :latex)

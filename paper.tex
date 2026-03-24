@@ -236,7 +236,7 @@ A seminal paper in memory dependence prediction is 'Memory Dependence Prediction
 Store Sets is extremely area efficient, delivering a large portion of available performance with a very small hardware budget. It's small size and simplicity make it well suited to area-constrained processors. However, especially at smaller sizes, Store Sets struggles with false dependencies due hash collisions. When a memory independent load hashes to an existing SSID entry, it is incorrectly made dependent on the corresponding store for that entry. The clear period can be made shorter to offset this, but this comes with the trade-off of a larger number of memory order violations as the predictor must re-learn true dependencies more often. Furthermore, many loads exhibit non-consistent memory dependencies. A load in a loop may be dependent on a store every even iteration, but not on odd iterations. Store Sets has no way to disambiguate these cases, and conservatively predicts the load as dependent on every iteration.
 
 \subsection{XiangShan Store Sets}
-XiangShan is an open-source high-performance RISCV processor RTL implementation \cite{xiangshan-paper}. XiangShan represents the cutting edge in open-source superscalar processor design, and comes with a Gem5 fork modified to closer model the RTL implementation \cite{xiangshan-gem5}. This Gem5 fork implements a variation of the Store Sets predictor that offers a closer representation to Store Sets implementations found in real processors. We henceforth refer to this as the XS Store Sets predictor.
+XiangShan is an open-source high-performance RISCV processor RTL implementation \cite{xiangshan-paper}. XiangShan represents the cutting edge in open-source superscalar processor design, and comes with a Gem5 fork modified to closer model the RTL implementation \cite{xiangshan-gem5}. This Gem5 fork implements a variation of the Store Sets predictor that offers a closer representation to Store Sets implementations found in real processors. From here on this is referred to as XS Store Sets.
 
 The main optimisation over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple store sequence numbers at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. XS Store Sets also clears it's tables according to the number of elapsed cycles rather than observed memory operations. There are further optimisations on allocation policy which we omit here.
 
@@ -275,7 +275,7 @@ This section presents the experimental results using our PGO technique. It highl
 
 \subsection{Experimental Design}
 
-We use Gem5 to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for a realistic area budget at that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when allowed larger areas. Additionally, we model the v. small configuration to not use a memory dependence predictor at all, and instead conservatively stalls loads on all unresolved stores. This shows the impact on highly constrained cores that cannot spare the overhead of memory dependence predictor whatsoever.
+We use Gem5 to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for a realistic area budget at that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when allowed larger areas. Additionally, we model the v. small configuration to not use a memory dependence predictor at all, and instead conservatively stall loads on all unresolved stores. This shows the impact on highly constrained cores that cannot spare the overhead for memory dependence prediction whatsoever.
 
 \begin{table}[h!]
  \centering
@@ -307,7 +307,8 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
 
 The full configuration for each model is detailed in Table \ref{table:cpu-models}. All models except the v. small core use a 64KB TAGE-SC-L for branch prediction and a DCPT prefetcher. To better model the constrained size of the v. small core, it employs a tournament branch predictor with 2k local and 8k global entries and a stride prefetcher. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable (or upstream McPat for the v. small core).
 
-\subsection{IPC}
+\subsection{Performance}
+\label{sec:ipc}
 
 \begin{figure}[t]
   \centering
@@ -316,17 +317,37 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \label{fig:ipc}
 \end{figure}
 
-Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed for each core configuration. The gmean IPC gain ranges from 1.4\%, 0.7\% and 0\% as core size grows. Examining the gains in the best case (small core size), the IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the percent reduction in false dependencies seen in Figure \ref{fig:falsedeps}. 
+Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed for each core configuration. The gmean IPC gain ranges from 1.4\%, 0.7\% and 0\% as core size grows. This demonstrates our techniques ability to deliver zero-cost performance gains on area-constrained cores while still maintaining performance on larger cores with more sophisticated MDPs. Examining the gains in the best case (small core size), the IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the magnitude of false dependencies before and after seen in Figure \ref{fig:falsedeps}. The four largest gainers - $625.x264\_s$ inputs 1 and 2, $641.leela\_s$ and $620.omnetpp\_s$ - all exhibit relatively higher false dependencies per kilo-instruction in the base case, and see this cut down significantly by over 80\% when PND labels are used. As the core size increases to the medium configuration, most of these gains are diminished as the larger Store Set tables reduce the base number of hash collisions. A sensitivity analysis on the size of Store Sets on the small configuration results is shown in Section \ref{sec:storesetsize}.
+
+%$600.perlbench\_s$ inputs 1 and 2 are outliers to this trend. They have the highest number of absolute false dependencies in the base case and also sees a significant reduction, yet only receives a modest IPC gain of around 1\% each. This is likely because the workloads are more frontend than backend bound, and so frequent frontend stalls mask most potential performance gains from issuing loads sooner. Whereas the average number of total icache misses across intspeed benchmarks is approximately 540k, $600.perlbench\_s$ inputs 1 and 2 observe 1.2M and 790k ichace misses respectively.
+
+$620.omnetpp\_s$ exhibits more false dependencies per kilo-instruction in the medium core despite the larger Store Set size. This is likely because while it doesn't issue the most loads overall, it does have the highest number of dependent loads. Whereas the average across intspeed benchmarks is approximately 2 million dependent loads, $620.omnetpp\_s$ observes 6 million. This suggests due to the nature of the workload, a longer instruction window captures more dependencies which the larger Store Set tables cannot offset.
 
 \begin{figure}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_small.pdf}
-\caption{Percent change of false dependencies. Values roughly equal between core sizes.}
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_main.pdf}
+\caption{Percent change of false dependencies.}
 \label{fig:falsedeps}
 \end{figure}
 
+In select cases PND labels can lead to a performance regression, notably for input 2 of $600.perlbench\_s$. This is because loads have been mis-labelled from the train inputs and cause an increase in memory order violations on the test inputs, as seen in Figure \ref{fig:violations} for the medium core configuration. Although memory order violations are increased in all workloads, they're mostly offset by the reduction in false dependencies. It is also worth noting that violations are already very rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can often still keep them in negligible ranges compared to the number of false dependencies. In input 2 of $600.perlbench\_s$ though the absolute number of violations is at it's highest, and so offsets any reductions in false dependencies (which as was also already discussed have more a limited impact in this workload).
 
-\subsection{MDP Queries}
+$620.omnetpp\_s$ sees the largest increase in violations yet maintains a performance gain for the medium configuration. This is possibly because it observes almost double the average intspeed dcache miss rate (4.3M vs 2.6M), leading to costly false dependencies that stall on stores long-to-resolve stores, but low penalty violations that occur during cache misses. 
+
+The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:method}. The optimal threshold may still provide a net performance gain while still causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. They could be also mitigated by specialising the PGO technique to each benchmark rather than the processor.
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_medium.pdf}
+\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
+\label{fig:violations}
+\end{figure}
+
+\subsection{Power}
+
+- analyse power savings, correlated to lookup reduction. small core has small shift in MDP power, but total core power saving congruent to IPC gain, which is an opportuny to remind how the gains come at no area/power tradeoff.\\
+- need large core results which have a larger MDP power saving, but next to no core change. can try and speculate how this offsets growing MDP power for the future\\
+- need large core with big phast power savings which will hopefully nudge total core power a little more? not sure where to go with this section if it doesn't tho. 
 
 \begin{figure}[t]
   \centering
@@ -335,21 +356,26 @@ Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed f
 \label{fig:lookups}
 \end{figure}
 
-\subsection{Violations}
-
-\begin{figure}[t]
-  \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_small.pdf}
-\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
-\label{fig:violations}
-\end{figure}
-
-\subsection{Power}
 
 \subsection{Read Port Impact Estimation}
-Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, it can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction it simulates. Given the importance of this aspect to our proposed technique, we estimate the potential impact on IPC when read ports are limited. We generously assume that predictions always arrive within a single cycle for both XS Store Sets and PHAST. We assign a number of read ports to the memory dependence predictor for each processor model, as listed in Table \ref{table:cpu-models}. Dispatch is modelled to block when the number of memory operations dispatched in a cycle exceeds the number maximum number of read ports. This includes both loads and stores for XS Store Sets and only loads for PHAST. The count of in-use ports resets to zero each cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, \textbf{the number of read ports does not affect any other results presented in this paper}.
+Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, it can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction it simulates. Given the importance of this aspect to our proposed technique, we estimate the potential impact on IPC when read ports are limited. We generously assume that predictions always arrive within a single cycle for both XS Store Sets and PHAST. We assign a number of read ports to the memory dependence predictor for each processor model, as listed in Table \ref{table:cpu-models}. Dispatch is modelled to block when the number of memory operations dispatched in a cycle exceeds the number maximum number of read ports. This includes both loads and stores for XS Store Sets and only loads for PHAST. The count of in-use ports resets to zero each cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, \textbf{the number of read ports does not affect any other results presented in this paper}.\\
+
+- insert results here
 
 \subsection{Profile Analysis \& Threshold Sensitivity}
+
+- need to generate profile from test input for this, will take a few days
+
+\subsection{Store Set Table Size Sensitivity}
+\label{sec:storesetsize}
+
+As seen in Section \ref{sec:ipc}, the number of false dependencies falls sharply when increasing the Store Set table sizes along with core size. We present a sensitivity study for how gmean IPC improvement and base false dependencies in the small core configuration varies as both SSIT and LFST sizes grow. 
+
+- graphs here\\
+
+Figure \ref{fig:storesetsizefalsedeps} shows that the majority of false dependencies can be removed by growing the Store Set tables, and likewise Figure \ref{fig:storesetsizeipc} shows that the IPC gain diminishes along with this too. This demonstrates the main source of performance our technique offers is due to reducing hash collisions in the predictor tables, but without having to grow them.
+
+Furthermore, we perform an iso-area comparison in the small core configuration between doubling the Store Set size verses growing the load queue by an equal number of bits. Whereas growing Store Sets provide an additional x\% gmean IPC, the larger load queue provides y\%. This suggests that Store Set hash collisions would not typically be eliminated in small processors by growing the predictor size.
 
 
 \section{Threats to Validity}

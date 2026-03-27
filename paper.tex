@@ -54,7 +54,12 @@
     Bib\TeX}}}
 
 \usepackage{makecell}
-
+\usepackage{circuitikz}
+\usepackage{pgfplots}
+\definecolor{s5}{HTML}{117733}
+\definecolor{a14}{HTML}{999933}
+\definecolor{m4}{HTML}{332288}
+\usepackage[dvipsnames]{xcolor}
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
 %% values in them; it is your responsibility as an author to replace
@@ -252,6 +257,15 @@ PHAST is a newer predictor which achieves much greater accuracy than Store Sets 
 
 Although PHAST delivers much greater accuracy, it also comes with greater hardware overhead. Though PHAST greatly outperforms Store Sets for iso-area comparisons at larger budgets, it struggles with the smaller budgets most efficiency-focused cores allow for memory dependence prediction. Furthermore, PHAST incurs pipeline complexity by requiring global branch history be made available in the load-store unit, has greater prediction latency, and consumes more power for the same area. This makes PHAST better suited only for larger performance-focused cores that would benefit most from the greater MLP.
 
+\begin{figure*}[!t]
+    \centering
+    \resizebox{0.9\textwidth}{!}{%
+        \input{figures/storedistance_toolflow}
+    }
+    \caption{Toolflow for Store Distance based load labelling}
+    \label{fig:storedistancetoolflow}
+\end{figure*}
+
 \section{Related Work}
 
 \emph{Improving Memory Dependence Prediction with Static Analysis} \cite{improvingmdp} tackles the same problem as this paper, but using static analysis to determine which load instructions to label as 'PND'. It demonstrates small IPC gains in select cases, but with an overall best-case gmean of less than 0.1\%. Furthermore, due to relying on static analysis it also sees performance regressions elsewhere, making it unviable. In comparison, by leveraging profiles we are able to achieve higher IPC gains in broader contexts. Our technique is also resistant to regressions on larger or more sophisticated MDP algorithms such as PHAST, which \cite{improvingmdp} is not.
@@ -265,9 +279,60 @@ Although PHAST delivers much greater accuracy, it also comes with greater hardwa
 \emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and PHAST \cite{storesets, phast}, other MDP algorithms include Store Vectors, NoSQ and MDP-TAGE \cite{storevectors, nosq, mdptage}. Each of these algorithms offer different trade-offs and advantages. We choose to evaluate XS Store Sets and PHAST because we understand them to be the optimal choices for small and large cores respectively, and that XS Store Sets provides, to the best of our knowledge, the closest representation of MDP algorithms found in real processors.\\
 NOTE: MDP-TAGE boasts the accuracy of a large store sets for only 70 bits of storage. I *think* that this is predicated on having a good branch predictor though, which the small cores we're targeting wouldn't have (although I haven't tested this). 1. does this make sense and 2. should we state it explicitly? If it does make sense, then its already contained implicitly in referring to XS Store Sets as 'optimal' for small cores (XS-SS also has the benefit of existing in a real CPU). If MDP-TAGE does work well for small cores though I think we kind of have to be evaluating that instead.
 
+
+
 \section{Method}
 - justifying PGO: how PGO is commonly used and static analysis (even SVF) doesn't work\\
 - where we win (read only/likely stable, hash collisions, resolved stores, occasional dependence)
+
+This section presents the profiling methodology used to identify the right loads to be marked as PND. The key criteria for labelling loads are (i) the distance between the load and its aliasing store instruction, referred to as \textit{store distance}~\cite{replacestoreset}, and (ii) the percentage of the total execution of this load that had a \textit{store distance} below a certain threshold. 
+
+\subsection{Defining Store Distance}
+Memory distance~\cite{fang2005instruction} refers to the quantifiable dynamic distance in terms of memory references between two accesses to the same memory location. There are several forms of memory distance metrics, however, in this work, \textit{store distance}~\cite{replacestoreset} is used. \textbf{Store distance refers to the number of store instructions between the load and its dependent store}. The choice of using store distance motivated by several factors. Most importantly, store instructions are managed within the store queue, and the number of intervening stores between a candidate store and a dependent load provides a reliable estimate of whether the store’s address has been resolved by the time the load executes. Unresolved store addresses are a key contributor to incorrect memory dependence speculation. Further, \textit{store distance} can be computed efficiently using tools like ATOM~\cite{atom}, PIN~\cite{pin} and QEMU~\cite{bellard2005qemu}. Therefore, \textit{store distance} serves as a practical and efficient heuristic for identifying loads that are unlikely to result in memory order violations.
+
+\subsection{Instrumenting for Store Distance Profile}
+
+Here we discuss how the Store Distance profile is collected for our experiments. The full pipeline is shown in Figure~\ref{fig:storedistancetoolflow}. The instrumentation methodology can be broken down into the following steps. 
+
+\textbf{Augmenting Gem5 to collect store distance information:} Though there are several ways to achieve this, for this work, Gem5 is modified to collect store distance information. The \textit{NonCachingSimpleCPU} model is chosen for its minimal simulation complexity. It executes instructions in-order and without speculation, hence ideal for tracing memory operations in the correct sequence. For every store instruction, a store counter is incremented. A map is used to record the store counter value as well as the target address at the last execution of this store instruction. For every load instruction, the target address of the load is used to check for any store that had the same target. Note that only the latest store to the same target is considered, i.e. the closest store instruction. If an aliasing store is found, that aliasing store's store counter value is subtracted from the current store counter value. This is then tagged as the store distance value for the current load. If no dependency exists, the load is tagged with a store distance of 1000. A limit of 1000 instructions is used as the maximum instruction window in which a dependency can cause a violation. 
+
+\textbf{Aggregating store distance information:} We then aggregate the results by simply adding the count of each store distance tag for each load from every train input run of each benchmark. 
+
+\subsection{Determining PND labels from Store Distance Profile}
+
+Store distance behaviour for a given load is not always fixed. In some cases, it remains constant throughout execution, but in others it can vary depending on control flow or execution context. For example, a load may exhibit different store distances depending on which branch of a conditional is taken, making its behaviour path-dependent. Similarly, within loops, a load might have one store distance when first encountered and a different, consistent value during subsequent iterations, with the overall pattern influenced by the number of loop iterations.
+
+Crucially, these variations are often input-dependent: the same load instruction can produce different store distance values when executed with different inputs. This variability makes it harder to determine whether a load is a suitable candidate for PND labelling.
+
+This is significant for the methodology presented here, since using runtime memory distance heuristics can accurately catch these input specific behaviour, however such scenarios may not scale with different inputs. Fang \textit{et al.}~\cite{replacestoreset} considers instances of a particular distance that account for at least 95\% of the total accesses for this instruction as the \textit{dominant store distance}. In case of no dominant store distance, it uses the lowest observed distance as a conservative manner. 
+ 
+While this is important for calculating exact speculative distances, for marking loads PND this is not required. Instead, \textbf{if 95\% of the total load accesses exhibit a store distance greater than a predefined threshold, the load can be considered safe for PND labelling}. The rationale is that, if the vast majority of instances, the load depends only on stores that are sufficiently distant, it can avoid causing memory order violations, or at least the performance gain  when speculating will outweigh the small number of additional violations caused. This is especially true if the particular load was dependent initially in the start of the loop but never after. This may cause the load to be inserted into the MDP initially and later cause MDP to predict false dependencies in the critical path of the program, causing slow-downs. Labelling such loads will improve the overall throughput of the program.
+
+
+\subsection{Optimal Threshold analysis for PND Candidates}
+
+So far, we discussed how to generate the store distance information and how to label loads. Here we perform a study to identify the optimal store distance threshold beyond which it can be considered safe to label loads. As mentioned, we calculate the total occurrences of the load above the threshold, and if this sum was greater than 95\% of the total execution count of the load, it can be considered safe. We use 95\% as the confidence cut-off as used by Fang \textit{et al.}~\cite{replacestoreset}. However, ideal distance threshold is significantly impacted by the instruction execution window and other different parameters in the CPU. 
+
+We perform a binary search on a range of thresholds for each CPU model. The underlying assumption in this analysis is that the threshold exhibits a bitonic relationship with Instructions Per Cycle (IPC), that is, IPC initially increases as the threshold is lowered, reaches a peak, and then begins to decline if the threshold is reduced further. This behaviour arises from the trade-off between maximizing the bypass rate of the Memory Dependence Predictor (MDP) and avoiding memory order violations. Lowering the threshold increases the number of loads eligible for PND labelling, thereby improving speculation and IPC up to a certain point. Beyond this point, further reduction leads to the inclusion of loads that are more likely to violate dependencies, resulting in increased violations and a subsequent decline in IPC.
+
+
+The binary search was performed on a select subset of benchmarks that are most likely to be affected by PND labelling. This includes \textit{gcc}, \textit{leela}, \textit{nab}, \textit{perlbench}, \textit{x264}, \textit{xalancbmk} and \textit{xz}. This was done to mitigate the substantial time and computational expense associated with full micro-architectural simulation. For this search, the reference input set was employed.
+
+% Although using a validation set from the train input set is methodologically preferable, this approach was avoided due to the substantial time overhead required to regenerate the necessary Gem5 checkpoints with SimPoint (as detailed in Section~\ref{chapter:EvaluationMethodology}) on this new train set.
+
+\begin{figure}[!t] 
+\centering
+  \resizebox{1\linewidth}{!}{
+  \input{figures/thresholdsearch}
+  }
+\caption{Store Distance threshold search for each CPU model. The Arrows indicate the best threshold.}
+\label{fig:thresholdsearch}
+\end{figure}
+
+The data points from the search is plotted in Figure~\ref{fig:thresholdsearch}. All CPU models show a bitonic relationship, verifying our assumption. It is evident that the ideal threshold is dependent on the CPU size.
+
+% For the A14 and M4 CPU models, the ideal threshold is approximately 0.7 times the store queue size. The outlier is the S5 CPU model which has a significantly lower threshold. This is due to the fact that it has no MDP hardware and hence has more false dependency related slowdowns, hence performance benefit of labelling more loads offset the increased memory order violations.
+
 
 \section{Evaluation}
 

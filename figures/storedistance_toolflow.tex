@@ -1,0 +1,50 @@
+\begin{circuitikz}[line width=1.5pt]
+\filldraw[color=red!60, fill=red!5, very thick] [rounded corners = 4.8, dashed] (-7.75,17.75) rectangle (-2,12.5);
+\filldraw[color=teal!60, fill=teal!5, very thick] [rounded corners = 4.8, dashed] (8.75,19.5) rectangle (26.75,9);
+\filldraw[color=blue!60, fill=blue!5, very thick] [rounded corners = 4.8, dashed] (28.75,17) rectangle (34.75,12.25);
+\filldraw[color=OliveGreen!60, fill=OliveGreen!5, very thick] [rounded corners = 4.8, dashed]  (2,19.25) rectangle (6.5,15);
+\filldraw[color=OliveGreen!60, fill=OliveGreen!5, very thick] [rounded corners = 4.8, dashed] (1.2,14.5) rectangle (7.8,10);
+
+\tikzstyle{every node}=[font=\Huge]
+\draw [rounded corners = 4.8] (2,13) rectangle  node {\Huge Binary} (7,10.5);
+\draw [short] (7,11.75) -- (9.75,11.75);
+\draw [short] (9.75,11.75) -- (9.75,14.5);
+\draw [->, >=Stealth] (9.75,14.5) -- (11.5,14.5);
+\draw [rounded corners = 4.8] (11.5,17.25) rectangle (18,13.5);
+\draw [short] (18,15.25) -- (19.5,15.25);
+\draw [short] (19.5,15.25) -- (19.5,13);
+\draw [->, >=Stealth] (19.5,13) -- (21.5,13);
+\draw [short] (9.75,11.75) -- (9.75,10.5);
+\draw [->, >=Stealth] (9.75,10.5) -- (21.5,10.5);
+\draw [rounded corners = 4.8] (21.5,13.75) rectangle (26,9.75);
+\draw [->, >=Stealth] (27.5,14) -- (29.25,14);
+\draw [rounded corners = 4.8] (29.25,15.5) rectangle  node {\Huge Labelled binary} (34.25,12.75);
+\draw [->, >=Stealth] (6,16.5) -- (11.5,16.5);
+\node [font=\Huge] at (17.5,18.75) {Store Distance Based Filtering};
+\node [font=\Huge] at (31.75,16.5) {Ready to Exec};
+\draw [rounded corners = 4.8] (2.5,17.75) rectangle (5.5,16);
+\draw [ fill=OliveGreen!5 ] [rounded corners = 4.8] (2.75,17.5) rectangle (5.75,15.75);
+\draw [ fill=OliveGreen!5 ] [rounded corners = 4.8] (3,17.25) rectangle  node[color=black] {\Huge Input} (6,15.5);
+\node [font=\Huge] at (4.25,18.5) {Train Input Set};
+\node [font=\Huge] at (4.35,14) {Native AArch64 exe};
+\draw [rounded corners = 4.8] (-7.25,15.75) rectangle (-2.5,13.25);
+\node [font=\Huge] at (-4.5,14.5) {SPEC 2017};
+\node (SPEClogo) at  (-6.5,14.5) {\includegraphics[width=0.9cm]{figures/SPEClogo.png}};
+\node [font=\Huge] at (-5,17) {Benchmark};
+\draw [short] (-2.5,14.25) -- (-0.25,14.25);
+\draw [short] (-0.25,16.75) -- (-0.25,11.5);
+\draw [->, >=Stealth] (-0.25,16.75) -- (2.5,16.75);
+\draw [->, >=Stealth] (-0.25,11.5) -- (2,11.5);
+\draw [short] (27.5,14) -- (27.5,11.5);
+\draw [short] (26,11.5) -- (27.5,11.5);
+\draw [->, >=Stealth, dashed] (34.25,14) -- (35.5,14);
+\node [font=\Huge] at (37,14) {\textit{To Gem5}};
+
+\node (Gem5Logo) at (14.75,16)  {\includegraphics[width=2.5cm]{figures/Gem5_Logo.png}};
+\node [font=\Huge] at (14.75,14.3) {Store Distance Profiling};
+
+\node (SPEClogo) at  (23.75, 12.8) {\includegraphics[width=3cm]{figures/pythonlogo.png}};
+\node [font=\Huge] at (23.75,10.25) {Filtering};
+\node [font=\Huge] at (23.75,11.75) {Aggregating};
+\node [font=\Huge] at (23.75,11) {\&};
+\end{circuitikz}

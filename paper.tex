@@ -122,7 +122,7 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{Guidelines for Submission to MICRO 2026}
+\title{A Profile-Guided Optimization to Reduce False Memory Dependence Predictions}
 \subtitle{\normalsize{MICRO 2026 Submission
     \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
 %%
@@ -131,8 +131,8 @@
 %% Of note is the shared affiliation of the first two authors, and the
 %% "authornote" and "authornotemark" commands
 %% used to denote shared contribution to the research.
-\author{\normalsize{MICRO 2026 Submission
-   \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
+%\author{\normalsize{MICRO 2026 Submission
+%   \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
 
 %%
 %% By default, the full list of authors will be used in the page
@@ -150,7 +150,9 @@
 
 \begin{abstract}
 
-Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and can often only spare limited space for MDP tables. This leads to a high number of false dependencies as memory independent loads collide with unrelated predictor entries, causing unnecessary stalls. This paper proposes a profile-guided hardware/software co-design to detect frequently memory independent loads and labels them via their opcode to mark them as 'predict no dependency' (PND) loads. These PND loads bypass the MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across Spec2017 intspeed, this technique achieves a gmean IPC gain of 1.4\% in the smallest core simulated. On larger cores, performance is maintained while average MDP power usage is reduced by 40\%.
+Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and can often only spare limited space for MDP tables. This leads to a high number of false dependencies as memory independent loads collide with unrelated predictor entries (i.e., the aliasing problem), causing unnecessary stalls in the processor pipeline. 
+
+This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of 1.4\% in the smallest simulated core. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
 
 \end{abstract}
 %%
@@ -190,8 +192,7 @@ Memory Dependence Prediction (MDP) is a speculative technique to determine which
 %%
 %% Keywords. The author(s) should pick words that accurately describe
 %% the work being presented. Separate the keywords with commas.
-\keywords{Do, Not, Use, This, Code, Put, the, Correct, Terms, for,
-  Your, Paper}
+%\keywords{Do, Not, Use, This, Code, Put, the, Correct, Terms, for, Your, Paper}
 
 \maketitle
 

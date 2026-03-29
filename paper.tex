@@ -444,9 +444,16 @@ Furthermore, we perform an iso-area comparison in the small core configuration b
 
 
 \section{Threats to Validity}
-- encoding space (cite cooperative memory disambig)\\
-- cpu models (and gem5)\\
-- intended for specific target compilation
+This section touches on possible threats to the validity of results presented in this paper.
+
+\subsection{Encoding Space for Load Labels}
+We have proposed new opcodes to differentiate our labelled PND loads from regular loads in the ISA at zero overhead. While possible in theory, this may be difficult to implement in pre-existing and widely used ISAs such as X86, AArch64 and RISCV due to limited available encoding space. Alternate proposals to this problem have been offered in \cite{cooperative}. Further options include introducing some level of overhead to apply our proposed technique, such as extending load opcodes to include a label bit, or reserving a bit in their register operand and adjusting register allocation accordingly.
+
+\subsection{Simulated Processor Models}
+The processor model we simulate specified in Section \ref{sec:models} does not reflect any real world processor configuration. Though we would like to use publicly known parameters from real processors (for instance from sources such as \cite{cpusizes}), when using Gem5 to simulate workloads this can be dangerous, as the same features and mechanisms which inform the optimal parameter values in those real world processors could be absent in the Gem5 core. As such we design the simulated model used in this paper by the intuition of what is reasonable for Gem5 specifically, while still within realistic area bounds for a real processor in our use case.
+
+\subsection{Target Specific Compilation}
+The technique proposed in this paper assumed target specific compilation is possible in order to select the processor-specific optimal store distance threshold. In many cases though this is not the case. Enterprise software products are often compiled once and shipped to many different platforms. This would make short thresholds invalid, as they would introduce performance regressions in larger processors. A conservatively large threshold could be used for generic compilation, but this would likely also eliminate any performance gains in small processors too. One solution could be for processors known not to benefit from PND labels to ignore the ISA hint and execute labelled loads as normal.
 
 \section{Future Work}
 -per benchmark tuning \& JITs\\

@@ -6,7 +6,7 @@
    (TeX-add-to-alist 'LaTeX-provided-class-options
                      '(("elsarticle" "") ("article" "") ("acmart" "sigconf" "screen" "review")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("hyperref" "hidelinks") ("graphicx" "") ("listings" "") ("color" "") ("caption" "") ("makecell" "")))
+                     '(("hyperref" "hidelinks") ("graphicx" "") ("listings" "") ("color" "") ("caption" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("xcolor" "dvipsnames")))
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "ead")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
@@ -20,13 +20,21 @@
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
    (TeX-run-style-hooks
     "latex2e"
+    "figures/storedistance_toolflow"
+    "figures/thresholdsearch"
     "acmart"
     "acmart10"
-    "makecell")
+    "makecell"
+    "circuitikz"
+    "pgfplots"
+    "xcolor")
    (TeX-add-symbols
     '("aj" 1)
     "BibTeX")
    (LaTeX-add-labels
+    "fig:storedistancetoolflow"
+    "sec:storedistances"
+    "fig:thresholdsearch"
     "table:cpu-models"
     "sec:ipc"
     "fig:ipc"
@@ -35,6 +43,10 @@
     "fig:lookups"
     "sec:storesetsize")
    (LaTeX-add-bibliographies
-    "bibtex"))
+    "bibtex")
+   (LaTeX-add-xcolor-definecolors
+    "s5"
+    "a14"
+    "m4"))
  :latex)
 

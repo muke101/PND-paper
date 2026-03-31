@@ -157,7 +157,7 @@
 
 Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and can often only spare limited space for MDP tables. This leads to a high number of false dependencies as memory independent loads collide with unrelated predictor entries (i.e., the aliasing problem), causing unnecessary stalls in the processor pipeline. 
 
-This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of 0.4\% in the smallest simulated core. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
+This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of \textcolor{red}{0.4\%} in the smallest simulated core. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
 
 \end{abstract}
 %%
@@ -201,18 +201,20 @@ This paper proposes a profile-guided hardware-software co-design to detect frequ
 
 \maketitle
 
-- do we need varying CPU sizes? maybe it'd make sense just to present the best result then have a size analysis subsection.\\
+- do we need varying CPU sizes? maybe it'd make sense just to present the best result then have a size analysis subsection. \aj{agree}\\
 - have a section on finding the minimum store set size
+\aj{analysis of MDP+PND vs MDP, varying MDP size}
 
 \section{Introduction}
 
--turned into a false dependency/IPC story. is it still potentially worthwhile to try and push the MDP lookup reduction/predictor activity as a result? its only useful in so far as it reduces false deps (as percent power usage of MDP is so small), but maybe it could still be seen as interesting in its own right
+\textcolor{red}{-turned into a false dependency/IPC story. is it still potentially worthwhile to try and push the MDP lookup reduction/predictor activity as a result? its only useful in so far as it reduces false deps (as percent power usage of MDP is so small), but maybe it could still be seen as interesting in its own right}
+\aj{Can we check the average MSHR-occupancy as a metric for MLP w/o PND?}
 
-Memory-level parallelism (MLP) is important for efficient out-of-order (OoO) execution and overcoming the memory wall in processor performance. Memory dependence prediction is a speculative technique used in OoO processors that aims to enhance total MLP by predicting the stores on which a given load instruction will depend, as well as identifying memory-independent loads. Smaller cores utilising smaller predictors can often struggle with a large number of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} is exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the SotA to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on core design, which is often not viable in smaller cores. At the same time, while simply growing a Store Sets-like predictor would offset the hash collisions, this benefit struggles to outperform an iso-area comparison to scaling other components. As such, memory dependence predictors in small cores typically remain small and inefficient.
+Memory-level parallelism (MLP) is important for efficient out-of-order (OoO) execution and overcoming the memory wall in processor performance. Memory dependence prediction is a speculative technique used in OoO processors that aims to enhance total MLP by predicting the stores on which a given load instruction will depend, as well as identifying memory-independent loads. Smaller cores utilising smaller predictors can often struggle with a large number of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the SotA to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on the core design, which is often not viable in smaller cores. At the same time, while simply growing a Store Sets-like predictor would offset the hash collisions, this benefit struggles to outperform an iso-area comparison to scaling other components. \aj{ref?} As such, memory dependence predictors in small cores typically remain small and inefficient.
 
-At the same time, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are, of course, also found in power-constrained systems such as smartphones, tablets, smartwatches and other edge systems. These cores are more and more performing demanding general purpose computation while striving to consume as little energy as possible. As they grow more performance-sensitive, finding optimisations which don't also incur additional area, power or complexity costs becomes more pressing.
+Nevertheless, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are, of course, also found in power-constrained systems such as smartphones, tablets, smartwatches and other edge systems. These cores are more and more performing demanding general purpose computation while striving to consume as little energy as possible. As they grow more performance-sensitive, finding optimisations which don't also incur additional area, power or complexity costs becomes more pressing.
 
-This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. This is exploited to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. Our technique labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or improving IPC, as well as provide a potential power saving.
+This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. We leveraged this insight to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. Our technique labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or improving IPC,\textcolor{red}{ as well as provide a potential power saving}. \aj{This sounds weak, use final numbers, as provided by the third contribution.}
 
 \subsection{Contributions}
 This paper makes the following contributions:
@@ -222,9 +224,9 @@ This paper makes the following contributions:
         \item[$\bullet$] Extends McPat to provide power usage estimations of the MDP unit.
         \item[$\bullet$] Evaluates Spec2017 IntSpeed and demonstrates on average: 
         \begin{itemize}
-          \item[$\bullet$] IPC improves on the smallest core by 0.4\%,
           \item[$\bullet$] 71\% of MDP load queries are redundant,
-          \item[$\bullet$] MDP power reduces by 12\% on the smallest core, whereas the largest core maintains IPC and reduces MDP power by 42\%. 
+          \item[$\bullet$] IPC improves on the smallest core by 0.4\% and MDP power reduces by 12\%.
+          \item[$\bullet$]  the largest core maintains IPC and reduces MDP power by 42\%. 
         \end{itemize}
         \item[$\bullet$] Additionally demonstrates a x\% IPC gain when modelling a limited number of MDP read ports.
         % \item[$\bullet$] (currently only includes 2 benchmarks) Evaluates Spec2017 FloatSpeed and demonstrates on average: 87\% of MDP load queries are redundant, IPC improves by 0.1\% \& MDP power reduces by 6.5\% on the smallest core, whereas the largest core maintains IPC and reduces MDP power by x\%. 
@@ -284,6 +286,11 @@ NOTE: MDP-TAGE boasts the accuracy of a large store sets for only 70 bits of sto
 
 \section{Method}
 This section presents the profile-guided co-design technique used in this paper. We put forward the concepts of store distances, distance thresholds, and how these are combined to find reliably memory independent loads. We then motivate the use of profiles to determine load labels, outlining the benefits provided over static analysis.
+
+\aj{Before discussing the store distances, I suggest a subsection where Fig 1 is explained giving an overview of the technique. Reference the follow-up subsections for more details, but use this overview as the backbone of the method, to make it clear how everything fits together.}
+
+\subsection{Overview}
+
 
 \subsection{Store Distances \& Labelling Thresholds}
 \label{sec:storedistances}

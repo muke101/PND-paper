@@ -214,7 +214,7 @@ Memory-level parallelism (MLP) is important for efficient out-of-order (OoO) exe
 
 Nevertheless, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are, of course, also found in power-constrained systems such as smartphones, tablets, smartwatches and other edge systems. These cores are more and more performing demanding general purpose computation while striving to consume as little energy as possible. As they grow more performance-sensitive, finding optimisations which don't also incur additional area, power or complexity costs becomes more pressing.
 
-This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. We leveraged this insight to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. Our technique labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or improving IPC,\textcolor{red}{ as well as provide a potential power saving}. \aj{This sounds weak, use final numbers, as provided by the third contribution.}
+This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. We leveraged this insight to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. Our technique labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or improving IPC,\textcolor{red}{ as well as provide a potential power saving}. \aj{This sounds weak, use final numbers, as provided by the third contribution.} \aj{claify that correctness is ensured by the speculation-check mechanism and guaranteed even if the profiling results are not accurate from one input to another. MDP queries are bypassed, but profiling-based annotations are treated and checked as predictions.}
 
 \subsection{Contributions}
 This paper makes the following contributions:
@@ -290,16 +290,23 @@ This section presents the profile-guided co-design technique used in this paper.
 \aj{Before discussing the store distances, I suggest a subsection where Fig 1 is explained giving an overview of the technique. Reference the follow-up subsections for more details, but use this overview as the backbone of the method, to make it clear how everything fits together.}
 
 \subsection{Overview}
+\autoref{fig:storedistancetoolflow}
+I. Profiling step:\\
+1. How is profiling performed? Binaries are compiled and run with different input tests \textcolor{red}{test or train?} provided with SPEC. For each load, one records the stores it depends on (store distance, see \autoref{sec:storedistances}.\\
+2. Once the store distances are computed based on profiling, the info is recorded in the binary. How?
 
-
+II. Execution:\\
+ The binaries are executed with the train\ ref input? How is the PND information retrieved by the hardware? How do the loads behave. See subsection X for details. 
+ 
 \subsection{Store Distances \& Labelling Thresholds}
 \label{sec:storedistances}
 
 As overviewed in Section \ref{sec:lsq}, when loads are issued in out-of-order execution they search the store queue (SQ) for older stores with overlapping addresses. We use the term store distance to refer to the number of prior entries in the SQ a load's dependent store is found. A load that depends on the most recent prior store would have a store distance of 1.
 
-The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions are selected as that load's profiled store distance. When no single store distance occurs in at least 95\% of executions, the shortest observed distance is chosen.
+The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions are selected as that load's profiled store distance. When no single store distance occurs in at least 95\% of executions, the shortest observed distance is chosen. 
+\aj{How many inputs are used per binary? SPEC provides a low number of train inputs per benchmark, so it is not clear how many runs can be done and what means 95\%. }
 
-The premise our technique is based on is that loads with either no or consistently long dependent store distances are good candidates to label as PND. This heuristic captures three different types of behaviour:
+The premise our technique is based on is that loads with either no or consistently long dependent store distances are good candidates to label as PND. This heuristic captures three different types of behaviours:
 %TODO: would be nice to have a breakdown of the dynamic \% of each type of load we end up labelling
 \begin{itemize}
         \item[$\bullet$] \textbf{(1) Memory Independent Loads:} Loads which read constant data (i.e. have no store distance).
@@ -307,12 +314,24 @@ The premise our technique is based on is that loads with either no or consistent
         \item[$\bullet$] \textbf{(3) Structurally Independent Loads:} Loads whose dependent stores do not exist in-flight at the same time the load is issued.
         \item[$\bullet$] \textbf{(4) Fast-to-Resolve Dependencies:} Loads which have in-flight but resolved dependent stores, allowing forwarding.
 \end{itemize}
+\aj{Can you connect the four categories with the profiling method: "The profile-derived store distance for each load is found by
+recording every per-execution store distance on train inputs. Store
+distances that occur in 95\% or more executions are selected as that
+load’s profiled store distance. When no single store distance occurs
+in at least 95\% of executions, the shortest observed distance is cho-
+sen. "?}
+\aj{Maybe a code example with a CFG showing different store distances per branch and what is seletcted? Or several examples of increasing complexity?}
 
-Loads with behaviour types one and two can always be safely labelled, but whether a load's store distance will fall into types three or four will depend on the processor being targeted. A larger processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will fall into this category. Type four is even further target (or even workload) specific, but is still correlated with a longer distance as more time is left between dispatching the store and issuing the load.
+Loads with behaviour types one and two can always be safely labelled, but whether a load's store distance will fall into types three or four will depend on the target processor's characteristics. A larger processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will fall into this category. Type four is even further target (or even workload) specific, but is still correlated with a longer distance as more time is left between dispatching the store and issuing the load.
+\aj{The text above is correct, but I had to read it twice to follow the description :) We can refine it in the final version.}
 
-The optimal store distance threshold for a specific target processor is found via binary search, choosing the threshold with the best average performance over train inputs. By using a representative selection of workloads to perform the search with, an optimal store distance threshold can target the processor rather than the each individual workload, meaning the search only has to be performed once. Figure \ref{fig:thresholdsearch} shows how the performance impact of labels for different core sizes varies, and the optimal choice for each target. 
+The optimal store distance threshold for a specific target processor is found via binary search, choosing the threshold with the best average performance over train inputs. 
+\aj{Threshold?  We never talked about it before .. What is the optimal store distance threshold?}
 
-Once a threshold is selected it is applied to each workloads profile, and loads with sufficiently long distances have their opcodes changed to the appropriate PND load variant.
+By using a representative selection of workloads to perform the search with, an optimal store distance threshold can target the processor rather than each individual workload, meaning the search only has to be performed once. Figure \ref{fig:thresholdsearch} shows how the performance impact of labels for different core sizes varies, and the optimal choice for each target. 
+\aj{I suggest to move this figure and the discussion on the search of the optimal store distance threshold in a motivation section before the proposal description. Ideal store distance threshold is a good way to show the potential of the idea, once it was briefly presented in the intro. Then here present the method only, i.e. the implementation. Alternatively, the optimal store distance threshold can be considered as a pre-compilation step, i.e. same as profiling, so it can be presented there..}
+
+Once a threshold is selected it is applied to each workload profile, and loads with sufficiently long distances have their opcodes changed to the appropriate PND load variant.
 
 \begin{figure}[!h] 
 \centering
@@ -329,9 +348,12 @@ While profile-guided optimisations (PGO) have long offered performance benefits,
 
 Addressing adoption, prior work shows that use of PGO has risen significantly in recent years \cite{unveilingpgo}. This can be seen in enterprise projects such as Firefox and Chrome web browsers, the Python interpreter and the GCC compiler. Performance-critical server workloads have also seen renewed attention to the benefits that PGO can provide \cite{bolt}. This enforces the use of profiles as a reasonable approach to designing new software-hardware co-designs.
 
-We furthermore demonstrate in Section \ref{sec:generalise} that the our profiles generated from Spec2017 train inputs do generalise effectively to the test inputs, suggesting our proposed technique is able to generalise to unseen inputs. It is also important to note that in the case of load instructions which are unseen in the train inputs, these are never labelled and so execute as normal. This allows our technique to be more tolerant to workloads with high code coverage variation between inputs.
+We furthermore demonstrate in Section \ref{sec:generalise} that the our profiles generated from Spec2017 train inputs do generalise effectively to the test inputs, suggesting our proposed technique is able to generalise to unseen inputs.
+\aj{ From train to test is not "generalizing".. From train I would move to ref, or from test to train.. i.e. from smaller to larger inputs. It is expected that train "Generalizes" to test, because test is likely subsumed by train.}
 
-Lastly we highlight the benefits that profiles are able to provide to this technique over static analysis. Of the four types of load behaviour referred to in Section \ref{sec:storedistances}, only two of them (types one and three) could theoretically be captured by perfect alias analysis. Type two would then further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behaviour in type four. It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only applicable to domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behaviour, which pairs well with speculative execution where mistakes will not invalidate program semantics.
+It is also important to note that in the case of load instructions which are unseen in the train inputs, these are never labelled and so execute as normal. This allows our technique to be more tolerant to workloads with high code coverage variation between inputs.
+
+Lastly we highlight the benefits that profiles are able to provide to this technique over static analysis. Of the four types of load behaviour referred to in Section \ref{sec:storedistances}, only two of them (types one and three) could theoretically be captured by perfect alias analysis. Type two would then further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behaviour in type four. It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only applicable to domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. \aj{In particular, I would highlight that most static alias analyses only work within the compile-time module, i.e. although they have support for inter-procedural analysis, they do not have whole-program visibility.} In contrast, profiles allow much greater flexibility and coverage of load behaviour, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
 \section{Evaluation}
 

@@ -127,9 +127,9 @@
 %%
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
-\title{A Profile-Guided Optimization to Reduce False Memory Dependence Predictions}
+\title{PG-MDP: Profile-Guided Memory Dependence Prediction for Area-Constrained Cores}
 \subtitle{\normalsize{MICRO 2026 Submission
-    \textbf{\#NaN} -- Confidential Draft -- Do NOT Distribute!!}}
+    \textbf{\#1358} -- Confidential Draft -- Do NOT Distribute!!}}
 %%
 %% The "author" command and its associated commands are used to define
 %% the authors and their affiliations.
@@ -157,7 +157,7 @@
 
 Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and can often only spare limited space for MDP tables. This leads to a high number of false dependencies as memory independent loads collide with unrelated predictor entries (i.e., the aliasing problem), causing unnecessary stalls in the processor pipeline. 
 
-This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of \textcolor{red}{1.4\%} in the smallest simulated core. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
+This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of 1.4\% and proportional power-savings in a small core configuration. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
 
 \end{abstract} 
 %%
@@ -201,20 +201,13 @@ This paper proposes a profile-guided hardware-software co-design to detect frequ
 
 \maketitle
 
-- do we need varying CPU sizes? maybe it'd make sense just to present the best result then have a size analysis subsection. \aj{agree}\\
-- have a section on finding the minimum store set size
-\aj{analysis of MDP+PND vs MDP, varying MDP size}
-
 \section{Introduction}
-
-\textcolor{red}{-turned into a false dependency/IPC story. is it still potentially worthwhile to try and push the MDP lookup reduction/predictor activity as a result? its only useful in so far as it reduces false deps (as percent power usage of MDP is so small), but maybe it could still be seen as interesting in its own right}
-\aj{Can we check the average MSHR-occupancy as a metric for MLP w/o PND?}
 
 Memory-level parallelism (MLP) is important for efficient out-of-order (OoO) execution and overcoming the memory wall in processor performance. Memory dependence prediction is a speculative technique used in OoO processors that aims to enhance total MLP by predicting the stores on which a given load instruction will depend, as well as identifying memory-independent loads. Smaller cores utilising smaller predictors can often struggle with a large number of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the SotA to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on the core design, which is often not viable in smaller cores. At the same time, while simply growing a Store Sets-like predictor would offset the hash collisions, this benefit struggles to outperform an iso-area comparison to scaling other components. \aj{ref?} As such, memory dependence predictors in small cores typically remain small and inefficient.
 
 Nevertheless, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. Efficiency-focused cores are, of course, also found in power-constrained systems such as smartphones, tablets, smartwatches and other edge systems. These cores are more and more performing demanding general purpose computation while striving to consume as little energy as possible. As they grow more performance-sensitive, finding optimisations which don't also incur additional area, power or complexity costs becomes more pressing.
 
-This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. We leveraged this insight to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. Our technique labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. We show that the vast majority of dynamic loads can avoid querying the MDP while maintaining or improving IPC,\textcolor{red}{ as well as provide a potential power saving}. \aj{This sounds weak, use final numbers, as provided by the third contribution.} \aj{claify that correctness is ensured by the speculation-check mechanism and guaranteed even if the profiling results are not accurate from one input to another. MDP queries are bypassed, but profiling-based annotations are treated and checked as predictions.}
+This paper builds on an observation demonstrated by various prior works that a considerable portion of load instructions in general-purpose workloads rarely or never exhibit in-flight memory dependencies \cite{store-distance,improving-mem-dep,constable}. We leveraged this insight to reduce false dependencies in memory dependence prediction via a profile-guided software co-design at \textbf{zero hardware cost}. This profile-guided memory dependence prediction (PG-MDP) labels frequently memory-independent loads by their opcode, causing them to bypass MDP queries and always schedule as early as possible. In the event that a labelled load incorrectly passes a prior store to the same address, this still triggers a rollback as normal, but this will not create a new entry in the MDP. We show that on average 71\% of dynamic loads can avoid querying the MDP while improving IPC by 1.4\% on area-constrained cores. 
 
 \subsection{Contributions}
 This paper makes the following contributions:
@@ -238,7 +231,7 @@ This paper makes the following contributions:
 
 \section{Background}
 
-This section outlines the fundamental concepts in memory-level parallelism for out-of-order execution. It then introduces Store Sets as a foundational memory dependence predictor algorithm, a more modern variation found in the XiangShan processor, and lastly the current state of the art in the PHAST predictor.
+This section outlines the fundamental concepts in memory-level parallelism for out-of-order execution. It then introduces Store Sets as a foundational memory dependence predictor algorithm, a modern variation found in the XiangShan processor, and lastly the current state of the art in the PHAST predictor.
 
 \subsection{Loads in Out-of-Order Execution}
 The key structure in memory-level parallelism is the load-store queue (LSQ), used to hold in-flight memory operations and perform memory disamgibuation. When load instructions dispatch, they are inserted into the load queue (LQ), and query the memory dependence predictor (MDP) for a predicted store(s) to wait on before execution. Once their source operands are ready and all predicted dependent stores have executed, loads search backwards through the store queue (SQ) for store-forwarding opportunities. If no matching addresses are found, the loads access cache to get their data.
@@ -262,30 +255,17 @@ PHAST is a newer predictor which achieves much greater accuracy than Store Sets 
 
 Although PHAST delivers much greater accuracy, it also comes with greater hardware overhead. Though PHAST greatly outperforms Store Sets for iso-area comparisons at larger budgets, it struggles with the smaller budgets most efficiency-focused cores allow for memory dependence prediction. Furthermore, PHAST incurs pipeline complexity by requiring global branch history be made available in the load-store unit, has greater prediction latency, and consumes more power for the same area. This makes PHAST better suited only for larger performance-focused cores that would benefit most from the greater MLP.
 
-\begin{figure*}[!t]
-    \centering
-    \resizebox{0.9\textwidth}{!}{%
-        \input{figures/storedistance_toolflow}
-    }
-    \caption{Toolflow for Store Distance based load labelling}
-    \label{fig:storedistancetoolflow}
-\end{figure*}
-
-\section{Related Work}
-
-\emph{Improving Memory Dependence Prediction with Static Analysis} \cite{improvingmdp} tackles the same problem as this paper, but using static analysis to determine which load instructions to label as 'PND'. It demonstrates small IPC gains in select cases, but with an overall best-case gmean of less than 0.1\%. Furthermore, due to relying on static analysis it also sees performance regressions elsewhere, making it unviable. In comparison, by leveraging profiles we are able to achieve higher IPC gains in broader contexts. Our technique is also resistant to regressions on larger or more sophisticated MDP algorithms such as PHAST, which \cite{improvingmdp} is not.
-
-\emph{Feedback-directed Memory Disambiguation Through Store Distance Analysis} \cite{storedistance} proposes a similar profile-guided co-design to this paper, but with a more aggressive use case. In their work, the MDP is replaced altogether and load instructions are extended to include 4-bit distance fields indicating the store queue position they're likely to be dependent on. This achieves high accuracy compared to Store Sets, but comes at the cost of higher instruction bandwidth to encode predicted store distances, which is usually infeasible in modern processor designs where instruction bandwidth is critical. Larger processors would also likely require more bits to encode longer store queue distances. Furthermore, \cite{storedistance} could be more sensitive to profile accuracy than our work, as loads which do not appear in the profile must be assumed to be memory independent. In contrast, our technique is able to leave unseen loads to execute as normal. 
-
-\emph{Software-hardware Cooperative Memory Disambiguation} \cite{cooperative} is a binary analysis co-design to reduce load queue pressure. Certain kinds of provably memory independent loads are labelled and prevented from being inserted into the load queue when issued. This technique is able to label 40\% of static loads across Spec2006 floatspeed (but dynamic percentage is unclear). This also incurs additional instruction bandwidth by inserting barrier-like instructions when entering loops to ensure labelled loads are only removed from the load queue when their parent loop reaches a steady state in the pipeline. LSQ entries must also store an additional bit to track whether these custom instructions are in-flight or not. This work presents an interesting proposal for reducing load queue pressure in area-constrained processors that lack space for hardware-based load elimination techniques, but has reduced viability due to currently lacking a mechanism for ensuring memory coherence in multi-core systems.
-
-\emph{Constable: Improving Performance and Power Efficiency by Safely Eliminating Load Instruction Execution} \cite{constable} is a pure hardware technique to track and eliminate stable loads which consistently read the same value from memory. This technique is able to eliminate both the memory read and address calculation altogether, greatly improving pipeline efficiency. It also demonstrates a wide coverage a variety of workloads, improving gmean IPC by 5.1\%. For larger performance-orientated processors, this technique would most likely be more effective at improving the efficiency of load execution than our work, with a large overlap (albeit not total) of the types of load instructions targeted. However, at an estimated hardware overhead of 12.4KB, this technique may be infeasible for the area-constrained cores we target.
-
-\emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and PHAST \cite{storesets, phast}, other MDP algorithms include Store Vectors, NoSQ and MDP-TAGE \cite{storevectors, nosq, mdptage}. Each of these algorithms offer different trade-offs and advantages. We choose to evaluate XS Store Sets and PHAST because we understand them to be the optimal choices for small and large cores respectively, and that XS Store Sets provides, to the best of our knowledge, the closest representation of MDP algorithms found in real processors.\\
-NOTE: MDP-TAGE boasts the accuracy of a large store sets for only 70 bits of storage. I *think* that this is predicated on having a good branch predictor though, which the small cores we're targeting wouldn't have (although I haven't tested this). 1. does this make sense and 2. should we state it explicitly? If it does make sense, then its already contained implicitly in referring to XS Store Sets as 'optimal' for small cores (XS-SS also has the benefit of existing in a real CPU). If MDP-TAGE does work well for small cores though I think we kind of have to be evaluating that instead.
+% \begin{figure*}[!t]
+%     \centering
+%     \resizebox{0.9\textwidth}{!}{%
+%         \input{figures/storedistance_toolflow}
+%     }
+%     \caption{Toolflow for Store Distance based load labelling}
+%     \label{fig:storedistancetoolflow}
+% \end{figure*}
 
 \section{Method}
-This section presents the profile-guided co-design technique used in this paper. We put forward the concepts of store distances, distance thresholds, and how these are combined to find reliably memory independent loads. We then motivate the use of profiles to determine load labels, outlining the benefits provided over static analysis.
+This section presents the profile-guided memory dependence prediction (PG-MDP) technique. We put forward the concepts of store distances, distance thresholds, and how these are combined to find reliably memory independent loads. We then motivate the use of profiles to determine load labels, outlining the benefits provided over static analysis.
 
 \aj{Before discussing the store distances, I suggest a subsection where Fig 1 is explained giving an overview of the technique. Reference the follow-up subsections for more details, but use this overview as the backbone of the method, to make it clear how everything fits together.}
 
@@ -344,7 +324,7 @@ Once a threshold is selected it is applied to each workload profile, and loads w
 
 \subsection{Why Profiles?}
 
-While profile-guided optimisations (PGO) have long offered performance benefits, the technique has historically struggled to achieve adoption due to complicating the compilation workflow \cite{fdocompilation}. PGO also introduces concerns about the accuracy of generated profiles, and the potential to harm performance should real input differ too far from train input.
+While profile-guided optimisation (PGO) has long offered performance benefits, the technique has historically struggled to achieve adoption due to complicating the compilation workflow \cite{fdocompilation}. PGO also introduces concerns about the accuracy of generated profiles, and the potential to harm performance should real input differ too far from train input.
 
 Addressing adoption, prior work shows that use of PGO has risen significantly in recent years \cite{unveilingpgo}. This can be seen in enterprise projects such as Firefox and Chrome web browsers, the Python interpreter and the GCC compiler. Performance-critical server workloads have also seen renewed attention to the benefits that PGO can provide \cite{bolt}. This enforces the use of profiles as a reasonable approach to designing new software-hardware co-designs.
 
@@ -390,9 +370,9 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
    \hline
    \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{1} & \makecell{1} & \makecell{2} & \makecell{3}\\
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{TAGE-SC-L Size:}}} & \multicolumn{2}{c|}{\makecell{8KB}} & \multicolumn{2}{c|}{\makecell{64KB}}\\ 
+   \multicolumn{2}{|c|}{\textbf{\makecell{Branch Predictor:}}} & \multicolumn{4}{c|}{\makecell{64KB TAGE-SC-L}}\\
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{Prefetcher:}}} & \multicolumn{4}{c|}{\makecell{DCPT}}\\
+   \multicolumn{2}{|c|}{\textbf{\makecell{Prefetcher (L1D/I+L2):}}} & \multicolumn{4}{c|}{\makecell{DCPT}}\\
    \hline
    \hline
  \end{tabular}
@@ -404,12 +384,12 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \subsection{Performance}
 \label{sec:ipc}
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_main.pdf}
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_main.pdf}
 \caption{IPC \% changes for each CPU model on each intspeed benchmark.}
 \label{fig:ipc}
-\end{figure}
+\end{figure*}
 
 Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed for each core configuration. The gmean IPC gain ranges from 0.4\%, 0\% and 0\% as core size grows. This demonstrates our techniques ability to deliver zero-cost performance gains on area-constrained cores while still maintaining performance on larger cores with more sophisticated MDPs. Examining the gains in the best case (small core size), the IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the magnitude of false dependencies before and after seen in Figure \ref{fig:falsedeps}. The four largest gainers - $625.x264\_s$ inputs 1 and 2, $641.leela\_s$ and $620.omnetpp\_s$ - all exhibit relatively higher false dependencies per kilo-instruction in the base case, and see this cut down significantly by over 80\% when PND labels are used. As the core size increases to the medium configuration, most of these gains are diminished as the larger Store Set tables reduce the base number of hash collisions. A sensitivity analysis on the size of Store Sets on the small configuration results is shown in Section \ref{sec:storesetsize}.
 
@@ -417,12 +397,12 @@ Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed f
 
 $620.omnetpp\_s$ exhibits more false dependencies per kilo-instruction in the medium core despite the larger Store Set size. This is likely because while it doesn't issue the most loads overall, it does have the highest number of dependent loads. Whereas the average across intspeed benchmarks is approximately 2 million dependent loads, $620.omnetpp\_s$ observes 6 million. This suggests due to the nature of the workload, a longer instruction window captures more dependencies which the larger Store Set tables cannot offset.
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_main.pdf}
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_main.pdf}
 \caption{Percent change of false dependencies.}
 \label{fig:falsedeps}
-\end{figure}
+\end{figure*}
 
 In select cases PND labels can lead to a performance regression, notably for input 2 of $600.perlbench\_s$. This is because loads have been mis-labelled from the train inputs and cause an increase in memory order violations on the test inputs, as seen in Figure \ref{fig:violations} for the medium core configuration. Although memory order violations are increased in all workloads, they're mostly offset by the reduction in false dependencies. It is also worth noting that violations are already very rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can often still keep them in negligible ranges compared to the number of false dependencies. In input 2 of $600.perlbench\_s$ though the absolute number of violations is at it's highest, and so offsets any reductions in false dependencies (which as was also already discussed have more a limited impact in this workload).
 
@@ -430,12 +410,12 @@ In select cases PND labels can lead to a performance regression, notably for inp
 
 The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:method}. The optimal threshold may still provide a net performance gain while still causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. They could be also mitigated by specialising the PGO technique to each benchmark rather than the processor.
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_medium.pdf}
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_medium.pdf}
 \caption{Percent change of memory order violations. Values roughly equal between core sizes.}
 \label{fig:violations}
-\end{figure}
+\end{figure*}
 
 \subsection{Power}
 
@@ -443,12 +423,12 @@ The degree to which violations increase is controlled by the threshold value dis
 - need large core results which have a larger MDP power saving, but next to no core change. can try and speculate how this offsets growing MDP power for the future\\
 - need large core with big phast power savings which will hopefully nudge total core power a little more? not sure where to go with this section if it doesn't tho. 
 
-\begin{figure}[t]
+\begin{figure*}[t]
   \centering
-  \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
 \caption{Percent change of MDP queries. Values roughly equal between core sizes.}
 \label{fig:lookups}
-\end{figure}
+\end{figure*}
 
 
 \subsection{Read Port Impact Estimation}
@@ -471,6 +451,17 @@ Figure \ref{fig:storesetsizefalsedeps} shows that the majority of false dependen
 
 Furthermore, we perform an iso-area comparison in the small core configuration between doubling the Store Set size verses growing the load queue by an equal number of bits. Whereas growing Store Sets provide an additional x\% gmean IPC, the larger load queue provides y\%. This suggests that Store Set hash collisions would not typically be eliminated in small processors by growing the predictor size.
 
+\section{Related Work}
+
+\emph{Improving Memory Dependence Prediction with Static Analysis} \cite{improvingmdp} tackles the same problem as this paper, but using static analysis to determine which load instructions to label as 'PND'. It demonstrates small IPC gains in select cases, but with an overall best-case gmean of less than 0.1\%. Furthermore, due to relying on static analysis it also sees performance regressions elsewhere, making it unviable. In comparison, by leveraging profiles we are able to achieve higher IPC gains in broader contexts. Our technique is also resistant to regressions on larger or more sophisticated MDP algorithms such as PHAST, which \cite{improvingmdp} is not.
+
+\emph{Feedback-directed Memory Disambiguation Through Store Distance Analysis} \cite{storedistance} proposes a similar profile-guided co-design to this paper, but with a more aggressive use case. In their work, the MDP is replaced altogether and load instructions are extended to include 4-bit distance fields indicating the store queue position they're likely to be dependent on. This achieves high accuracy compared to Store Sets, but comes at the cost of higher instruction bandwidth to encode predicted store distances, which is usually infeasible in modern processor designs where instruction bandwidth is critical. Larger processors would also likely require more bits to encode longer store queue distances. Furthermore, \cite{storedistance} could be more sensitive to profile accuracy than our work, as loads which do not appear in the profile must be assumed to be memory independent. In contrast, our technique is able to leave unseen loads to execute as normal. 
+
+\emph{Software-hardware Cooperative Memory Disambiguation} \cite{cooperative} is a binary analysis co-design to reduce load queue pressure. Certain kinds of provably memory independent loads are labelled and prevented from being inserted into the load queue when issued. This technique is able to label 40\% of static loads across Spec2006 floatspeed (but dynamic percentage is unclear). This also incurs additional instruction bandwidth by inserting barrier-like instructions when entering loops to ensure labelled loads are only removed from the load queue when their parent loop reaches a steady state in the pipeline. LSQ entries must also store an additional bit to track whether these custom instructions are in-flight or not. This work presents an interesting proposal for reducing load queue pressure in area-constrained processors that lack space for hardware-based load elimination techniques, but has reduced viability due to currently lacking a mechanism for ensuring memory coherence in multi-core systems.
+
+\emph{Constable: Improving Performance and Power Efficiency by Safely Eliminating Load Instruction Execution} \cite{constable} is a pure hardware technique to track and eliminate stable loads which consistently read the same value from memory. This technique is able to eliminate both the memory read and address calculation altogether, greatly improving pipeline efficiency. It also demonstrates a wide coverage a variety of workloads, improving gmean IPC by 5.1\%. For larger performance-orientated processors, this technique would most likely be more effective at improving the efficiency of load execution than our work, with a large overlap (albeit not total) of the types of load instructions targeted. However, at an estimated hardware overhead of 12.4KB, this technique may be infeasible for the area-constrained cores we target.
+
+\emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and PHAST \cite{storesets, phast}, other MDP algorithms include Store Vectors, NoSQ and MDP-TAGE \cite{storevectors, nosq, mdptage}. Each of these algorithms offer different trade-offs and advantages. We choose to evaluate XS Store Sets and PHAST because we understand them to be the optimal choices for small and large cores respectively, and that XS Store Sets provides, to the best of our knowledge, the closest representation of MDP algorithms found in real processors.\\
 
 \section{Threats to Validity}
 This section touches on possible threats to the validity of results presented in this paper.
@@ -485,10 +476,21 @@ The processor model we simulate specified in Section \ref{sec:models} does not r
 The technique proposed in this paper assumed target specific compilation is possible in order to select the processor-specific optimal store distance threshold. In many cases though this is not the case. Enterprise software products are often compiled once and shipped to many different platforms. This would make short thresholds invalid, as they would introduce performance regressions in larger processors. A conservatively large threshold could be used for generic compilation, but this would likely also eliminate any performance gains in small processors too. One solution could be for processors known not to benefit from PND labels to ignore the ISA hint and execute labelled loads as normal.
 
 \section{Future Work}
--per benchmark tuning \& JITs\\
--serverless workloads\\
+
+\subsection{Per-Workload Threshold Selection}
+As the threshold is untied to any architectural state, it is possible to select a different optimal store distance threshold for each individual workload. We chose not to do this for this work to prove that meaningful performance gains were possible with a generic threshold, and that the PG-MDP technique did not require a threshold search for each compiled program. However, there are use cases where this is feasible, and it would be worthwhile to evaluate the potential performance available for the additional compilation cost.
+
+\subsection{Just-in-Time Compilers}
+Just-in-Time Compilers (JITs) are a widely used run-time based compilation technique for dynamic languages. PG-MDP could potentially pair very well with these compilers for various reasons. Firstly, the additional workflow complexity of profiling can be automated by the run-time optimiser. Secondly, JITs make speculative optimisations about observed program behaviour, and so could potentially aggressively apply PND labels to any loads which read from addresses not recently stored to. Because PG-MDP is then also speculative, JITs do not necessarily have to immediately de-optimise if a labelled load does encounter a dependency. Lastly, dynamic languages tend to emit many memory independent pointer-chasing load instructions to implement data structures. This suggests these workloads could have a high potential for performance gains when using PG-MDP.
+
+\subsection{Serverless Workloads}
+Serverless workloads are characterised as a collection of many short-lived workloads which only execute a few times, then not again for a long time with lots of unrelated code in-between. This effectively makes their execution always cold on the target processor, meaning high performance is very difficult to achieve. When memory dependence predictors cannot learn dependencies fast enough to deliver performance gains (which is especially a concern for modern TAGE-like predictors such as PHAST), it may be preferable to disable memory dependence prediction entirely and conservatively stall loads on any unresolved stores. In this case, MD-PGO could potentially deliver substantial IPC gains by allowing likely-independent loads to issue immediately, while still preventing most memory order violations.
 
 \section{Conclusion}
+This paper proposed profile-guided memory dependence prediction (PG-MDP), a software-hardware co-design technique to label load instructions via their opcode as 'predict no dependency', and prevent them from making MDP queries to eliminate false dependencies. We showed PG-MDP very effectively reduces false memory dependencies at zero hardware cost, and delivers a geomean average of 1.4\% IPC gain in a simulated area-constrained core, along with a correlated power saving. We further showed that this technique does not introduce regressions as processor size scales, and can potentially offset the increased energy usage of modern MDP algorithms like PHAST in these processors.
+
+% \section{Acknowledgments}
+% We gratefully acknowledge funding for this work via the EPSRC ICASE scheme (voucher number 210197) with support from Huawei Research UK.
 
 %%%%%%% -- PAPER CONTENT ENDS -- %%%%%%%%
 

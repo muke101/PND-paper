@@ -387,7 +387,7 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_main.pdf}
-\caption{IPC \% changes for each CPU model on each intspeed benchmark.}
+\caption{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark.}
 \label{fig:ipc}
 \end{figure*}
 
@@ -408,7 +408,7 @@ In select cases PND labels can lead to a performance regression, notably for inp
 
 %$620.omnetpp\_s$ sees the largest increase in violations yet maintains a performance gain for the medium configuration. This is possibly because it observes almost double the average intspeed dcache miss rate (4.3M vs 2.6M), leading to costly false dependencies that stall on stores long-to-resolve stores, but low penalty violations that occur during cache misses. 
 
-The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:method}. The optimal threshold may still provide a net performance gain while still causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. They could be also mitigated by specialising the PGO technique to each benchmark rather than the processor.
+The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:method}. The optimal threshold may still provide a net performance gain while still causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. They could also be mitigated by specialising the PGO technique to each benchmark rather than the processor, which is discussed further in Section \ref{sec:futurework}.
 
 \begin{figure*}[t]
   \centering

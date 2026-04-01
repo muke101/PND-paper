@@ -343,7 +343,7 @@ This section presents experimental results using our profile-guided co-design. I
 \subsection{Experimental Design}
 
 - todo: test phast on medium once store set size decided\\
-We use Gem5 to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for the area budget of that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when afforded larger sizes.
+We use Gem5 \cite{gem5} to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for the area budget of that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when afforded larger sizes.
 
 \begin{table}[h!]
  \centering
@@ -370,7 +370,7 @@ We use Gem5 to simulate varying core size configurations to measure impact as co
    \hline
    \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{1} & \makecell{1} & \makecell{2} & \makecell{3}\\
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{Branch Predictor:}}} & \multicolumn{4}{c|}{\makecell{64KB TAGE-SC-L}}\\
+   \multicolumn{2}{|c|}{\textbf{\makecell{Branch Predictor:}}} & \multicolumn{4}{c|}{\makecell{64KB TAGE-SC-L, 4K-entry 8-way BTB}}\\
    \hline
    \multicolumn{2}{|c|}{\textbf{\makecell{Prefetcher (L1D/I+L2):}}} & \multicolumn{4}{c|}{\makecell{DCPT}}\\
    \hline

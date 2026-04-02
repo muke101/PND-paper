@@ -292,7 +292,7 @@ The premise our technique is based on is that loads with either no or consistent
 \begin{itemize}
         \item[$\bullet$] \textbf{(1) Memory Independent Loads:} Loads which read constant data (i.e. have no store distance).
         \item[$\bullet$] \textbf{(2) Rarely Dependent Loads:} Loads which observe short dependent store distances in <5\% of executions.
-        \item[$\bullet$] \textbf{(3) Structurally Independent Loads:} Loads whose dependent stores do not exist in-flight at the same time the load is issued.
+        \item[$\bullet$] \textbf{(3) Strutcturally Independent Loads:} Loads whose dependent stores do not exist in-flight at the same time the load is issued.
         \item[$\bullet$] \textbf{(4) Fast-to-Resolve Dependencies:} Loads which have in-flight but resolved dependent stores, allowing forwarding.
 \end{itemize}
 \aj{Can you connect the four categories with the profiling method: "The profile-derived store distance for each load is found by

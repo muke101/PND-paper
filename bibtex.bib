@@ -49,23 +49,22 @@ isbn="978-3-031-66146-4"
   issn =         {},
   url =          {}
 }
-@INPROCEEDINGS{storeset,
-
-  author={Chrysos, G.Z. and Emer, J.S.},
-
-  booktitle={Proc.~25th ISCA},
-
-  title={Memory dependence prediction using store sets},
-
-  year={1998},
-
-  volume={},
-
-  number={},
-
-  pages={142-153},
-
-  doi={10.1109/ISCA.1998.694770}}
+@inproceedings{storesets,
+  author       = {George Z. Chrysos and
+                  Joel S. Emer},
+  title        = {Memory Dependence Prediction Using Store Sets},
+  booktitle    = {Proceedings of the 25th Annual International Symposium on Computer
+                  Architecture, {ISCA}},
+  pages        = {142--153},
+  publisher    = {{IEEE} Computer Society},
+  year         = {1998},
+  month        = jun,
+  url          = {https://doi.org/10.1109/ISCA.1998.694770},
+  doi          = {10.1109/ISCA.1998.694770},
+  timestamp    = {Fri, 24 Mar 2023 00:02:38 +0100},
+  biburl       = {https://dblp.org/rec/conf/isca/ChrysosE98.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
 
 @InProceedings{llvm,
     author    = {Chris Lattner and Vikram Adve},
@@ -125,21 +124,19 @@ title = {{Memory Dependence Prediction Methods Study and Improvement Proposals}}
 school = 	 {Universitat Politècnica de Catalunya}
 }
 
-
 @inproceedings{storevectors,
-author = {Patel, Dhruv and Pandey, Shrey and Sharma, Abhishek},
-title = {{Efficient Vector Store System for Python using Shared Memory}},
-year = {2023},
-isbn = {9781450398473},
-url = {https://doi.org/10.1145/3564121.3564799},
-doi = {10.1145/3564121.3564799},
-abstract = {Many e-commerce companies use machine learning to make customer experience better. Even within a single company, there will be generally many independent services running, each specializing in some aspect of customer experience. Since machine learning models work on abstract vectors representing users and/or items, each such service needs a way to store these vectors. A common approach nowadays is to save them in in-memory caches like Memcached. As these caches run in their own processes, and Machine Learning services generally run as Python services, there is a communication overhead involved for each request that ML service serves. One can reduce this overhead by directly storing these vectors in a Python dictionary within the service. To support concurrency and scale, a single node runs multiple instances of the same service. Thus, we also want to avoid duplicating these vectors across multiple processes. In this paper, we propose a system to store vectors in shared memory and efficiently serve all concurrent instances of the service, without replicating the vectors themselves. We achieve up to 4.5x improvements in latency compared to Memcached. Additionally, due to availability of more memory, we can increase the number of server processes running in each node, translating into greater throughput. We also discuss the impact of the proposed method (towards increasing the throughput) in live production scenario.},
-booktitle = {Proc.~AIMLSystems '22} ,
-articleno = {22},
-numpages = {6},
-keywords = {vector data store, shared memory, embedding data store},
-location = {Bangalore, India}
+  author       = {Samantika Subramaniam and
+                  Gabriel H. Loh},
+  title        = {Store vectors for scalable memory dependence prediction and scheduling},
+  booktitle    = {12th International Symposium on High-Performance Computer Architecture, {HPCA}},
+  pages        = {65--76},
+  publisher    = {{IEEE} Computer Society},
+  year         = {2006},
+  month        = feb,
+  url          = {https://doi.org/10.1109/HPCA.2006.1598113},
+  doi          = {10.1109/HPCA.2006.1598113}
 }
+
 @inproceedings{SVF,
   title={{SVF: interprocedural static value-flow analysis in LLVM}},
   author={Sui, Yulei and Xue, Jingling},
@@ -421,22 +418,37 @@ series = {SIGMETRICS '03}
 	booktitle = {2019 {IEEE} International Symposium on Workload Characterization ({IISWC})}
 }
 
+@article{mdp-tage,
+  author       = {Arthur Perais and
+                  Andr{\'{e}} Seznec},
+  title        = {Storage-Free Memory Dependency Prediction},
+  journal      = {{IEEE} Comput. Archit. Lett.},
+  volume       = {16},
+  number       = {2},
+  pages        = {149--152},
+  year         = {2017},
+  month        = nov,
+  url          = {https://doi.org/10.1109/LCA.2016.2628379},
+  doi          = {10.1109/LCA.2016.2628379},
+  timestamp    = {Thu, 23 Jun 2022 20:04:13 +0200},
+  biburl       = {https://dblp.org/rec/journals/cal/PeraisS17.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
+}
 
-@inproceedings{mdp-tage,
-author = {Perais, Arthur and Seznec, Andr\'{e}},
-title = {Cost effective speculation with the omnipredictor},
-year = {2018},
-isbn = {9781450359863},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/3243176.3243208},
-doi = {10.1145/3243176.3243208},
-abstract = {Modern superscalar processors heavily rely on out-of-order and speculative execution to achieve high performance. The conditional branch predictor, the indirect branch predictor and the memory dependency predictor are among the key structures that enable efficient speculative out-of-order execution. Therefore, processors implement these three predictors as distinct hardware components.In this paper, we propose the omnipredictor that predicts conditional branches, memory dependencies and indirect branches at state-of-the-art accuracies without paying the hardware cost of the memory dependency predictor and the indirect jump predictor.We first show that the TAGE prediction scheme based on global branch history can be used to concurrently predict both branch directions and memory dependencies. Thus, we unify these two predictors within a regular TAGE conditional branch predictor whose prediction is interpreted according to the type of the instruction accessing the predictor. Memory dependency prediction is provided at almost no hardware overhead.We further show that the TAGE conditional predictor can be used to accurately predict indirect branches through using TAGE entries as pointers to Branch Target Buffer entries. Indirect target prediction can be blended into the conditional predictor along with memory dependency prediction, forming the omnipredictor.},
-booktitle = {Proceedings of the 27th International Conference on Parallel Architectures and Compilation Techniques},
-articleno = {25},
-numpages = {13},
-location = {Limassol, Cyprus},
-series = {PACT '18}
+@inproceedings{mdp-tage2,
+  author       = {Arthur Perais and
+                  Andr{\'{e}} Seznec},
+  title        = {Cost effective speculation with the omnipredictor},
+  booktitle    = {Proceedings of the 27th International Conference on Parallel Architectures and Compilation Techniques, {PACT}},
+  pages        = {25:1--25:13},
+  publisher    = {{ACM}},
+  year         = {2018},
+  month        = nov,
+  url          = {https://doi.org/10.1145/3243176.3243208},
+  doi          = {10.1145/3243176.3243208},
+  timestamp    = {Thu, 23 Jun 2022 19:58:53 +0200},
+  biburl       = {https://dblp.org/rec/conf/IEEEpact/PeraisS18.bib},
+  bibsource    = {dblp computer science bibliography, https://dblp.org}
 }
 
 @inproceedings{fang2005instruction,
@@ -475,4 +487,24 @@ series = {PACT '18}
   pages={190--200},
   year={2005},
   publisher={ACM New York, NY, USA}
+}
+
+@inproceedings{Mose25,
+  author       = {Karl H. Mose and
+                  Sebastian S. Kim and
+                  Alberto Ros and
+                  Timothy M. Jones and
+                  Robert D. Mullins},
+  title        = {Mascot: Predicting Memory Dependencies and Opportunities for Speculative Memory Bypassing},
+  booktitle =    {31st Symposium on High Performance Computer Architecture (HPCA)},
+  doi =          {},
+  pages =        {59--71},
+  year =         {2025},
+  editor =       {},
+  address =      {Las Vegas, NV, USA},
+  month =        mar,
+  publisher =    {IEEE Computer Society},
+  isbn =         {},
+  issn =         {},
+  url =          {}
 }

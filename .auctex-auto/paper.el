@@ -29,6 +29,7 @@
     "xcolor"
     "multirow")
    (TeX-add-symbols
+    '("sk" 1)
     '("aj" 1)
     "BibTeX")
    (LaTeX-add-labels

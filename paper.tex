@@ -60,6 +60,7 @@
 \definecolor{a14}{HTML}{999933}
 \definecolor{m4}{HTML}{332288}
 \usepackage[dvipsnames]{xcolor}
+\usepackage{multirow}
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
 %% values in them; it is your responsibility as an author to replace
@@ -337,13 +338,11 @@ Lastly we highlight the benefits that profiles are able to provide to this techn
 
 \section{Evaluation}
 
-This section presents experimental results using our profile-guided co-design. It highlights how performance is improved by eliminating false memory dependencies, the extent of redundant memory dependence prediction queries and associated power savings, as well as an estimation of the impact of reducing predictor read port pressure.\\
--todo: mention the other sections to be filled in later (profile analysis, prior work comparisons, sensitivity analysis etc)
+This section presents experimental results of applying PG-MDP to Spec2017 CPU intspeed workloads. It highlights how effectively false dependencies are eliminated and the resulting IPC gain on a small core (ROB=128), as well showing how the effects of PG-MDP scale to larger cores and state of the art MDP algorithms such as PHAST. This is followed by an analysis of how results change over different XS Store Set table sizes, and lastly provides an estimation of potential further performance gains when simulated a limited number of MDP read ports, limiting how many non-labelled loads can be dispatched per cycle.
 
 \subsection{Experimental Design}
 
-- todo: test phast on medium once store set size decided\\
-We use Gem5 \cite{gem5} to simulate varying core size configurations to measure impact as components scale, going from a very small core (ROB=64) to a large core (ROB=512). Each core either utilises the XS Store Sets or PHAST predictor, depending on which provides better performance for the area budget of that size. We find that XS Store Sets performs optimally in smaller area allocations, whereas PHAST is more accurate when afforded larger sizes.
+We use Gem5 \cite{gem5} to simulate varying core size configurations. The full configuration for each model is detailed in Table \ref{table:cpu-models}. We evaluate the Spec2017 Intspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable.
 
 \begin{table}[h!]
  \centering
@@ -354,7 +353,7 @@ We use Gem5 \cite{gem5} to simulate varying core size configurations to measure 
    \hline
    & & \textbf{V. Small} & \textbf{Small} & \textbf{Med.} & \textbf{Large}\\
    \hline
-   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{32\\52\\21\\12} & \makecell{128\\77\\38\\22} & \makecell{256\\154\\77\\54} & \makecell{512\\308\\154\\108}\\
+   \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{64\\52\\21\\12} & \makecell{128\\77\\38\\22} & \makecell{256\\154\\77\\54} & \makecell{512\\308\\154\\108}\\
    \hline
    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{3\\6} & \makecell{4\\8} & \makecell{6\\8} & \makecell{8\\12}\\
    \hline
@@ -362,24 +361,24 @@ We use Gem5 \cite{gem5} to simulate varying core size configurations to measure 
    \hline
    \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{1\\8} & \makecell{2\\16} & \makecell{4\\32} & \makecell{8\\64}\\
    \hline
-   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\} & \makecell{16\\16\\1} & \makecell{32\\16\\2} & \makecell{128\\64\\2} & \makecell{N/A}\\
+   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{32\\16\\2\\125k} & \makecell{64\\32\\2\\125k} & \makecell{128\\64\\2\\125k} & \makecell{N/A}\\
    \hline
-   \multicolumn{2}{|c|}{\makecell{Clear Period:}} & \multicolumn{3}{c|}{\makecell{125k}} & \makecell{N/A}\\
+   % \multicolumn{2}{|c|}{\makecell{Clear Period:}} & \multicolumn{3}{c|}{\makecell{125k}} & \makecell{N/A}\\
+   % \hline
+   \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{128\\4\\16}\\
    \hline
-   \textbf{\makecell{PHAST}} & \makecell{Rows:\\Assoc:\\Tag Bits:\\} & \makecell{N/A} & \makecell{N/A} & \makecell{N/A} & \makecell{32\\2\\8}\\
+   % \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{1} & \makecell{1} & \makecell{2} & \makecell{2}\\
+   % \hline
+   % \multicolumn{2}{|c|}{\textbf{\makecell{Branch Predictor:}}} & \multicolumn{4}{c|}{\makecell{64KB TAGE-SC-L, 4K-entry 8-way BTB}}\\
+   % \hline
+   \multicolumn{2}{|c|}{\textbf{\makecell{TAGE-SC-L Size:}}} & \multicolumn{2}{c|}{\makecell{64KB}} & \multicolumn{2}{c|}{\makecell{128KB}}\\
    \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{MDP Read Ports:}}} & \makecell{1} & \makecell{1} & \makecell{2} & \makecell{3}\\
-   \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{Branch Predictor:}}} & \multicolumn{4}{c|}{\makecell{64KB TAGE-SC-L, 4K-entry 8-way BTB}}\\
-   \hline
-   \multicolumn{2}{|c|}{\textbf{\makecell{Prefetcher (L1D/I+L2):}}} & \multicolumn{4}{c|}{\makecell{DCPT}}\\
+   \multicolumn{2}{|c|}{\textbf{\makecell{Prefetcher:}}} & \multicolumn{4}{c|}{\makecell{DCPT \cite{dcpt}}}\\
    \hline
    \hline
  \end{tabular}
 
 \end{table}
-
-The full configuration for each model is detailed in Table \ref{table:cpu-models}. We evaluate the Spec2017 Intspeed and Floatspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPat, which models XS Store Sets or PHAST as applicable.
 
 \subsection{Performance}
 \label{sec:ipc}
@@ -391,11 +390,11 @@ The full configuration for each model is detailed in Table \ref{table:cpu-models
 \label{fig:ipc}
 \end{figure*}
 
-Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 intspeed for each core configuration. The gmean IPC gain ranges from 0.4\%, 0\% and 0\% as core size grows. This demonstrates our techniques ability to deliver zero-cost performance gains on area-constrained cores while still maintaining performance on larger cores with more sophisticated MDPs. Examining the gains in the best case (small core size), the IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the magnitude of false dependencies before and after seen in Figure \ref{fig:falsedeps}. The four largest gainers - $625.x264\_s$ inputs 1 and 2, $641.leela\_s$ and $620.omnetpp\_s$ - all exhibit relatively higher false dependencies per kilo-instruction in the base case, and see this cut down significantly by over 80\% when PND labels are used. As the core size increases to the medium configuration, most of these gains are diminished as the larger Store Set tables reduce the base number of hash collisions. A sensitivity analysis on the size of Store Sets on the small configuration results is shown in Section \ref{sec:storesetsize}.
+Figure \ref{fig:ipc} shows the percent changes in IPC across Spec2017 CPU intspeed for the small core configuration, achieving a 1.4\% geomean improvement. This demonstrates PG-MDP's ability to deliver zero-cost performance gains on area-constrained cores. It can be seen that IPC gains have an uneven spread across benchmarks, with some seeing large benefits and others next to none. This loosely correlates to the magnitude of false dependencies before and after seen in Figure \ref{fig:falsedeps}. The four largest gainers - $625.x264\_s$ inputs 1 and 2, $641.leela\_s$ and $620.omnetpp\_s$ - all exhibit relatively higher false dependencies per kilo-instruction in the base case, and see this cut down significantly by over 80\% by PG-MDP. 
 
 %$600.perlbench\_s$ inputs 1 and 2 are outliers to this trend. They have the highest number of absolute false dependencies in the base case and also sees a significant reduction, yet only receives a modest IPC gain of around 1\% each. This is likely because the workloads are more frontend than backend bound, and so frequent frontend stalls mask most potential performance gains from issuing loads sooner. Whereas the average number of total icache misses across intspeed benchmarks is approximately 540k, $600.perlbench\_s$ inputs 1 and 2 observe 1.2M and 790k ichace misses respectively.
 
-$620.omnetpp\_s$ exhibits more false dependencies per kilo-instruction in the medium core despite the larger Store Set size. This is likely because while it doesn't issue the most loads overall, it does have the highest number of dependent loads. Whereas the average across intspeed benchmarks is approximately 2 million dependent loads, $620.omnetpp\_s$ observes 6 million. This suggests due to the nature of the workload, a longer instruction window captures more dependencies which the larger Store Set tables cannot offset.
+%$620.omnetpp\_s$ exhibits more false dependencies per kilo-instruction in the medium core despite the larger Store Set size. This is likely because while it doesn't issue the most loads overall, it does have the highest number of dependent loads. Whereas the average across intspeed benchmarks is approximately 2 million dependent loads, $620.omnetpp\_s$ observes 6 million. This suggests due to the nature of the workload, a longer instruction window captures more dependencies which the larger Store Set tables cannot offset.
 
 \begin{figure*}[t]
   \centering
@@ -404,11 +403,13 @@ $620.omnetpp\_s$ exhibits more false dependencies per kilo-instruction in the me
 \label{fig:falsedeps}
 \end{figure*}
 
-In select cases PND labels can lead to a performance regression, notably for input 2 of $600.perlbench\_s$. This is because loads have been mis-labelled from the train inputs and cause an increase in memory order violations on the test inputs, as seen in Figure \ref{fig:violations} for the medium core configuration. Although memory order violations are increased in all workloads, they're mostly offset by the reduction in false dependencies. It is also worth noting that violations are already very rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can often still keep them in negligible ranges compared to the number of false dependencies. In input 2 of $600.perlbench\_s$ though the absolute number of violations is at it's highest, and so offsets any reductions in false dependencies (which as was also already discussed have more a limited impact in this workload).
-
-%$620.omnetpp\_s$ sees the largest increase in violations yet maintains a performance gain for the medium configuration. This is possibly because it observes almost double the average intspeed dcache miss rate (4.3M vs 2.6M), leading to costly false dependencies that stall on stores long-to-resolve stores, but low penalty violations that occur during cache misses. 
+In select cases PND labels can lead to a performance regression. This is due to loads behaving memory independent on train inputs but exhibiting dependencies on ref inputs and causing an increase in memory order violations, as seen in Figure \ref{fig:violations}. Although memory order violations are increased in all workloads, they're mostly offset by the reduction in false dependencies. It is worth noting that violations are already very rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can often still remain in negligible ranges compared to the number of false dependencies.
 
 The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:method}. The optimal threshold may still provide a net performance gain while still causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. They could also be mitigated by specialising the PGO technique to each benchmark rather than the processor, which is discussed further in Section \ref{sec:futurework}.
+
+%In input 2 of $600.perlbench\_s$ though the absolute number of violations is at it's highest, and so offsets any reductions in false dependencies (which as was also already discussed have more a limited impact in this workload).
+
+%$620.omnetpp\_s$ sees the largest increase in violations yet maintains a performance gain for the medium configuration. This is possibly because it observes almost double the average intspeed dcache miss rate (4.3M vs 2.6M), leading to costly false dependencies that stall on stores long-to-resolve stores, but low penalty violations that occur during cache misses. 
 
 \begin{figure*}[t]
   \centering
@@ -417,39 +418,31 @@ The degree to which violations increase is controlled by the threshold value dis
 \label{fig:violations}
 \end{figure*}
 
-\subsection{Power}
+\subsection{MDP \& Core Size Sensitivity}
 
-- analyse power savings, correlated to lookup reduction. small core has small shift in MDP power, but total core power saving congruent to IPC gain, which is an opportuny to remind how the gains come at no area/power tradeoff.\\
-- need large core results which have a larger MDP power saving, but next to no core change. can try and speculate how this offsets growing MDP power for the future\\
-- need large core with big phast power savings which will hopefully nudge total core power a little more? not sure where to go with this section if it doesn't tho. 
+Figure \ref{fig:sweep} plots a sweep of geomean performance in the base and PG-MDP case, for two cores and five XS Store Set sizes. This analyses how performance in impacted by core size and SSIT/LFST size. As expected, IPC gains achieved by PG-MDP fall sharply as SSIT/LFST sizes grow. This is because larger tables mean fewer hash collisions (and therefore fewer false dependencies) in the base case, and so less potential improvement in reducing them. The figure also demonstrates, again as expected, that the benefit of growing XS Store Sets on a small core quickly diminishes past small sizes, implying the additional area cost is better spent elsewhere. Table sizes become more important as instruction window length grows in the medium core, but still quickly reaches a plateau.
 
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
-\caption{Percent change of MDP queries. Values roughly equal between core sizes.}
-\label{fig:lookups}
-\end{figure*}
+-talk about how labelled 64 matches base 128 on small and any other interesting points
 
+\subsection{Power Savings \& PHAST}
+
+Figure \ref{fig:small-power} shows the total core energy reduction of each workload on the small configuration with PG-MDP applied. Because PG-MDP is a zero-cost optimisation, it can be seen that IPC gains directly translate into correlated power savings with no offset introduced by additional area costs. 
+
+Reducing MDP queries should in theory also offer a further power saving. However, we find that XS Store Sets already uses negligible power compared to the LSU and total core, that any reductions don't show up in final figures. Furthermore, XS Store Sets power usage is dominated by the sub-threshold leakage rather than runtime-dynamic cost (i.e. accessing the tables), and so an average 78\% reduction in MDP queries only translates to an average 13\% reduction in total MDP power.
+
+However, the PHAST predictor incurs a greater power usage due to containing more tables and searching them all in parallel. This makes PHAST's runtime-dynamic power usage about equal to sub-threshold leakage, and takes up a larger proportion of total LSU power usage. This is especially true for larger cores that contain larger predictors. Evaluating PG-MDP on the large core configuration is shown to maintain performance while reducing average PHAST power usage by 40\%.
+
+- don't think we need to plot any graphs for the large core as they're not interesting, can just include the numbers
+- talk about total portion of LSU power, how its still quite small, but maybe future-proofs PHAST better
 
 \subsection{Read Port Impact Estimation}
-Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, the processor can dispatch up to two memory operations per cycle. Gem5 does not model this behaviour by default, as it is a low-level detail that is difficult to represent accurately at the level of abstraction Gem5 simulates. Given the importance of this aspect to our proposed technique, we provide an estimation of the potential impact on IPC when read ports are limited. Each core configuration is assigned a number of read ports to the memory dependence predictor as listed in Table \ref{table:cpu-models}. The dispatch stage is modelled to block when the number of memory operations dispatched within a cycle exceeds the maximum number of read ports. This includes both loads and stores for XS Store Sets and only loads for PHAST. It is assumed that predictions always arrive within a single cycle for both XS Store Sets and PHAST, and so read port usage is reset to zero every cycle. This provides a rough estimation of the impact of predicted non-dependent loads on workloads with a high density of memory operations. For clarity, the number of MDP read ports does \textbf{not affect} any other results presented in this paper.\\
+Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, the processor can dispatch (that is, allocate instructions into OoO structures) up to two memory operations per cycle. Gem5 does not model this behaviour by default, as this is a low-level detail that is difficult to faithfully represent at the level of abstraction Gem5 simulates. Given the importance of this aspect to our proposed technique, we provide an estimation of the potential impact on IPC when the number of MDP read ports is limited. The dispatch stage is modelled to block when the number of unlabelled memory operations dispatched within a cycle exceeds the maximum number of read ports, which we model in the small core as 1. It is assumed that predictions always arrive within a single cycle, and so read port usage is reset to zero every cycle. 
 
 - insert results here
 
-\subsection{Profile Analysis \& Threshold Sensitivity}
+% \subsection{Profile Analysis \& Threshold Sensitivity}
 
-- need to generate profile from test input for this, will take a few days
-
-\subsection{Store Set Table Size Sensitivity}
-\label{sec:storesetsize}
-
-As seen in Section \ref{sec:ipc}, the number of false dependencies falls sharply when increasing the Store Set table sizes along with core size. We present a sensitivity study for how gmean IPC improvement and base false dependencies in the small core configuration varies as both SSIT and LFST sizes grow. 
-
-- graphs here\\
-
-Figure \ref{fig:storesetsizefalsedeps} shows that the majority of false dependencies can be removed by growing the Store Set tables, and likewise Figure \ref{fig:storesetsizeipc} shows that the IPC gain diminishes along with this too. This demonstrates the main source of performance our technique offers is due to reducing hash collisions in the predictor tables, but without having to grow them.
-
-Furthermore, we perform an iso-area comparison in the small core configuration between doubling the Store Set size verses growing the load queue by an equal number of bits. Whereas growing Store Sets provide an additional x\% gmean IPC, the larger load queue provides y\%. This suggests that Store Set hash collisions would not typically be eliminated in small processors by growing the predictor size.
+% - need to generate profile from test input for this, will take a few days
 
 \section{Related Work}
 
@@ -477,7 +470,7 @@ The technique proposed in this paper assumed target specific compilation is poss
 
 \section{Future Work}
 
-\subsection{Per-Workload Threshold Selection}
+\subsubsection{Per-Workload Threshold Selection}
 As the threshold is untied to any architectural state, it is possible to select a different optimal store distance threshold for each individual workload. We chose not to do this for this work to prove that meaningful performance gains were possible with a generic threshold, and that the PG-MDP technique did not require a threshold search for each compiled program. However, there are use cases where this is feasible, and it would be worthwhile to evaluate the potential performance available for the additional compilation cost.
 
 \subsection{Just-in-Time Compilers}

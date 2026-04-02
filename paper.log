@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.3.12)  2 APR 2026 23:18
+This is pdfTeX, Version 3.141592653-2.6-1.40.26 (TeX Live 2025/dev/Debian) (preloaded format=pdflatex 2026.3.12)  2 APR 2026 23:24
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1678,9 +1678,6 @@ Underfull \vbox (badness 6808) has occurred while \output is active []
 
 
 [5.5 <./figures/ipc_main.pdf> <./figures/falsedeps_main.pdf>]
-LaTeX Font Info:    Font shape `T1/LinuxBiolinumT-TLF/m/it' will be
-(Font)              scaled to size 9.0pt on input line 450.
-
 
 Package natbib Warning: Citation `improvingmdp' on page 6 undefined on input li
 ne 450.
@@ -1700,15 +1697,15 @@ Package natbib Warning: Citation `storedistance' on page 6 undefined on input l
 ine 452.
 
 
-Underfull \vbox (badness 6625) has occurred while \output is active []
+Package natbib Warning: Citation `constable' on page 6 undefined on input line 
+456.
+
+
+Underfull \vbox (badness 10000) has occurred while \output is active []
 
 
 
 [6.6 <./figures/violations_medium.pdf>]
-
-Package natbib Warning: Citation `constable' on page 7 undefined on input line 
-456.
-
 
 LaTeX Warning: Reference `sec:models' on page 7 undefined on input line 467.
 
@@ -1779,25 +1776,24 @@ Package rerunfilecheck Info: File `paper.out' has not changed.
 (rerunfilecheck)             Checksum: 20E092C9014F92D468507E6D58F49D22;4114.
  ) 
 Here is how much of TeX's memory you used:
- 59695 strings out of 473197
- 1452266 string characters out of 5718605
+ 59686 strings out of 473197
+ 1452082 string characters out of 5718605
  2274537 words of memory out of 5000000
- 81591 multiletter control sequences out of 15000+600000
- 715116 words of font info for 329 fonts, out of 8000000 for 9000
+ 81588 multiletter control sequences out of 15000+600000
+ 709732 words of font info for 329 fonts, out of 8000000 for 9000
  1302 hyphenation exceptions out of 8191
  99i,21n,131p,1593b,2390s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texlive/texmf-dist/fonts/type1/public/newtx/LibertineMathMI.pfb><
 /usr/share/texlive/texmf-dist/fonts/type1/public/libertine/LinBiolinumT.pfb></u
 sr/share/texlive/texmf-dist/fonts/type1/public/libertine/LinBiolinumTB.pfb></us
-r/share/texlive/texmf-dist/fonts/type1/public/libertine/LinBiolinumTI.pfb></usr
-/share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.pfb></usr/
-share/texlive/texmf-dist/fonts/type1/public/newtx/txsys.pfb>
-Output written on paper.pdf (8 pages, 511020 bytes).
+r/share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineT.pfb></usr
+/share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineTB.pfb></usr
+/share/texlive/texmf-dist/fonts/type1/public/libertine/LinLibertineTI.pfb></usr
+/share/texlive/texmf-dist/fonts/type1/public/newtx/txsys.pfb>
+Output written on paper.pdf (8 pages, 470743 bytes).
 PDF statistics:
- 306 PDF objects out of 1000 (max. 8388607)
- 256 compressed objects within 3 object streams
- 57 named destinations out of 1000 (max. 500000)
- 76028 words of extra memory for PDF output out of 89155 (max. 10000000)
+ 295 PDF objects out of 1000 (max. 8388607)
+ 247 compressed objects within 3 object streams
+ 52 named destinations out of 1000 (max. 500000)
+ 71932 words of extra memory for PDF output out of 74296 (max. 10000000)
 

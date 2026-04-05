@@ -302,7 +302,7 @@ Lastly we highlight the benefits that profiles are able to provide to this techn
 
 \section{Evaluation}
 
-This section presents the experimental results of applying PG-MDP to SPEC2017 CPU intspeed workloads. We first highlight the effective elimination of false dependencies and the resulting IPC gain on a small core (ROB=128). It then demonstrates how the benefits of PG-MDP scale to larger cores and to state-of-the-art MDP algorithms like PHAST. Next, we analyze how performance changes across varying XS Store Set table sizes. Finally, we estimate potential performance gains by simulating a limited number of MDP read ports to restrict the dispatch of non-labelled loads per cycle.
+This section presents the experimental results of applying PG-MDP to SPEC2017 CPU intspeed workloads. We first highlight the effective elimination of false dependencies and the resulting IPC gain on a small core (ROB=128). We then demonstrate how the benefits of PG-MDP scale to larger cores and to state-of-the-art MDP algorithms such as PHAST. Next, we analyze how performance changes across varying XS \aj{reduced?, extra-small? Unify across all uses} Store Set table sizes. Finally, we estimate potential performance gains by simulating a limited number of MDP read ports to restrict the dispatch of non-labelled loads per cycle.
 
 \subsection{Experimental Design}
 

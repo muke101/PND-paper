@@ -159,7 +159,7 @@
 
 Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and can often only spare limited space for MDP tables. This leads to a high number of false dependencies as memory independent loads collide with unrelated predictor entries (i.e., the aliasing problem), causing unnecessary stalls in the processor pipeline. 
 
-This paper proposes a profile-guided hardware-software co-design to detect frequently memory independent loads. Our profiler labels those loads via their opcode to mark them as \emph{predict-no-dependency} (PND) loads. PND loads bypass MDP and are always scheduled as early as possible, eliminating the possibility of false dependencies without introducing additional hardware overhead. Across SPEC CPU 2017 intspeed, this technique achieves a geomean IPC gain of 1.47\% and proportional power-savings in a small core configuration. On larger cores, performance is maintained, while average MDP power usage is reduced by 40\%.
+The conventional way to address this problem is with greater predictor size or complexity, but these are costs which cannot be afforded on area-constrained cores. This paper proposes that targeting the \textbf{predictor working set} is as effective as growing the predictor, and can deliver performance gains which match that of very large predictors while still using very small predictors. This paper introduces profile-guided memory dependence prediction (PG-MDP), a software co-design to label consistently memory independent loads via their opcode and remove them from the MDP working set. These loads are referred to as \emph{predict-no-dependency} (PND) loads, and bypass querying the MDP when dispatched, always issuing as soon as possible. Across SPEC CPU 2017 intspeed, PG-MDP reduces dynamic MDP queries by 77\%, false dependencies by 80\%, and improves IPC for a small simulated core by 1.47\% (to within 0.5\% of a very large predictor), all at \textbf{zero hardware cost}.
 
 \end{abstract} 
 %%
@@ -206,13 +206,27 @@ This paper proposes a profile-guided hardware-software co-design to detect frequ
 \section{Introduction}
 
 
+-todo:
+comments (overleaf, paul (and abstract), jacky)
+regen graphs
+fill in sweep and power sections
+redo section overviews and conclusion
+figures
+
 Memory dependence prediction (MDP) is a speculative technique used in out-of-order processors to increase available instruction-level parallelism (ILP) by predicting the stores on which a given load instruction will depend, as well as identifying loads that are memory independent. Smaller cores utilising smaller predictors can often struggle with a large number of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the state of the art to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on the core design, which is often not viable in smaller cores. While simply growing a Store Sets-like predictor would offset hash collisions, the potential benefits of larger memory dependence predictors is bounded by the total available ILP, often making this an inefficient investment in cores with short instruction windows. As such, memory dependence predictors in area-constrained cores typically remain small and inaccurate.
+
+\begin{figure}[!t]
+    \centering
+    \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_small.pdf}
+    \caption{Base and improved IPC for increasing XS Store Set \cite{xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}
+    \label{fig:ssitsweep}
+\end{figure}
 
 Nevertheless, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. These efficiency cores share die area with high-performance cores under strict budgets for both area and power. Crucially, this pattern is no longer confined to mobile devices, and this heterogeneous design can now be found across mobile, desktop and server designs. Even as processors in high-end mobile devices scale to rival those found in laptops, they are often paired with efficiency cores to maximize battery life. Area-constrained cores are further found as standalone cores in edge systems, or efficiency tiles in a disaggregated chiplet architecture. In all these cases, out-of-order execution components are scaled to fit the given area envelope rather than to maximize performance. As these area-constrained cores are increasingly tasked with demanding general-purpose computation while striving to consume as little energy as possible, increasing ILP without  incurring additional area, power or complexity costs becomes more pressing.
 
-In this paper we argue that the problem of false memory dependencies is not necessarily a question of predictor size or complexity, and that, for area-constrained cores, it is the \textbf{predictor working set} that is most impactful. We define the predictor working set as the set of all instructions that actively index into the predictor during a given execution window. For Store Sets, this includes all issued loads and stores, whether or not they are actually memory dependent. Prior work has demonstrated that a considerable fraction \aj{How much? It is stronger to say N\%} of load instructions in general-purpose workloads rarely or never exhibit in-flight dependencies \cite{storedistance,arcs,constable}. Hence, these loads represent ideal candidates to be removed from the MPD working set.
+In this paper we argue that the problem of false memory dependencies is not necessarily a question of predictor size or complexity, and that, for area-constrained cores, it is the \textbf{predictor working set} that is most important, and that for an appropriate working set even a very small predictor is able to deliver most of the performance of a very large predictor. We define the predictor working set as the set of all instructions that actively index into the predictor during a given execution window. For Store Sets, this includes all issued loads and stores, whether or not they are actually memory dependent. Prior work has demonstrated that a considerable fraction of load instructions in general-purpose workloads rarely or never exhibit in-flight dependencies \cite{storedistance,arcs,constable}. Hence, these loads represent ideal candidates to be removed from the MPD working set.
 
-We exploit this insight with \textbf{profile-guided memory dependence prediction (PG-MDP)}, a software co-design at \textbf{zero hardware cost} which identifies frequently memory-independent loads and labels them via their opcode as \emph{predict no dependency} (PND), causing them to bypass MDP queries entirely, and always schedule as early as possible. In the event that a labelled load incorrectly passes a store to the same address, a rollback is  triggered as usual, but no new MDP entry is created. PG-MDP reduces average runtime MDP queries by 77\% and false dependencies by 80\% across SPEC2017 CPU intspeed. Crucially, by reducing the working set to only genuinely memory dependent loads, very small Store Set-like predictors are able to match the performance of much larger ones: on a small simulated core, PG-MDP improves geomean IPC of a 64 entry XiangShan Store Sets predictor \cite{xiangshan-gem5} by 1.47\%, falling within 0.5\% IPC of a 1024 entry predictor.
+We exploit this insight with \textbf{profile-guided memory dependence prediction (PG-MDP)}, a software co-design at \textbf{zero hardware cost} which identifies frequently memory-independent loads and labels them via their opcode as \emph{predict no dependency} (PND), causing them to bypass MDP queries entirely, and always schedule as early as possible. In the event that a labelled load incorrectly passes a store to the same address, a rollback is triggered as usual, but no new MDP entry is created. PG-MDP reduces average runtime MDP queries by 77\% and false dependencies by 80\% across SPEC2017 CPU intspeed. Crucially, by reducing the working set to only genuinely memory dependent loads, very small Store Set-like predictors are able to match the performance of much larger ones: on a small simulated core, PG-MDP improves geomean IPC of a 64 entry XiangShan Store Sets predictor \cite{xiangshan-gem5} by 1.47\%, falling within 0.5\% IPC of a 1024 entry predictor, as shown in Figure \ref{fig:ssitsweep}.
 
 \subsection{Contributions}
 This paper makes the following contributions:
@@ -346,6 +360,18 @@ We use Gem5 \cite{gem5} to simulate varying core size configurations. The full c
 
 \end{table}
 
+\subsection{Predictor Size Performance Gap}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_full.pdf}
+\caption{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark.}
+\label{fig:ipc}
+\end{figure*}
+
+Figure \ref{fig:fullssitsweep} shows an extended plot of the results in Figure \ref{fig:ssitsweep}, including the medium core configuration as well as the small core. 
+- shows how pg-mpd works on larger cores and how, even though they can usually afford larger predictors by default anyway, we could still allow them to get the same performance with smaller predictors 
+
 \subsection{Performance}
 \label{sec:ipc}
 
@@ -420,7 +446,7 @@ Real processors have a limited number of read ports for each predictor component
 
 \emph{Constable: Improving Performance and Power Efficiency by Safely Eliminating Load Instruction Execution} \cite{constable} is a pure hardware technique to track and eliminate stable loads which consistently read the same value from memory. This technique is able to eliminate both the memory read and address calculation altogether, greatly improving pipeline efficiency. It also demonstrates a wide coverage a variety of workloads, improving geomean IPC by 5.1\%. For larger performance-orientated processors, this technique would most likely be more effective at improving the efficiency of load execution than our work, with a large overlap (albeit not total) of the types of load instructions targeted. However, at an estimated hardware overhead of 12.4KB, this technique may be infeasible for the area-constrained cores we target.
 
-\emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and PHAST \cite{storesets, phast}, other MDP algorithms include Store Vectors, MDP-TAGE, and MASCOT \cite{storevectors, mdp-tage2, Mose25}. Each of these algorithms offer different trade-offs and advantages. We choose to evaluate XS Store Sets and PHAST because we understand them to be the optimal choices for small and large cores respectively, and that XS Store Sets provides, to the best of our knowledge, the closest representation of MDP algorithms found in real processors. 
+\emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and PHAST \cite{storesets, phast}, other MDP algorithms include Store Vectors, MDP-TAGE, and MASCOT \cite{storevectors, mdp-tage, mdp-tage2, Mose25}. Each of these algorithms offer different trade-offs and advantages. We choose to evaluate XS Store Sets and PHAST because we understand them to be the optimal choices for small and large cores respectively, and that XS Store Sets provides, to the best of our knowledge, the closest representation of MDP algorithms found in real processors. 
 
 \section{Threats to Validity}
 This section touches on possible threats to the validity of results presented in this paper.

@@ -5,31 +5,33 @@
 \citation{storesets}
 \citation{openxiangshan}
 \citation{phast}
+\citation{xiangshan-gem5}
+\citation{xiangshan-gem5}
 \citation{storedistance,arcs,constable}
 \@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Contributions}{1}{subsection.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{1}{section.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Base and improved IPC for increasing XS Store Set \citep  {xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}}{1}{figure.caption.3}\protected@file@percent }
+\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
+\newlabel{fig:ssitsweep}{{1}{1}{Base and improved IPC for increasing XS Store Set \cite {xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical}{figure.caption.3}{}}
+\citation{xiangshan-gem5}
 \citation{storesets}
 \citation{gem5}
 \citation{xiangshan-paper,openxiangshan}
 \citation{xiangshan-gem5}
-\citation{phast}
+\@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Contributions}{2}{subsection.1.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {2}Background}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Loads in Out-of-Order Execution}{2}{subsection.2.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Store Sets}{2}{subsection.2.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.3}XiangShan Store Sets}{2}{subsection.2.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}PHAST}{2}{subsection.2.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{2}{section.3}\protected@file@percent }
+\citation{phast}
 \citation{fdocompilation}
 \citation{unveilingpgo}
 \citation{bolt}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Overview}{3}{subsection.3.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Store Distances \& Labelling Thresholds}{3}{subsection.3.2}\protected@file@percent }
-\newlabel{sec:storedistances}{{3.2}{3}{Store Distances \& Labelling Thresholds}{subsection.3.2}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Store Distance threshold search for each CPU model. The Arrows indicate the best threshold.}}{3}{figure.caption.3}\protected@file@percent }
-\providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:thresholdsearch}{{1}{3}{Store Distance threshold search for each CPU model. The Arrows indicate the best threshold}{figure.caption.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Why Profiles?}{3}{subsection.3.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.4}PHAST}{3}{subsection.2.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{\numberline {3}Method}{3}{section.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Store Distances \& Labelling Thresholds}{3}{subsection.3.1}\protected@file@percent }
+\newlabel{sec:storedistances}{{3.1}{3}{Store Distances \& Labelling Thresholds}{subsection.3.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Why Profiles?}{3}{subsection.3.2}\protected@file@percent }
 \citation{roadnottaken}
 \citation{svf,affine}
 \citation{gem5}
@@ -37,41 +39,42 @@
 \citation{dcpt}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Evaluation}{4}{section.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Experimental Design}{4}{subsection.4.1}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Predictor Size Performance Gap}{4}{subsection.4.2}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Parameters of processor components for each simulated model}}{4}{table.caption.4}\protected@file@percent }
 \newlabel{table:cpu-models}{{1}{4}{Parameters of processor components for each simulated model}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Performance}{4}{subsection.4.2}\protected@file@percent }
-\newlabel{sec:ipc}{{4.2}{4}{Performance}{subsection.4.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Performance}{4}{subsection.4.3}\protected@file@percent }
+\newlabel{sec:ipc}{{4.3}{4}{Performance}{subsection.4.3}{}}
 \@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark.}}{5}{figure.caption.5}\protected@file@percent }
 \newlabel{fig:ipc}{{2}{5}{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark}{figure.caption.5}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Percent change of false dependencies.}}{5}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:falsedeps}{{3}{5}{Percent change of false dependencies}{figure.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}MDP \& Core Size Sensitivity}{5}{subsection.4.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Power Savings \& PHAST}{5}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark.}}{5}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:ipc}{{3}{5}{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed benchmark}{figure.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}MDP \& Core Size Sensitivity}{5}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Power Savings \& PHAST}{5}{subsection.4.5}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Percent change of false dependencies.}}{6}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:falsedeps}{{4}{6}{Percent change of false dependencies}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Percent change of memory order violations. Values roughly equal between core sizes.}}{6}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:violations}{{5}{6}{Percent change of memory order violations. Values roughly equal between core sizes}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Read Port Impact Estimation}{6}{subsection.4.6}\protected@file@percent }
 \citation{arcs}
 \citation{improvingmdp}
 \citation{storedistance}
 \citation{storedistance}
 \citation{cooperative}
 \citation{constable}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Percent change of memory order violations. Values roughly equal between core sizes.}}{6}{figure.caption.7}\protected@file@percent }
-\newlabel{fig:violations}{{4}{6}{Percent change of memory order violations. Values roughly equal between core sizes}{figure.caption.7}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Read Port Impact Estimation}{6}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{6}{section.5}\protected@file@percent }
 \citation{storesets,phast}
-\citation{storevectors,mdp-tage2,Mose25}
+\citation{storevectors,mdp-tage,mdp-tage2,Mose25}
 \citation{cooperative}
 \citation{cpusizes}
-\bibstyle{ACM-Reference-Format}
-\bibdata{bibtex}
-\bibcite{affine}{{1}{[n.\,d.]}{{aff}}{{}}}
-\bibcite{storesets}{{2}{1998}{{Chrysos and Emer}}{{}}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{7}{section.5}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {6}Threats to Validity}{7}{section.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Encoding Space for Load Labels}{7}{subsection.6.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Simulated Processor Models}{7}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Target Specific Compilation}{7}{subsection.6.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Future Work}{7}{section.7}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{7}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{7}{section*.9}\protected@file@percent }
+\bibstyle{ACM-Reference-Format}
+\bibdata{bibtex}
+\bibcite{affine}{{1}{[n.\,d.]}{{aff}}{{}}}
+\bibcite{storesets}{{2}{1998}{{Chrysos and Emer}}{{}}}
 \bibcite{gem5}{{3}{2020}{{et~al.}}{{}}}
 \bibcite{cooperative}{{4}{2006}{{Huang et~al\mbox  {.}}}{{}}}
 \bibcite{phast}{{5}{2024}{{Kim and Ros}}{{}}}
@@ -87,5 +90,7 @@
 \newlabel{tocindent3}{0pt}
 \newlabel{tocindent4}{0pt}
 \newlabel{tocindent5}{0pt}
+\@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{8}{section.8}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{8}{section*.10}\protected@file@percent }
 \newlabel{TotPages}{{8}{8}{}{page.8}{}}
 \gdef \@abspage@last{8}

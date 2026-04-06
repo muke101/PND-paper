@@ -1,0 +1,107 @@
+\definecolor{TP}{HTML}{2E8B57}
+\definecolor{TN}{HTML}{90EE90}
+\definecolor{FP}{HTML}{B22222}
+\definecolor{FN}{HTML}{F08080}
+\definecolor{M}{HTML}{4682B4}
+
+\begin{tikzpicture}
+    \begin{axis}[
+        width=1.2\textwidth, % Increased width for more benchmarks
+        height=8cm,
+        ybar stacked,
+        ymin=0,
+        ymax=100,
+        %bar width=6pt, % Adjusted bar width
+        enlarge x limits=0.05,
+        legend style={at={(0.5,-0.3)}, anchor=north, legend columns=-1},
+        ylabel={\% of load instruction},
+        symbolic x coords={
+            perlbench,
+            gcc,
+            mcf, lbm, omnetpp, xalancbmk,
+            x264,
+            deepsjeng, leela, nab,
+            xz,
+            % Average
+        },
+        xtick=data,
+        xtick pos=bottom,
+        xtick align=outside,
+        x tick label style={rotate=45, anchor=east, font=\small}, % Rotated labels
+        yticklabel={\pgfmathprintnumber{\tick}\%},
+    ]
+
+    % Data for Bar 2 (center)
+\addplot+[ybar, fill=TP, draw=black] plot coordinates{
+         (perlbench,64.71)
+         (gcc,72.47)
+         (mcf,71.35)
+         (lbm,62.53)
+         (omnetpp,78.59)
+         (xalancbmk,52.24)
+         (x264,78.54)
+         (deepsjeng,70.02)
+         (leela,66.70)
+         (nab,75.89)
+         (xz,73.77)
+};
+
+\addplot+[ybar, fill=TN, draw=black] plot coordinates{
+         (perlbench,23.66)
+         (gcc,15.07)
+         (mcf,23.72)
+         (lbm,35.01)
+         (omnetpp,20.10)
+         (xalancbmk,12.65)
+         (x264,17.58)
+         (deepsjeng,27.38)
+         (leela,28.86)
+         (nab,14.80)
+         (xz,24.50)
+};
+
+\addplot+[ybar, fill=FP, draw=black] plot coordinates{
+         (perlbench,1.19)
+         (gcc,0.77)
+         (mcf,0.47)
+         (lbm,0.00)
+         (omnetpp,0.21)
+         (xalancbmk,0.80)
+         (x264,0.59)
+         (deepsjeng,0.30)
+         (leela,1.06)
+         (nab,0.24)
+         (xz,0.55)
+};
+
+\addplot+[ybar, fill=FN, draw=black] plot coordinates{
+         (perlbench,2.31)
+         (gcc,0.95)
+         (mcf,4.47)
+         (lbm,1.55)
+         (omnetpp,1.09)
+         (xalancbmk,0.98)
+         (x264,0.42)
+         (deepsjeng,1.45)
+         (leela,0.72)
+         (nab,2.03)
+         (xz,1.18)
+};
+
+
+\addplot+[ybar, fill=M, draw=black] plot coordinates{
+         (perlbench,8.13)
+         (gcc,10.74)
+         (mcf,0.00)
+         (lbm,0.90)
+         (omnetpp,0.00)
+         (xalancbmk,33.32)
+         (x264,2.87)
+         (deepsjeng,0.85)
+         (leela,2.65)
+         (nab,7.04)
+         (xz,0.00)
+};
+    \legend{True Positive, True Negative, False Positive, False Negative, Missing}
+    \end{axis}
+\end{tikzpicture}

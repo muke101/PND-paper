@@ -293,31 +293,13 @@ The PG-MDP workflow follows a standard profile-guided optimization pattern. Prog
 \subsection{Store Distances \& Labelling Thresholds}
 \label{sec:storedistances}
 
-<<<<<<< HEAD
 As overviewed in Section \ref{sec:lsq}, when loads are issued in out-of-order execution they search the store queue (SQ) for older stores with overlapping addresses. Informally, a load's \emph{store distance} refers to the number of prior SQ entries between the load and the dependent stores. A load depending on the most recent prior store has a store distance of 1. Formally, let $x$ be the address of a load, and let the SQ contain store addresses $y_1, y_2, \dots, y_n$ ordered from youngest ($y_1$) to oldest ($y_n$). The \emph{store distance} is defined as the minimum index $i$ such that $x = y_i$. If no such index exists, the store distance is $\infty$.
-=======
-As overviewed in Section \ref{sec:lsq}, when loads are issued in
-out-of-order execution they search the store queue (SQ) for older
-stores with overlapping addresses. Informally, the term \emph{store 
-distance} of a load refers to the number of SQ entries that must be
-checked to locate the load’s corresponding store \sk{The SQ is a CAM structure and all entries are searched on parallel, I'm not sure this is the correct definition for store distance. Probably something like "the number of stores older than the load but younger than the matching store" or "the number of SQ entries between the youngest store at the time a load is dispatched and the matching older store"}. For instance, a load
-depending on the most recent prior store has a store distance of
-1. Formally, let $x$ be the address of a load, and let the SQ contain
-store addresses $y_1, y_2, \dots, y_n$ ordered from youngest ($y_1$)
-to oldest ($y_n$). The \emph{store distance} is defined as the minimum
-index $i$ such that $x = y_i$. If no such index exists, the store
-distance is $\infty$.
->>>>>>> refs/remotes/origin/main
 
 The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions across all train inputs are selected as that load's profiled store distance. When no single store distance occurs in at least 95\% of executions, the shortest \ar{should not be infinity here? I think this part is not clear enough. You mean the you take the shorter from the conflicting 5\%? Why?} observed distance is chosen. 
 
 Loads are then filtered by whether their profiled store distance is within a certain threshold. The premise PG-MDP is that loads with either infinite or sufficiently long dependent store distances are good candidates to be labelled. This heuristic captures four different types of behaviours:
 \begin{itemize}
-<<<<<<< HEAD
         \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e. have infinite store distance).
-=======
-        \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e.~have no store distance).
->>>>>>> refs/remotes/origin/main
         \item[$\bullet$] \textbf{(2) Rarely dependent loads:} Loads which observe short dependent store distances in <5\% of executions.
         \item[$\bullet$] \textbf{(3) Structurally independent loads:} Loads with no dependent stores in-flight at the time the load is issued. \ar{How does the PGO knows this? Even if you know the SQ size you do not know how many stores are there. Ok, I need to read after for the binary search... but not clear at this point.}
         \item[$\bullet$] \textbf{(4) Fast-to-Resolve Dependencies:} Loads which have in-flight yet resolved dependent stores, allowing forwarding. \ar{How does the PGO knows this?}
@@ -335,7 +317,6 @@ Addressing adoption, prior work shows that use of PGO has risen significantly in
 
 To test how PG-MDP generalizes, we compare the statically labelled loads between profiles generated from both train and reference inputs for intspeed, shown in Figure \ref{fig:pgo}. Where 'positive' means the load is labelled and 'negative' means it isn't, true positives are loads which are labelled in both profiles, false positives are loads only labelled in the train profile, and likewise for negatives. 'Missing' means the load does not appear in the train workload. These results suggest that profiles generated from train inputs do generalize effectively to reference inputs. It is also important to note that in the case of load instructions which are unseen in the train inputs, these are never labelled and hence execute as normal. This allows PG-MDP to be more tolerant to workloads with high code coverage variation between inputs.
 
-<<<<<<< HEAD
 \begin{figure}[!t]
     \input{figures/pgo.tex}
     \caption{Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Majority of labelled loads are either true positives (TP) or true negatives (TN). Some missed potential is seen with false negatives (FN), but minimal harmful labels are introduced from false positives (FP).}
@@ -343,9 +324,6 @@ To test how PG-MDP generalizes, we compare the statically labelled loads between
 \end{figure}
 
 Profiles are also able to provide further benefits than static analysis. Of the four types of load behaviour referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behaviour in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behaviour, which pairs well with speculative execution where mistakes will not invalidate program semantics.
-=======
-Lastly we highlight the benefits that profiles are able to provide to this technique over static analysis. Of the four types of load behaviour referred to in Section \ref{sec:storedistances}, only two of them, types (1) and (3), could theoretically be captured by perfect alias analysis. Type (2) would  further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behaviour in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behaviour, which pairs well with speculative execution where mistakes will not invalidate program semantics.
->>>>>>> refs/remotes/origin/main
 
 \section{Evaluation}
 

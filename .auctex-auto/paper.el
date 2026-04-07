@@ -6,7 +6,7 @@
    (TeX-add-to-alist 'LaTeX-provided-class-options
                      '(("elsarticle" "") ("article" "") ("acmart" "sigconf" "screen" "review")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("hyperref" "hidelinks") ("graphicx" "") ("listings" "") ("color" "") ("caption" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("xcolor" "dvipsnames") ("multirow" "")))
+                     '(("hyperref" "hidelinks") ("graphicx" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("xcolor" "dvipsnames") ("multirow" "")))
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "lstinline")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "href")
@@ -20,11 +20,19 @@
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "path")
    (TeX-run-style-hooks
     "latex2e"
+    "code/525.x264"
+    "code/500.perlbench"
+    "code/556.omnetpp"
+    "code/502.gcc"
+    "code/505.mcf"
     "acmart"
     "acmart10"
     "makecell"
     "circuitikz"
     "pgfplots"
+    "listings"
+    "color"
+    "caption"
     "xcolor"
     "multirow")
    (TeX-add-symbols
@@ -35,13 +43,17 @@
     "fig:ssitsweep"
     "sec:storedistances"
     "table:cpu-models"
-    "fig:ipc"
+    "sec:ipcgap"
+    "fig:fullssitsweep"
+    "fig:lookups"
     "sec:ipc"
+    "fig:ipc"
     "fig:falsedeps"
     "fig:violations")
    (LaTeX-add-bibliographies
     "bibtex")
    (LaTeX-add-xcolor-definecolors
+    "mygray"
     "s5"
     "a14"
     "m4"))

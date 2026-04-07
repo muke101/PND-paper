@@ -307,10 +307,10 @@ stores with overlapping addresses. Informally, the term \emph{store
 distance} of a load refers to the number of SQ entries that must be
 checked to locate the load’s corresponding store. For instance, a load
 depending on the most recent prior store has a store distance of
-1. Formally, let $a$ be the address of a load, and let the SQ contain
-store addresses $a_1, a_2, \dots, a_n$ ordered from youngest ($a_1$)
-to oldest ($a_n$). The \emph{store distance} is defined as the minimum
-index $i$ such that $a = a_i$. If no such index exists, the store
+1. Formally, let $x$ be the address of a load, and let the SQ contain
+store addresses $y_1, y_2, \dots, y_n$ ordered from youngest ($y_1$)
+to oldest ($y_n$). The \emph{store distance} is defined as the minimum
+index $i$ such that $x = y_i$. If no such index exists, the store
 distance is $\infty$.
 
 The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions across all train inputs are selected as that load's profiled store distance. When no single store distance occurs in at least 95\% of executions, the shortest observed distance is chosen. 
@@ -513,6 +513,17 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a soft
 %% the bibliography file.
 \bibliographystyle{ACM-Reference-Format}
 \bibliography{bibtex}
+
+\appendix
+
+\section{Examples}
+
+\input{code/525.x264.txt}
+\input{code/500.perlbench.txt}
+\input{code/556.omnetpp.txt}
+\input{code/502.gcc.txt}
+\input{code/505.mcf.txt}
+
 
 \end{document}
 \endinput

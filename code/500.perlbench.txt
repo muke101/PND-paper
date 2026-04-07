@@ -1,0 +1,21 @@
+\begin{lstlisting}[language=C, caption=2. Rarely Dependent Loads: 500.perlbench$\_$r (Perl Interpreter)]
+// Simplified from perlbench hash table operations
+struct HashBucket { char* key; int value; };
+
+void update_symbol_table(struct HashBucket* table, int hash1, int hash2) {
+    // Store to one variable
+    
+    table[hash1].value = 100; 
+
+    // Rarely Dependent Load:
+    // 95%+ of the time, hash1 != hash2, so there
+    // is no dependency. However, if the script
+    // accesses the same variable or aliases to 
+    // the same bucket, the load suddenly has a
+    // very short store distance.
+    
+    int check_val = table[hash2].value; 
+    if (check_val == 0) allocate_new_symbol();
+}
+\end{lstlisting}
+

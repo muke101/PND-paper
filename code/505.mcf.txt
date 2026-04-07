@@ -1,0 +1,21 @@
+
+\begin{lstlisting}[language=C, caption=4. Slow-to-Resolve: 505.mcf$\_$r (Combinatorial Optimization)]
+// Simplified mcf network simplex
+// (Pointer Chasing)
+
+void update_network(struct Node* n) {
+    // Slow Store: The address requires chasing
+    // pointers first
+    
+    n->child->sibling->potential = 50; 
+    
+    // Slow Load: Store distance is 1, but the LSQ
+    // cannot confirm the aliasing until the long-
+    // latency address generation for the store 
+    // (and the load) is completely resolved.
+    // Forwarding is stalled
+    
+    int pot = n->child->sibling->potential; 
+}
+\end{lstlisting}
+

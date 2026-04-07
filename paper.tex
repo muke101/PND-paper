@@ -353,6 +353,7 @@ This section presents the experimental results of applying PG-MDP to SPEC2017 CP
 
 \subsection{Experimental Design}
 
+-medium is still too small for phast
 We use Gem5 \cite{gem5} to simulate varying core size configurations. The full configuration for each model is detailed in Table \ref{table:cpu-models}. We evaluate the SPEC2017 Intspeed benchmarks using up to 10 simpoints, with an interval of 100M instructions and a warm-up of 10M. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPAT \cite{mcpatpaper,mcpatrepo}, which models XS Store Sets or PHAST as applicable.
 
 \begin{table}[h!]
@@ -372,7 +373,7 @@ We use Gem5 \cite{gem5} to simulate varying core size configurations. The full c
    \hline
    \textbf{\makecell{L2 Cache}} & \makecell{L2 (MB):\\MSHRs:} & \makecell{2\\16} & \makecell{4\\32} & \makecell{8\\64}\\
    \hline
-   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{64\\32\\2\\125k} & \makecell{128\\64\\2\\125k} & \makecell{N/A}\\
+   \textbf{\makecell{XS Store\\Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{64\\32\\2\\125k} & \makecell{256\\128\\2\\125k} & \makecell{N/A}\\
    \hline
    % \multicolumn{2}{|c|}{\makecell{Clear Period:}} & \multicolumn{3}{c|}{\makecell{125k}} & \makecell{N/A}\\
    % \hline
@@ -402,8 +403,16 @@ We use Gem5 \cite{gem5} to simulate varying core size configurations. The full c
 \label{fig:ipc}
 \end{figure*}
 
-Figure \ref{fig:fullssitsweep} shows an extended plot of the results in Figure \ref{fig:ssitsweep}, including the medium core configuration as well as the small core. 
-- shows how pg-mpd works on larger cores and how, even though they can usually afford larger predictors by default anyway, we could still allow them to get the same performance with smaller predictors 
+Figure \ref{fig:fullssitsweep} shows an extended plot of the results in Figure \ref{fig:ssitsweep}, including the medium core configuration as well as the small core. The x-axis represents both the number of SSIT and LFST entries (after being multiplied by an appropriate number of slots). Both cases confirm our initial hypothesis that for a Store Set-like predictor, a small number of entries can capture most of the performance of a large number of entries for an appropriate predictor working set. Figure \ref{fig:lookups} shows the reduction in dynamic MDP queries, with an arithmetic average reduction of 77\%, demonstrating that only roughly 25\% of the original predictor working set needs to be tracked with hardware structures.
+
+In both core size configurations, 64 table entries with PG-MDP achieves an IPC within 0.5\% of 1024 entries. In an area-constrained use case as in the small core, this buys the benefits of a larger predictor without any area cost. The medium core represents a case where more area can be spared, and so contains a predictor that already delivers most of the potential benefit. In this case, PG-MDP can be used to reduce the area cost while maintaining performance.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
+\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
+\label{fig:violations}
+\end{figure*}
 
 \subsection{Performance}
 \label{sec:ipc}

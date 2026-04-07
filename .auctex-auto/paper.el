@@ -37,13 +37,16 @@
     "xcolor"
     "multirow")
    (TeX-add-symbols
+    '("ar" 1)
     '("sk" 1)
     '("aj" 1)
     "BibTeX")
    (LaTeX-add-labels
     "fig:ssitsweep"
+    "sec:lsq"
     "sec:storedistances"
     "fig:pgo"
+    "sec:models"
     "table:cpu-models"
     "sec:ipcgap"
     "fig:fullssitsweep"

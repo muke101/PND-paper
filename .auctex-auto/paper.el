@@ -21,11 +21,6 @@
    (TeX-run-style-hooks
     "latex2e"
     "figures/pgo"
-    "code/525.x264"
-    "code/500.perlbench"
-    "code/556.omnetpp"
-    "code/502.gcc"
-    "code/505.mcf"
     "acmart"
     "acmart10"
     "makecell"
@@ -45,6 +40,7 @@
     "fig:ssitsweep"
     "sec:lsq"
     "sec:storedistances"
+    "sec:profiles"
     "fig:pgo"
     "sec:models"
     "table:cpu-models"
@@ -56,7 +52,8 @@
     "fig:x264"
     "fig:falsedeps"
     "fig:violations"
-    "fig:readports")
+    "fig:readports"
+    "sec:futurework")
    (LaTeX-add-bibliographies
     "bibtex")
    (LaTeX-add-xcolor-definecolors

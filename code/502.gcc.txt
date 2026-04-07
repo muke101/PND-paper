@@ -1,0 +1,19 @@
+
+\begin{lstlisting}[language=C, caption=4. Fast-to-Resolve: 502.gcc$\_$r (C Compiler)]
+// Simplified gcc AST parsing (Stack Access)
+void parse_expression() {
+    int local_flags = 0; // Fast Store: Address is
+                         // Stack Pointer + 4
+    
+    // ... a few instructions ...
+    
+    // Fast Load: Address is known instantly at
+    // dispatch
+    // The LSQ can forward the data immediately
+    
+    if (local_flags & OPTIMIZE_FLAG) { 
+        do_optimization();
+    }
+}
+\end{lstlisting}
+

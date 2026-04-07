@@ -1,0 +1,17 @@
+\begin{lstlisting}[language=C, caption=1. Memory Independent Loads: 525.x264$\_$r (Video Compression)]
+// Simplified from x264 CABAC/Quantization tables
+const int cabac_context_state[1024] = { /* pre-computed static data */ };
+
+void encode_macroblock(int* pixels, int ctx_idx) {
+
+    // Memory Independent Load: 
+    // The MDP will never see an in-flight store
+    // to cabac_context_state.
+    // Store distance is infinite.
+
+    int state = cabac_context_state[ctx_idx]; 
+    
+    pixels[0] = apply_transform(pixels[0], state);
+}
+\end{lstlisting}
+

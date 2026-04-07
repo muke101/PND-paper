@@ -1,0 +1,24 @@
+
+\begin{lstlisting}[language=C, caption=3. Structurally Independent Loads: 556.omnetpp$\_$r (Discrete Event Simulation)]
+  // Simplified from omnetpp message passing
+void simulation_loop(struct EventQueue* q) {
+    // 1. Store: A module schedules a future event
+    // This store retires to the L1 cache quickly
+    
+    schedule_event(q, NEW_PACKET_EVENT); 
+
+    // ... Millions of cycles of other simulated
+    // network activity ...
+    
+    process_other_network_nodes();
+
+    // 2. Structurally Independent Load:
+    // The load occurs here, but the corresponding
+    // store retired millions of instructions ago
+    // The store distance is effectively infinite
+    // from the perspective of the SQ
+    
+    struct Event* next_event = pop_event(q);
+}
+\end{lstlisting}
+

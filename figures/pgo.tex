@@ -6,15 +6,16 @@
 
 \begin{tikzpicture}
     \begin{axis}[
-        width=1.2\textwidth, % Increased width for more benchmarks
-        height=8cm,
+        % width=1.2\textwidth, % Increased width for more benchmarks
+        % height=8cm,
+        title={Ref/Train Profile Comparison},
         ybar stacked,
         ymin=0,
         ymax=100,
         %bar width=6pt, % Adjusted bar width
         enlarge x limits=0.05,
-        legend style={at={(0.5,-0.3)}, anchor=north, legend columns=-1},
-        ylabel={\% of load instruction},
+        legend style={at={(0.5,-0.25)}, anchor=north, legend columns=-1},
+        ylabel={\% of load instructions},
         symbolic x coords={
             perlbench,
             gcc,
@@ -30,6 +31,7 @@
         x tick label style={rotate=45, anchor=east, font=\small}, % Rotated labels
         yticklabel={\pgfmathprintnumber{\tick}\%},
     ]
+    \legend{TP, TN, FP, FN, Missing}
 
     % Data for Bar 2 (center)
 \addplot+[ybar, fill=TP, draw=black] plot coordinates{
@@ -102,6 +104,5 @@
          (nab,7.04)
          (xz,0.00)
 };
-    \legend{True Positive, True Negative, False Positive, False Negative, Missing}
     \end{axis}
 \end{tikzpicture}

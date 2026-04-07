@@ -55,7 +55,8 @@
     "fig:ipc"
     "fig:x264"
     "fig:falsedeps"
-    "fig:violations")
+    "fig:violations"
+    "fig:readports")
    (LaTeX-add-bibliographies
     "bibtex")
    (LaTeX-add-xcolor-definecolors

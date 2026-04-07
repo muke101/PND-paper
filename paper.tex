@@ -56,6 +56,28 @@
 \usepackage{makecell}
 \usepackage{circuitikz}
 \usepackage{pgfplots}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{caption}
+\lstset{
+  basicstyle=\ttfamily\small, 
+  breaklines=true,
+  frame=single,
+}
+\definecolor{mygray}{rgb}{0.98,0.98,0.98}
+\lstset{
+  backgroundcolor=\color{mygray},
+  language=C,
+  numbers=left,
+  numberstyle=\tiny,
+  keywordstyle=\color{red},
+  commentstyle=\color{blue},
+  stringstyle=\color{red},
+  showspaces=false,
+  showstringspaces=false,
+  morekeywords={weakUniquenessCheck,match,case,par},
+  escapeinside={(*@}{@*)}
+}
 \definecolor{s5}{HTML}{117733}
 \definecolor{a14}{HTML}{999933}
 \definecolor{m4}{HTML}{332288}
@@ -280,11 +302,21 @@ The PG-MDP workflow follows a standard profile-guided optimization pattern. Prog
 \subsection{Store Distances \& Labelling Thresholds}
 \label{sec:storedistances}
 
-As overviewed in Section \ref{sec:lsq}, when loads are issued in out-of-order execution they search the store queue (SQ) for older stores with overlapping addresses. We use the term store distance to refer to the number of prior entries in the SQ a load's dependent store is found. A load that depends on the most recent prior store would have a store distance of 1.
+As overviewed in Section \ref{sec:lsq}, when loads are issued in
+out-of-order execution they search the store queue (SQ) for older
+stores with overlapping addresses. Informally, the term \emph{store 
+distance} of a load refers to the number of SQ entries that must be
+checked to locate the load’s corresponding store. For instance, a load
+depending on the most recent prior store has a store distance of
+1. Formally, let $a$ be the address of a load, and let the SQ contain
+store addresses $a_1, a_2, \dots, a_n$ ordered from youngest ($a_1$)
+to oldest ($a_n$). The \emph{store distance} is defined as the minimum
+index $i$ such that $a = a_i$. If no such index exists, the store
+distance is $\infty$.
 
 The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions across all train inputs are selected as that load's profiled store distance. When no single store distance occurs in at least 95\% of executions, the shortest observed distance is chosen. 
 
-Loads are then filtered by whether their profiled store distance is within a certain threshold. The premise PG-MDP builts on is that loads with either none or sufficiently long dependent store distances are good candidates to label as PND. This heuristic captures four different types of behaviours:
+Loads are then filtered by whether their profiled store distance is within a certain threshold. The premise PG-MDP builts on is that loads with either $\infty$ or sufficiently long dependent store distances are good candidates to label as PND. This heuristic captures four different types of behaviours:
 \begin{itemize}
         \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e. have no store distance).
         \item[$\bullet$] \textbf{(2) Rarely dependent loads:} Loads which observe short dependent store distances in <5\% of executions.

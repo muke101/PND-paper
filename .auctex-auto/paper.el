@@ -6,7 +6,7 @@
    (TeX-add-to-alist 'LaTeX-provided-class-options
                      '(("elsarticle" "") ("article" "") ("acmart" "sigconf" "screen" "review")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("hyperref" "hidelinks") ("graphicx" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("xcolor" "dvipsnames") ("multirow" "")))
+                     '(("hyperref" "hidelinks") ("graphicx" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("xcolor" "dvipsnames") ("multirow" "") ("amsmath" "") ("tikz" "")))
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "ead")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
@@ -20,6 +20,7 @@
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
    (TeX-run-style-hooks
     "latex2e"
+    "figures/lsq"
     "figures/pgo"
     "acmart"
     "acmart10"
@@ -30,7 +31,9 @@
     "color"
     "caption"
     "xcolor"
-    "multirow")
+    "multirow"
+    "amsmath"
+    "tikz")
    (TeX-add-symbols
     '("ar" 1)
     '("sk" 1)
@@ -39,6 +42,7 @@
    (LaTeX-add-labels
     "fig:ssitsweep"
     "sec:lsq"
+    "fig:lsq"
     "sec:storedistances"
     "sec:profiles"
     "fig:pgo"

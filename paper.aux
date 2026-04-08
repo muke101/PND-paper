@@ -10,106 +10,120 @@
 \citation{storedistance,arcs,constable}
 \@writefile{toc}{\contentsline {section}{Abstract}{1}{section*.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {1}Introduction}{1}{section.1}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Base and improved IPC for increasing XS Store Set \citep  {xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}}{1}{figure.caption.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Base and improved IPC for increasing XS Store Set \citep  {xiangshan-gem5} sizes on a small core (ROB=128). With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}}{1}{figure.caption.3}\protected@file@percent }
 \providecommand*\caption@xref[2]{\@setref\relax\@undefined{#1}}
-\newlabel{fig:ssitsweep}{{1}{1}{Base and improved IPC for increasing XS Store Set \cite {xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical}{figure.caption.3}{}}
+\newlabel{fig:ssitsweep}{{1}{1}{Base and improved IPC for increasing XS Store Set \cite {xiangshan-gem5} sizes on a small core (ROB=128). With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical}{figure.caption.3}{}}
+\citation{xiangshan-gem5}
 \citation{xiangshan-gem5}
 \citation{storesets}
 \citation{gem5}
-\citation{xiangshan-paper,openxiangshan}
-\citation{xiangshan-gem5}
 \@writefile{toc}{\contentsline {subsection}{\numberline {1.1}Contributions}{2}{subsection.1.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {2}Background}{2}{section.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Loads in Out-of-Order Execution}{2}{subsection.2.1}\protected@file@percent }
 \newlabel{sec:lsq}{{2.1}{2}{Loads in Out-of-Order Execution}{subsection.2.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Store Sets}{2}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}XiangShan Store Sets}{2}{subsection.2.3}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Diagram of components used to schedule memory operations in out-of-order cores. Memory operations are inserted into the IQ according to register dependencies and any predicted memory dependencies, and inserted into the LSQ by program order. When loads execute they search the SQ for forwarding opportunities. When stores execute they search the LQ for memory order violations.}}{2}{figure.caption.4}\protected@file@percent }
+\newlabel{fig:lsq}{{2}{2}{Diagram of components used to schedule memory operations in out-of-order cores. Memory operations are inserted into the IQ according to register dependencies and any predicted memory dependencies, and inserted into the LSQ by program order. When loads execute they search the SQ for forwarding opportunities. When stores execute they search the LQ for memory order violations}{figure.caption.4}{}}
+\citation{openxiangshan}
+\citation{xiangshan-gem5}
 \citation{phast}
-\citation{fdocompilation}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Store Sets}{3}{subsection.2.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}XiangShan Store Sets}{3}{subsection.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}PHAST}{3}{subsection.2.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {3}Method}{3}{section.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Store Distances \& Labelling Thresholds}{3}{subsection.3.1}\protected@file@percent }
 \newlabel{sec:storedistances}{{3.1}{3}{Store Distances \& Labelling Thresholds}{subsection.3.1}{}}
+\citation{fdocompilation}
 \citation{unveilingpgo}
 \citation{bolt}
 \citation{roadnottaken}
 \citation{svf,affine}
-\citation{gem5}
-\citation{simpoint}
-\citation{mcpatpaper,mcpatrepo}
-\citation{dcpt}
+\citation{gem5-phast}
+\citation{simpoints}
+\citation{mcpatpaper}
 \@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Why Profiles?}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{sec:profiles}{{3.2}{4}{Why Profiles?}{subsection.3.2}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Most labels are true positives/negatives when compared to the reference inputs, and very few are false positives.}}{4}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:pgo}{{3}{4}{Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Most labels are true positives/negatives when compared to the reference inputs, and very few are false positives}{figure.caption.5}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Evaluation}{4}{section.4}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Majority of labelled loads are either true positives (TP) or true negatives (TN). Some missed potential is seen with false negatives (FN), but minimal harmful labels are introduced from false positives (FP).}}{4}{figure.caption.4}\protected@file@percent }
-\newlabel{fig:pgo}{{2}{4}{Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Majority of labelled loads are either true positives (TP) or true negatives (TN). Some missed potential is seen with false negatives (FN), but minimal harmful labels are introduced from false positives (FP)}{figure.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Experimental Design}{4}{subsection.4.1}\protected@file@percent }
-\newlabel{sec:models}{{4.1}{4}{Experimental Design}{subsection.4.1}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}}{5}{figure.caption.6}\protected@file@percent }
-\newlabel{fig:fullssitsweep}{{3}{5}{SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core}{figure.caption.6}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Parameters of processor components for each simulated model}}{5}{table.caption.5}\protected@file@percent }
-\newlabel{table:cpu-models}{{1}{5}{Parameters of processor components for each simulated model}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Closing Predictor Size Gap}{5}{subsection.4.2}\protected@file@percent }
-\newlabel{sec:ipcgap}{{4.2}{5}{Closing Predictor Size Gap}{subsection.4.2}{}}
+\citation{dcpt}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Experimental Design}{5}{subsection.4.1}\protected@file@percent }
+\newlabel{sec:models}{{4.1}{5}{Experimental Design}{subsection.4.1}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Parameters of processor components for each simulated model}}{5}{table.caption.6}\protected@file@percent }
+\newlabel{table:cpu-models}{{1}{5}{Parameters of processor components for each simulated model}{table.caption.6}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Closing The Predictor Size Gap}{5}{subsection.4.2}\protected@file@percent }
+\newlabel{sec:ipcgap}{{4.2}{5}{Closing The Predictor Size Gap}{subsection.4.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Performance}{5}{subsection.4.3}\protected@file@percent }
 \newlabel{sec:ipc}{{4.3}{5}{Performance}{subsection.4.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Percent change of memory order violations. Values roughly equal between core sizes.}}{6}{figure.caption.7}\protected@file@percent }
-\newlabel{fig:lookups}{{4}{6}{Percent change of memory order violations. Values roughly equal between core sizes}{figure.caption.7}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed workload.}}{6}{figure.caption.8}\protected@file@percent }
-\newlabel{fig:ipc}{{5}{6}{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed workload}{figure.caption.8}{}}
-\newlabel{fig:x264}{{4.3}{6}{}{lstlisting.-1}{}}
+\newlabel{fig:x264}{{4.3}{5}{}{lstlisting.-1}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Impact of PG-MDP on IPC across SPEC2017 CPU intspeed for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}}{6}{figure.caption.7}\protected@file@percent }
+\newlabel{fig:fullssitsweep}{{4}{6}{Impact of PG-MDP on IPC across SPEC2017 CPU intspeed for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core}{figure.caption.7}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {5}{\ignorespaces Percent change in MDP queries per kilo-instruction.}}{6}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:lookups}{{5}{6}{Percent change in MDP queries per kilo-instruction}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Power Usage}{6}{subsection.4.4}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces IPC \% improvement with PG-MDP for each workload on the small core configuration. A handful of workloads benefit significantly, whereas others are largely unchanged.}}{7}{figure.caption.9}\protected@file@percent }
+\newlabel{fig:ipc}{{6}{7}{IPC \% improvement with PG-MDP for each workload on the small core configuration. A handful of workloads benefit significantly, whereas others are largely unchanged}{figure.caption.9}{}}
+\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Percent change of false dependencies per kilo-instruction. PG-MDP benefits workloads most that by default have a higher than average rate of false dependencies, but is still able to cut false dependencies across all workloads.}}{7}{figure.caption.10}\protected@file@percent }
+\newlabel{fig:falsedeps}{{7}{7}{Percent change of false dependencies per kilo-instruction. PG-MDP benefits workloads most that by default have a higher than average rate of false dependencies, but is still able to cut false dependencies across all workloads}{figure.caption.10}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Read Port Impact Estimation}{7}{subsection.4.5}\protected@file@percent }
 \citation{arcs}
 \citation{phast}
-\citation{improvingmdp}
+\citation{arcs}
 \citation{storedistance}
 \citation{storedistance}
-\@writefile{lof}{\contentsline {figure}{\numberline {6}{\ignorespaces Percent change of false dependencies.}}{7}{figure.caption.9}\protected@file@percent }
-\newlabel{fig:falsedeps}{{6}{7}{Percent change of false dependencies}{figure.caption.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Power Savings \& PHAST}{7}{subsection.4.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Read Port Impact Estimation}{7}{subsection.4.5}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{7}{section.5}\protected@file@percent }
 \citation{cooperative}
-\@writefile{lof}{\contentsline {figure}{\numberline {7}{\ignorespaces Percent change of memory order violations. Values roughly equal between core sizes.}}{8}{figure.caption.10}\protected@file@percent }
-\newlabel{fig:violations}{{7}{8}{Percent change of memory order violations. Values roughly equal between core sizes}{figure.caption.10}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}}{8}{figure.caption.11}\protected@file@percent }
-\newlabel{fig:readports}{{8}{8}{SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core}{figure.caption.11}{}}
 \citation{constable}
 \citation{storesets,phast}
 \citation{storevectors,mdp-tage,mdp-tage2,Mose25}
+\@writefile{lof}{\contentsline {figure}{\numberline {8}{\ignorespaces Percent change of memory order violations per Mega-instruction. Although relative \% changes are high, absolute values remain low.}}{8}{figure.caption.11}\protected@file@percent }
+\newlabel{fig:violations}{{8}{8}{Percent change of memory order violations per Mega-instruction. Although relative \% changes are high, absolute values remain low}{figure.caption.11}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Related Work}{8}{section.5}\protected@file@percent }
 \citation{cooperative}
 \citation{cpusizes}
 \citation{branchnet}
+\@writefile{lof}{\contentsline {figure}{\numberline {9}{\ignorespaces Impact of PG-MDP on IPC across intspeed when simulating a limited number of MDP read ports. IPC gains are amplified as well as spread to larger tables sizes.}}{9}{figure.caption.12}\protected@file@percent }
+\newlabel{fig:readports}{{9}{9}{Impact of PG-MDP on IPC across intspeed when simulating a limited number of MDP read ports. IPC gains are amplified as well as spread to larger tables sizes}{figure.caption.12}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {6}Threats to Validity}{9}{section.6}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.1}Encoding Space for Load Labels}{9}{subsection.6.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.2}Simulated Processor Models}{9}{subsection.6.2}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.3}Target Specific Compilation}{9}{subsection.6.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {6.4}Compilation Overhead}{9}{subsection.6.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {section}{\numberline {7}Future Work}{9}{section.7}\protected@file@percent }
+\newlabel{sec:futurework}{{7}{9}{Future Work}{section.7}{}}
 \bibstyle{ACM-Reference-Format}
 \bibdata{bibtex}
-\bibcite{affine}{{1}{[n.\,d.]}{{aff}}{{}}}
-\bibcite{storesets}{{2}{1998}{{Chrysos and Emer}}{{}}}
-\bibcite{gem5}{{3}{2020}{{et~al.}}{{}}}
-\bibcite{cooperative}{{4}{2006}{{Huang et~al\mbox  {.}}}{{}}}
-\bibcite{phast}{{5}{2024}{{Kim and Ros}}{{}}}
-\bibcite{Mose25}{{6}{2025}{{Mose et~al\mbox  {.}}}{{}}}
-\bibcite{mdp-tage}{{7}{2017}{{Perais and Seznec}}{{}}}
-\bibcite{mdp-tage2}{{8}{2018}{{Perais and Seznec}}{{}}}
-\bibcite{storevectors}{{9}{2006}{{Subramaniam and Loh}}{{}}}
-\bibcite{svf}{{10}{2016}{{Sui and Xue}}{{}}}
+\bibcite{cpusizes}{{1}{[n.\,d.]}{{cpu}}{{}}}
+\bibcite{affine}{{2}{[n.\,d.]}{{aff}}{{}}}
+\bibcite{gem5-phast}{{3}{[n.\,d.]}{{gem}}{{}}}
+\bibcite{constable}{{4}{2025}{{Bera et~al\mbox  {.}}}{{}}}
+\bibcite{fdocompilation}{{5}{2010}{{Chen et~al\mbox  {.}}}{{}}}
+\bibcite{roadnottaken}{{6}{2022}{{Chitre et~al\mbox  {.}}}{{}}}
+\bibcite{storesets}{{7}{1998}{{Chrysos and Emer}}{{}}}
+\bibcite{gem5}{{8}{2020}{{et~al.}}{{}}}
+\bibcite{storedistance}{{9}{2006}{{Fang et~al\mbox  {.}}}{{}}}
+\bibcite{cooperative}{{10}{2006}{{Huang et~al\mbox  {.}}}{{}}}
+\bibcite{phast}{{11}{2024}{{Kim and Ros}}{{}}}
+\bibcite{mcpatpaper}{{12}{2009}{{Li et~al\mbox  {.}}}{{}}}
+\bibcite{unveilingpgo}{{13}{2025}{{Liu et~al\mbox  {.}}}{{}}}
+\bibcite{dcpt}{{14}{2011}{{Marius~Grannaes}}{{}}}
+\bibcite{Mose25}{{15}{2025}{{Mose et~al\mbox  {.}}}{{}}}
+\bibcite{arcs}{{16}{2024}{{Panayi et~al\mbox  {.}}}{{}}}
+\bibcite{bolt}{{17}{2018}{{Panchenko et~al\mbox  {.}}}{{}}}
+\bibcite{mdp-tage}{{18}{2017}{{Perais and Seznec}}{{}}}
+\bibcite{mdp-tage2}{{19}{2018}{{Perais and Seznec}}{{}}}
+\bibcite{simpoints}{{20}{2003}{{Perelman et~al\mbox  {.}}}{{}}}
+\bibcite{storevectors}{{21}{2006}{{Subramaniam and Loh}}{{}}}
+\bibcite{svf}{{22}{2016}{{Sui and Xue}}{{}}}
+\bibcite{xiangshan-gem5}{{23}{2026}{{Team}}{{}}}
+\bibcite{openxiangshan}{{24}{2022}{{Xu et~al\mbox  {.}}}{{}}}
+\bibcite{branchnet}{{25}{2020}{{Zangeneh et~al\mbox  {.}}}{{}}}
 \@writefile{toc}{\contentsline {section}{\numberline {8}Conclusion}{10}{section.8}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{References}{10}{section*.13}\protected@file@percent }
-\@writefile{toc}{\contentsline {section}{\numberline {A}Examples {\color  {purple} SK: {The benchmarks are wrong. They are the rate inputs, and omnetpp is 620, not 556.}}}{10}{appendix.A}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {1}{\ignorespaces 1. Memory Independent Loads: 525.x264$\_$r (Video Compression)}}{10}{lstlisting.1}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {2}{\ignorespaces 2. Rarely Dependent Loads: 500.perlbench$\_$r (Perl Interpreter)}}{10}{lstlisting.2}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {3}{\ignorespaces 3. Structurally Independent Loads: 556.omnetpp$\_$r (Discrete Event Simulation)}}{10}{lstlisting.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {section}{References}{10}{section*.14}\protected@file@percent }
 \newlabel{tocindent-1}{0pt}
 \newlabel{tocindent0}{0pt}
-\newlabel{tocindent1}{6.25499pt}
+\newlabel{tocindent1}{4.185pt}
 \newlabel{tocindent2}{10.34999pt}
 \newlabel{tocindent3}{0pt}
 \newlabel{tocindent4}{0pt}
 \newlabel{tocindent5}{0pt}
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {4}{\ignorespaces 4. Fast-to-Resolve: 502.gcc$\_$r (C Compiler)}}{11}{lstlisting.4}\protected@file@percent }
-\@writefile{lol}{\contentsline {lstlisting}{\numberline {5}{\ignorespaces 4. Slow-to-Resolve: 505.mcf$\_$r (Combinatorial Optimization)}}{11}{lstlisting.5}\protected@file@percent }
 \newlabel{TotPages}{{11}{11}{}{page.11}{}}
 \gdef \@abspage@last{11}

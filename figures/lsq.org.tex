@@ -1,0 +1,117 @@
+\begin{tikzpicture}[
+    font=\sffamily,
+    >=Stealth,
+    block/.style={draw, thick, rectangle, align=center, fill=white, minimum height=1cm, inner sep=5pt},
+    store_entry/.style={align=left, font=\small},
+    load_entry/.style={align=left, font=\small},
+    highlight/.style={fill=orange!15}
+]
+
+% ==========================================
+% PIPELINE STAGES
+% ==========================================
+\node[block, minimum width=5cm] (dispatch) at (0, 0) {\textbf{Fetch / Decode}};
+\node[block, minimum width=4cm] (mdp) at (8, 0) {\textbf{Memory Dependence}\\\textbf{Predictor (MDP)}};
+
+\draw[thick, <-] (dispatch.north) -- ++(0, 1) node[above, font=\bfseries] {New Instruction Stream};
+\draw[thick, ->] (dispatch) -- (mdp) node[midway, above, font=\scriptsize] {Instruction PC};
+%\draw[thick, ->] (mdp.165) -- (dispatch.15) node[midway, below, font=\scriptsize] {Predicted Deps};
+
+% ==========================================
+% ROUTING SPLIT
+% ==========================================
+\node[fill=gray!30, inner sep=3pt, circle] (split) at (0, -2.5) {};
+\draw[thick, ->] (dispatch.south) -- (split);
+
+\node[block, fill=blue!10, rounded corners, minimum height=0.6cm] (load_split) at (3, -4.5) {\scriptsize \textbf{Loads}};
+\node[block, fill=blue!10, rounded corners, minimum height=0.6cm] (store_split) at (3, -11.5) {\scriptsize \textbf{Stores}};
+
+\draw[thick, ->] (split) -| (load_split.north);
+\draw[thick, ->] (split) -| (1.5, -2.5) |- (store_split.west);
+
+% ==========================================
+% INSTRUCTION QUEUE (IQ)
+% ==========================================
+\node[block, minimum width=4cm, minimum height=4cm, fill=yellow!10, align=center] (iq) at (-3, -8) {
+    \textbf{Instruction}\\\textbf{Queue (IQ)}\\
+    \\[0.5cm]
+    \scriptsize General Inst\\
+    \scriptsize Non-Memory Ops\\
+    \scriptsize General Inst\\
+    \dots
+};
+
+% FIXED 1: Routed the Non-Mem arrow to directly meet the top of the IQ box
+\draw[thick, ->] (split) -| (iq.north) node[pos=0.75, left, font=\scriptsize] {Non-Mem};
+
+% FIXED 2: Replaced "To Commit Stage" with "\dots"
+\draw[line width=1.5pt, ->] (iq.south) -- ++(0,-1) node[below, font=\bfseries\Large] {\dots};
+
+% ==========================================
+% MDP DEPENDENCE LINES
+% ==========================================
+\node[fill=gray!10, inner sep=3pt, rounded corners, font=\scriptsize, draw, thick] (pred_label) at (5, -2) {Predicted Deps Attached};
+\draw[thick, ->] (mdp.south) |- (pred_label.east);
+\draw[thick, dotted, ->] (pred_label.south) |- (load_split.east);
+\draw[thick, dotted, ->] (pred_label.south) |- (store_split.east);
+
+% ==========================================
+% QUEUES (FIXED 3: Single Column Layouts)
+% ==========================================
+\matrix[matrix of nodes,
+        nodes={draw, thick, rectangle, minimum height=0.8cm, minimum width=4.5cm, anchor=center},
+        column sep=-\pgflinewidth,
+        row sep=-\pgflinewidth] (lq_mat) at (10, -4.5) {
+    |[load_entry, highlight]| L0: $<$addr X$>$ \\
+    |[load_entry]| L1: $<$addr Y$>$ \\
+    |[load_entry]| L2: $<$addr Z$>$ \\
+    |[load_entry]| L3: $<$addr W$>$ \\
+};
+\node[above=0.3cm of lq_mat, font=\bfseries\large] {Load Queue (LQ)};
+
+\matrix[matrix of nodes,
+        nodes={draw, thick, rectangle, minimum height=0.8cm, minimum width=4.5cm, anchor=center},
+        column sep=-\pgflinewidth,
+        row sep=-\pgflinewidth] (sq_mat) at (10, -11.5) {
+    |[store_entry]| S0: $<???>$ $<$addr A$>$ \\
+    |[store_entry]| S1: $<$val$>$ $<$addr B$>$ \\
+    |[store_entry]| S2: $<$val$>$ $<$addr C$>$ \\
+    |[store_entry]| S3: $<???>$ $<$addr X$>$ \\
+    |[store_entry]| S4: $<$val$>$ $<$addr D$>$ \\
+    |[store_entry]| S5: $<$val$>$ $<$addr E$>$ \\
+};
+\node[above=0.3cm of sq_mat, font=\bfseries\large] {Store Queue (SQ)};
+
+% --- Routing into Queues ---
+\draw[thick, ->] (load_split.east) -- (lq_mat.west |- load_split.east);
+\draw[thick, ->] (store_split.east) -- (sq_mat.west |- store_split.east);
+
+% ==========================================
+% STORE-DISTANCE VISUALIZATION & ANNOTATIONS
+% ==========================================
+
+% LQ Highlight label
+\node[left=0.3cm of lq_mat-1-1, font=\scriptsize, text=gray, align=right] (lq_head_lbl) {Oldest};
+\draw[->, gray] (lq_head_lbl.east) -- (lq_mat-1-1.west);
+
+% Search Arrow
+\draw[thick, orange!80!black, ->, rounded corners=5pt]
+    (lq_head_lbl.south) |- (sq_mat-4-1.west);
+    
+% FIXED 4: Moved the Search box down so it no longer occludes the Store Queue title
+\node[fill=white, draw=orange!80!black, thick, font=\small, text=orange!80!black, align=center, rounded corners]
+    at ($(lq_head_lbl.south) + (1.5, -3.5)$) {\textbf{Dependence Search}\\};
+
+% Curly brace for D stores (Spanning from row 6 to row 4)
+\draw [thick, decoration={brace, mirror, amplitude=8pt}, decorate, orange!80!black]
+  (sq_mat-6-1.south east) -- (sq_mat-4-1.north east)
+  node[midway, right=12pt, font=\bfseries\small, align=left] {Store Distance 2 for L0\\(Count Up From Newest)};
+
+% Oldest/Newest Labels
+\node[left=0.3cm of sq_mat-1-1, font=\scriptsize, text=gray, align=right] {Oldest};
+\draw[<-, gray] (sq_mat-1-1.west) -- ++(-0.3, 0);
+
+%\node[right=0.3cm of sq_mat-6-1, font=\scriptsize, text=gray, align=left] {};
+%\draw[<-, gray] (sq_mat-6-1.east) -- ++(0.3, 0);
+
+\end{tikzpicture}

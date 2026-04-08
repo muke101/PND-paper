@@ -6,80 +6,91 @@ Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Reallocated wiz_functions (elt_size=4) to 6000 items from 3000.
 Database file #1: bibtex.bib
-Warning--I didn't find a database entry for "storeset"
-Warning--I didn't find a database entry for "openxiangshan"
-Warning--I didn't find a database entry for "store-distance"
-Warning--I didn't find a database entry for "improving-mem-dep"
-Warning--I didn't find a database entry for "constable"
-Warning--I didn't find a database entry for "xiangshan-paper"
-Warning--I didn't find a database entry for "xiangshan-gem5"
-Warning--I didn't find a database entry for "fdocompilation"
-Warning--I didn't find a database entry for "unveilingpgo"
-Warning--I didn't find a database entry for "bolt"
-Warning--I didn't find a database entry for "roadnottaken"
-Warning--I didn't find a database entry for "dcpt"
-Warning--I didn't find a database entry for "improvingmdp"
-Warning--I didn't find a database entry for "storedistance"
-Warning--I didn't find a database entry for "cpusizes"
 Reallocated singl_function (elt_size=4) to 100 items from 50.
 Warning--no key, author in affine
 Warning--no author, editor, organization, or key in affine
 Warning--to sort, need author or key in affine
+Warning--no key, author in gem5-phast
+Warning--no author, editor, organization, or key in gem5-phast
+Warning--to sort, need author or key in gem5-phast
+Warning--no key, author in cpusizes
+Warning--no author, editor, organization, or key in cpusizes
+Warning--to sort, need author or key in cpusizes
 Reallocated glb_str_ptr (elt_size=4) to 20 items from 10.
 Reallocated global_strs (elt_size=200001) to 20 items from 10.
 Reallocated glb_str_end (elt_size=4) to 20 items from 10.
 Warning--no key, author in affine
 Warning--no key, author in affine
+Warning--no key, author in cpusizes
+Warning--no key, author in cpusizes
+Warning--no key, author in gem5-phast
+Warning--no key, author in gem5-phast
 Reallocated singl_function (elt_size=4) to 100 items from 50.
+Warning--no key, author in cpusizes
+Warning--empty author in cpusizes
+Warning--empty year in cpusizes
 Warning--no key, author in affine
 Warning--empty author in affine
 Warning--empty year in affine
+Warning--no key, author in gem5-phast
+Warning--empty author in gem5-phast
+Warning--empty year in gem5-phast
+Warning--empty address in constable
 Warning--empty address in storesets
+Warning--empty publisher in storedistance
+Warning--empty address in storedistance
 Warning--empty publisher in cooperative
 Warning--empty address in cooperative
+Warning--empty booktitle in dcpt
+Warning--no number and no volume in dcpt
+Warning--page numbers missing in both pages and numpages fields in dcpt
 Warning--empty address in mdp-tage2
 Warning--empty address in storevectors
 Warning--empty publisher in svf
 Warning--empty address in svf
-You've used 10 entries,
+Warning--empty publisher in openxiangshan
+Warning--empty address in openxiangshan
+Warning--empty publisher in branchnet
+Warning--empty address in branchnet
+You've used 25 entries,
             5981 wiz_defined-function locations,
-            1559 strings with 20022 characters,
-and the built_in function-call counts, 11183 in all, are:
-= -- 1272
-> -- 281
+            1662 strings with 24472 characters,
+and the built_in function-call counts, 29630 in all, are:
+= -- 3317
+> -- 1169
 < -- 0
-+ -- 97
-- -- 115
-* -- 718
-:= -- 1036
-add.period$ -- 49
-call.type$ -- 10
-change.case$ -- 62
-chr.to.int$ -- 10
-cite$ -- 29
-duplicate$ -- 1096
-empty$ -- 767
-format.name$ -- 147
-if$ -- 2665
++ -- 408
+- -- 419
+* -- 2281
+:= -- 2951
+add.period$ -- 122
+call.type$ -- 25
+change.case$ -- 221
+chr.to.int$ -- 25
+cite$ -- 78
+duplicate$ -- 2603
+empty$ -- 1809
+format.name$ -- 495
+if$ -- 6961
 int.to.chr$ -- 2
 int.to.str$ -- 1
-missing$ -- 39
-newline$ -- 129
-num.names$ -- 63
-pop$ -- 468
+missing$ -- 86
+newline$ -- 290
+num.names$ -- 156
+pop$ -- 1149
 preamble$ -- 1
-purify$ -- 136
+purify$ -- 403
 quote$ -- 0
-skip$ -- 416
+skip$ -- 1005
 stack$ -- 0
-substring$ -- 846
-swap$ -- 108
+substring$ -- 1920
+swap$ -- 274
 text.length$ -- 0
 text.prefix$ -- 0
 top$ -- 0
-type$ -- 286
-warning$ -- 15
-while$ -- 75
+type$ -- 709
+warning$ -- 41
+while$ -- 134
 width$ -- 0
-write$ -- 244
-(There were 30 warnings)
+write$ -- 575
+(There were 41 warnings)

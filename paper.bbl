@@ -2,7 +2,7 @@
 %%% Do NOT edit. File created by BibTeX with style
 %%% ACM-Reference-Format-Journals [18-Jan-2012].
 
-\begin{thebibliography}{10}
+\begin{thebibliography}{25}
 
 %%% ====================================================================
 %%% NOTE TO THE USER: you can override these defaults by providing
@@ -37,6 +37,18 @@
 \providecommand\natexlab[1]{#1}
 \providecommand\showeprint[2][]{arXiv:#2}
 
+\bibitem[cpu({[n.\,d.]})]%
+        {cpusizes}
+ \bibinfo{year}{[n.\,d.]}\natexlab{}.
+\newblock \bibinfo{title}{Cardyaks Microarchitecture Cheat Sheet}.
+\newblock
+\newblock
+\urldef\tempurl%
+\url{https://docs.google.com/spreadsheets/d/18ln8SKIGRK5_6NymgdB9oLbTJCFwx0iFI-vUs6WFyuE/}
+\showURL{%
+\tempurl}
+
+
 \bibitem[aff({[n.\,d.]})]%
         {affine}
  \bibinfo{year}{[n.\,d.]}\natexlab{}.
@@ -44,6 +56,73 @@
 \newblock
   \bibinfo{howpublished}{\url{https://mlir.llvm.org/docs/Dialects/Affine/}}.
 \newblock
+
+
+\bibitem[gem({[n.\,d.]})]%
+        {gem5-phast}
+ \bibinfo{year}{[n.\,d.]}\natexlab{}.
+\newblock \bibinfo{title}{{Repo for the PHAST Gem5 Fork}}.
+\newblock \bibinfo{howpublished}{\url{https://gitlab.com/muke101/gem5-phast}}.
+\newblock
+
+
+\bibitem[Bera et~al\mbox{.}(2025)]%
+        {constable}
+\bibfield{author}{\bibinfo{person}{Rahul Bera}, \bibinfo{person}{Adithya
+  Ranganathan}, \bibinfo{person}{Joydeep Rakshit}, \bibinfo{person}{Sujit
+  Mahto}, \bibinfo{person}{Anant~V. Nori}, \bibinfo{person}{Jayesh Gaur},
+  \bibinfo{person}{Ataberk Olgun}, \bibinfo{person}{Konstantinos
+  Kanellopoulos}, \bibinfo{person}{Mohammad Sadrosadati},
+  \bibinfo{person}{Sreenivas Subramoney}, {and} \bibinfo{person}{Onur Mutlu}.}
+  \bibinfo{year}{2025}\natexlab{}.
+\newblock \showarticletitle{{Constable: Improving Performance and Power
+  Efficiency by Safely Eliminating Load Instruction Execution}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 51st Annual International
+  Symposium on Computer Architecture}} (Buenos Aires, Argentina)
+  \emph{(\bibinfo{series}{ISCA '24})}. \bibinfo{publisher}{IEEE Press},
+  \bibinfo{pages}{88–102}.
+\newblock
+\showISBNx{9798350326581}
+\urldef\tempurl%
+\url{https://doi.org/10.1109/ISCA59077.2024.00017}
+\showDOI{\tempurl}
+
+
+\bibitem[Chen et~al\mbox{.}(2010)]%
+        {fdocompilation}
+\bibfield{author}{\bibinfo{person}{Dehao Chen}, \bibinfo{person}{Neil
+  Vachharajani}, \bibinfo{person}{Robert Hundt}, \bibinfo{person}{Shih-wei
+  Liao}, \bibinfo{person}{Vinodha Ramasamy}, \bibinfo{person}{Paul Yuan},
+  \bibinfo{person}{Wenguang Chen}, {and} \bibinfo{person}{Weimin Zheng}.}
+  \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{Taming hardware event samples for FDO compilation}.
+  In \bibinfo{booktitle}{\emph{Proceedings of the 8th Annual IEEE/ACM
+  International Symposium on Code Generation and Optimization}} (Toronto,
+  Ontario, Canada) \emph{(\bibinfo{series}{CGO '10})}.
+  \bibinfo{publisher}{Association for Computing Machinery},
+  \bibinfo{address}{New York, NY, USA}, \bibinfo{pages}{42–52}.
+\newblock
+\showISBNx{9781605586359}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/1772954.1772963}
+\showDOI{\tempurl}
+
+
+\bibitem[Chitre et~al\mbox{.}(2022)]%
+        {roadnottaken}
+\bibfield{author}{\bibinfo{person}{Khushboo Chitre}, \bibinfo{person}{Piyus
+  Kedia}, {and} \bibinfo{person}{Rahul Purandare}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{The Road Not Taken: Exploring Alias Analysis Based
+  Optimizations Missed by the Compiler}}.
+\newblock \bibinfo{journal}{\emph{Proc. ACM Program. Lang.}}
+  \bibinfo{volume}{6}, \bibinfo{number}{OOPSLA2}, Article
+  \bibinfo{articleno}{153} (\bibinfo{date}{Oct.} \bibinfo{year}{2022}),
+  \bibinfo{numpages}{25}~pages.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1145/3563316}
+\showDOI{\tempurl}
 
 
 \bibitem[Chrysos and Emer(1998)]%
@@ -70,6 +149,21 @@
 \showeprint[arxiv]{2007.03152}~[cs.AR]
 
 
+\bibitem[Fang et~al\mbox{.}(2006)]%
+        {storedistance}
+\bibfield{author}{\bibinfo{person}{Changpeng Fang}, \bibinfo{person}{Steve
+  Carr}, \bibinfo{person}{Soner \"{O}nder}, {and} \bibinfo{person}{Zhenlin
+  Wang}.} \bibinfo{year}{2006}\natexlab{}.
+\newblock \showarticletitle{{Feedback-Directed Memory Disambiguation through
+  Store Distance Analysis}}. In \bibinfo{booktitle}{\emph{Proc.~ICS '06}}
+  (Cairns, Queensland, Australia). \bibinfo{numpages}{10}~pages.
+\newblock
+\showISBNx{1595932828}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/1183401.1183440}
+\showDOI{\tempurl}
+
+
 \bibitem[Huang et~al\mbox{.}(2006)]%
         {cooperative}
 \bibfield{author}{\bibinfo{person}{R. Huang}, \bibinfo{person}{A. Garg}, {and}
@@ -94,6 +188,57 @@
 \newblock
 
 
+\bibitem[Li et~al\mbox{.}(2009)]%
+        {mcpatpaper}
+\bibfield{author}{\bibinfo{person}{Sheng Li}, \bibinfo{person}{Jung~Ho Ahn},
+  \bibinfo{person}{Richard~D. Strong}, \bibinfo{person}{Jay~B. Brockman},
+  \bibinfo{person}{Dean~M. Tullsen}, {and} \bibinfo{person}{Norman~P. Jouppi}.}
+  \bibinfo{year}{2009}\natexlab{}.
+\newblock \showarticletitle{{McPAT: an integrated power, area, and timing
+  modeling framework for multicore and manycore architectures}}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 42nd Annual IEEE/ACM
+  International Symposium on Microarchitecture}} (New York, New York)
+  \emph{(\bibinfo{series}{MICRO 42})}. \bibinfo{publisher}{Association for
+  Computing Machinery}, \bibinfo{address}{New York, NY, USA},
+  \bibinfo{pages}{469–480}.
+\newblock
+\showISBNx{9781605587981}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/1669112.1669172}
+\showDOI{\tempurl}
+
+
+\bibitem[Liu et~al\mbox{.}(2025)]%
+        {unveilingpgo}
+\bibfield{author}{\bibinfo{person}{Bingxin Liu}, \bibinfo{person}{Yinghui
+  Huang}, \bibinfo{person}{Jianhua Gao}, \bibinfo{person}{Jianjun Shi},
+  \bibinfo{person}{Yongpeng Liu}, \bibinfo{person}{Yipin Sun}, {and}
+  \bibinfo{person}{Weixing Ji}.} \bibinfo{year}{2025}\natexlab{}.
+\newblock \bibinfo{title}{From Profiling to Optimization: Unveiling the Profile
+  Guided Optimization}.
+\newblock
+\newblock
+\showeprint[arxiv]{2507.16649}~[cs.PF]
+\urldef\tempurl%
+\url{https://arxiv.org/abs/2507.16649}
+\showURL{%
+\tempurl}
+
+
+\bibitem[Marius~Grannaes(2011)]%
+        {dcpt}
+\bibfield{author}{\bibinfo{person}{Lasse~Natvig Marius~Grannaes,
+  Magnus~Jahre}.} \bibinfo{year}{2011}\natexlab{}.
+\newblock \showarticletitle{Storage Efficient Hardware Prefetching using
+  Delta-Correlating Predicting Tables}.
+\newblock \bibinfo{journal}{\emph{Journal of Instruction-Level Parallelism}}.
+\newblock
+\urldef\tempurl%
+\url{https://jilp.org/dpc/online/papers/02grannaes.pdf}
+\showURL{%
+\tempurl}
+
+
 \bibitem[Mose et~al\mbox{.}(2025)]%
         {Mose25}
 \bibfield{author}{\bibinfo{person}{Karl~H. Mose}, \bibinfo{person}{Sebastian~S.
@@ -105,6 +250,39 @@
   Architecture (HPCA)}}. \bibinfo{publisher}{IEEE Computer Society},
   \bibinfo{address}{Las Vegas, NV, USA}, \bibinfo{pages}{59--71}.
 \newblock
+
+
+\bibitem[Panayi et~al\mbox{.}(2024)]%
+        {arcs}
+\bibfield{author}{\bibinfo{person}{Luke Panayi}, \bibinfo{person}{Rohan
+  Gandhi}, \bibinfo{person}{Jim Whittaker}, \bibinfo{person}{Vassilios
+  Chouliaras}, \bibinfo{person}{Martin Berger}, {and} \bibinfo{person}{Paul
+  Kelly}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{{Improving Memory Dependence Prediction with Static
+  Analysis}}. In \bibinfo{booktitle}{\emph{Architecture of Computing Systems}},
+  \bibfield{editor}{\bibinfo{person}{Dietmar Fey}, \bibinfo{person}{Benno
+  Stabernack}, \bibinfo{person}{Stefan Lankes}, \bibinfo{person}{Mathias
+  Pacher}, {and} \bibinfo{person}{Thilo Pionteck}} (Eds.).
+  \bibinfo{publisher}{Springer Nature Switzerland}, \bibinfo{address}{Cham},
+  \bibinfo{pages}{301--315}.
+\newblock
+\showISBNx{978-3-031-66146-4}
+
+
+\bibitem[Panchenko et~al\mbox{.}(2018)]%
+        {bolt}
+\bibfield{author}{\bibinfo{person}{Maksim Panchenko}, \bibinfo{person}{Rafael
+  Auler}, \bibinfo{person}{Bill Nell}, {and} \bibinfo{person}{Guilherme
+  Ottoni}.} \bibinfo{year}{2018}\natexlab{}.
+\newblock \bibinfo{title}{BOLT: A Practical Binary Optimizer for Data Centers
+  and Beyond}.
+\newblock
+\newblock
+\showeprint[arxiv]{1807.06735}~[cs.PL]
+\urldef\tempurl%
+\url{https://arxiv.org/abs/1807.06735}
+\showURL{%
+\tempurl}
 
 
 \bibitem[Perais and Seznec(2017)]%
@@ -135,6 +313,24 @@
 \showDOI{\tempurl}
 
 
+\bibitem[Perelman et~al\mbox{.}(2003)]%
+        {simpoints}
+\bibfield{author}{\bibinfo{person}{Erez Perelman}, \bibinfo{person}{Greg
+  Hamerly}, \bibinfo{person}{Michael Van~Biesbrouck}, \bibinfo{person}{Timothy
+  Sherwood}, {and} \bibinfo{person}{Brad Calder}.}
+  \bibinfo{year}{2003}\natexlab{}.
+\newblock \showarticletitle{{Using SimPoint for Accurate and Efficient
+  Simulation}}.
+\newblock \bibinfo{journal}{\emph{SIGMETRICS Perform. Eval. Rev.}}
+  \bibinfo{volume}{31}, \bibinfo{number}{1} (\bibinfo{date}{Jun}
+  \bibinfo{year}{2003}), \bibinfo{pages}{318–319}.
+\newblock
+\showISSN{0163-5999}
+\urldef\tempurl%
+\url{https://doi.org/10.1145/885651.781076}
+\showDOI{\tempurl}
+
+
 \bibitem[Subramaniam and Loh(2006)]%
         {storevectors}
 \bibfield{author}{\bibinfo{person}{Samantika Subramaniam} {and}
@@ -157,6 +353,61 @@
   LLVM}}. In \bibinfo{booktitle}{\emph{Proceedings of the 25th International
   Conference on Compiler Construction}}. ACM, \bibinfo{pages}{265--266}.
 \newblock
+
+
+\bibitem[Team(2026)]%
+        {xiangshan-gem5}
+\bibfield{author}{\bibinfo{person}{XiangShan Team}.}
+  \bibinfo{year}{2026}\natexlab{}.
+\newblock \bibinfo{title}{{XiangShan GEM5 Github Repo}}.
+\newblock \bibinfo{howpublished}{\url{https://github.com/OpenXiangShan/GEM5}}.
+\newblock
+
+
+\bibitem[Xu et~al\mbox{.}(2022)]%
+        {openxiangshan}
+\bibfield{author}{\bibinfo{person}{Yinan Xu}, \bibinfo{person}{Zihao Yu},
+  \bibinfo{person}{Dan Tang}, \bibinfo{person}{Guokai Chen},
+  \bibinfo{person}{Lu Chen}, \bibinfo{person}{Lingrui Gou},
+  \bibinfo{person}{Yue Jin}, \bibinfo{person}{Qianruo Li}, \bibinfo{person}{Xin
+  Li}, \bibinfo{person}{Zuojun Li}, \bibinfo{person}{Jiawei Lin},
+  \bibinfo{person}{Tong Liu}, \bibinfo{person}{Zhigang Liu},
+  \bibinfo{person}{Jiazhan Tan}, \bibinfo{person}{Huaqiang Wang},
+  \bibinfo{person}{Huizhe Wang}, \bibinfo{person}{Kaifan Wang},
+  \bibinfo{person}{Chuanqi Zhang}, \bibinfo{person}{Fawang Zhang},
+  \bibinfo{person}{Linjuan Zhang}, \bibinfo{person}{Zifei Zhang},
+  \bibinfo{person}{Yangyang Zhao}, \bibinfo{person}{Yaoyang Zhou},
+  \bibinfo{person}{Yike Zhou}, \bibinfo{person}{Jiangrui Zou},
+  \bibinfo{person}{Ye Cai}, \bibinfo{person}{Dandan Huan},
+  \bibinfo{person}{Zusong Li}, \bibinfo{person}{Jiye Zhao},
+  \bibinfo{person}{Zihao Chen}, \bibinfo{person}{Wei He},
+  \bibinfo{person}{Qiyuan Quan}, \bibinfo{person}{Xingwu Liu},
+  \bibinfo{person}{Sa Wang}, \bibinfo{person}{Kan Shi},
+  \bibinfo{person}{Ninghui Sun}, {and} \bibinfo{person}{Yungang Bao}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{{Towards Developing High Performance RISC-V
+  Processors Using Agile Methodology}}. In \bibinfo{booktitle}{\emph{2022 55th
+  IEEE/ACM International Symposium on Microarchitecture (MICRO)}}.
+  \bibinfo{pages}{1178--1199}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1109/MICRO56248.2022.00080}
+\showDOI{\tempurl}
+
+
+\bibitem[Zangeneh et~al\mbox{.}(2020)]%
+        {branchnet}
+\bibfield{author}{\bibinfo{person}{Siavash Zangeneh}, \bibinfo{person}{Stephen
+  Pruett}, \bibinfo{person}{Sangkug Lym}, {and} \bibinfo{person}{Yale~N.
+  Patt}.} \bibinfo{year}{2020}\natexlab{}.
+\newblock \showarticletitle{BranchNet: A Convolutional Neural Network to
+  Predict Hard-To-Predict Branches}. In \bibinfo{booktitle}{\emph{2020 53rd
+  Annual IEEE/ACM International Symposium on Microarchitecture (MICRO)}}.
+  \bibinfo{pages}{118--130}.
+\newblock
+\urldef\tempurl%
+\url{https://doi.org/10.1109/MICRO50266.2020.00022}
+\showDOI{\tempurl}
 
 
 \end{thebibliography}

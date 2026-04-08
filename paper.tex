@@ -83,6 +83,9 @@
 \definecolor{m4}{HTML}{332288}
 \usepackage[dvipsnames]{xcolor}
 \usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric, positioning, arrows.meta, calc, decorations.pathreplacing, matrix}
 %% Rights management information.  This information is sent to you
 %% when you complete the rights form.  These commands have SAMPLE
 %% values in them; it is your responsibility as an author to replace
@@ -228,26 +231,18 @@ The conventional way to address this problem is with greater predictor size or c
 
 \section{Introduction}
 
--todo:
-comments (overleaf, paul (and abstract), jacky)\\
-power\\
-diagram\\
-citations
-captions
-consist referring to spec
-
-Memory dependence prediction (MDP) is a speculative technique used in out-of-order processors to increase available instruction-level parallelism (ILP) by predicting the stores on which a given load instruction will depend, as well as identifying loads which are memory independent. Smaller cores utilising smaller predictors can often struggle with a large rate of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behaviour. The Store Sets predictor \cite{storesets} exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the state of the art to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on core design, which is often not viable in smaller cores. While simply growing a Store Sets-like predictor would offset hash collisions, the potential benefits of larger memory dependence predictors is bounded by the total available ILP, often making this an inefficient investment in cores where the instruction window is short. As such, memory dependence predictors in area-constrained cores typically remain small and inaccurate.
+Memory dependence prediction (MDP) is a speculative technique used in out-of-order processors to increase available instruction-level parallelism (ILP) by predicting the stores on which a given load instruction will depend, as well as identifying loads which are memory independent. Smaller cores utilising smaller predictors can often struggle with a large rate of false dependencies, which unnecessarily stalls loads on non-dependent stores. This is due to hash collisions in small predictor tables, or simple predictor algorithms that cannot capture varying dependency behavior. The Store Sets predictor \cite{storesets} exhibits both of these issues, and variations of the algorithm are found in real processors today \cite{openxiangshan}. Whereas modern predictors like PHAST \cite{phast} have pushed the state of the art to address these issues via techniques like associative tagging and context based predictions, they place higher area, energy and complexity demands on core design, which is often not viable in smaller cores. While simply growing a Store Sets-like predictor would offset hash collisions, the potential benefits of larger memory dependence predictors is bounded by the total available ILP, often making this an inefficient investment in cores where the instruction window is short. As such, memory dependence predictors in area-constrained cores typically remain small and inaccurate.
 
 \begin{figure}[!t]
     \centering
-    \includegraphics[width=\columnwidth,height=0.3\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_small.pdf}
-    \caption{Base and improved IPC for increasing XS Store Set \cite{xiangshan-gem5} sizes on a small core (ROB=128). Past 128 entries, performance gains quickly diminish. With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}
+    \includegraphics[width=\columnwidth,height=\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_small.pdf}
+    \caption{Base and improved IPC for increasing XS Store Set \cite{xiangshan-gem5} sizes on a small core (ROB=128). With PG-MDP, 64 entries deliver within 0.5\% of available IPC from 1024 entries, and 128 entries deliver almost all available IPC. PG-MDP plots past 256 entries are omitted as performance is near-identical.}
     \label{fig:ssitsweep}
 \end{figure}
 
 Nevertheless, the importance of such area-constrained cores has grown over time. Modern systems increasingly deploy heterogeneous processors containing both performance and efficiency-oriented core designs, combining larger high-performance cores with small energy-efficient (but still out-of-order) cores, as seen in ARM's big.LITTLE systems and both Apple’s \& Intel's performance and efficiency cores. These efficiency cores share die area with high-performance cores under strict budgets for both area and power. Crucially, this pattern is no longer confined to mobile devices, and this heterogeneous design can now be found across mobile, desktop, and server designs. Even as processors in high-end mobile devices scale to rival those found in laptops, they are often paired with efficiency cores to maximize battery life. Area-constrained cores are further found as standalone cores in edge systems, or efficiency tiles in chiplet architectures. In all these cases, out-of-order execution components are scaled to fit the given area envelope rather than to maximize performance. As these area-constrained cores are increasingly tasked with demanding general-purpose computation while striving to consume as little energy as possible, increasing ILP without  incurring additional area, power or complexity costs becomes more pressing.
 
-In this paper we argue that the problem of false memory dependencies is not necessarily a question of predictor size, but rather it is the \textbf{predictor working set} that is most important, and that for an appropriate working set even a very small predictor is able to deliver competitive performance with a very large predictor. We define the predictor working set as the set of all instructions that actively index into the predictor during a given execution window. For Store Sets, this includes all issued loads and stores, whether or not they are actually memory dependent. Prior work has demonstrated that a considerable fraction of load instructions in general-purpose workloads rarely or never exhibit in-flight dependencies \cite{storedistance,arcs,constable}. Hence, these loads represent ideal candidates to be removed from the MPD working set.
+In this paper we argue that the problem of false memory dependencies is not necessarily a question of predictor size, but rather it is the \textbf{predictor working set} that is most important, and that for an appropriate working set even a very small predictor is able to deliver competitive performance with a very large predictor. We define the predictor working set as the set of all instructions that actively index into the predictor during a given execution window. For Store Sets, this includes all issued loads and stores, whether or not they are actually memory dependent. Prior work has demonstrated that a considerable fraction of load instructions in general-purpose workloads rarely or never exhibit in-flight dependencies \cite{storedistance,arcs,constable}. Hence, these loads represent ideal candidates to be removed from the MDP working set.
 
 We exploit this with \textbf{profile-guided memory dependence prediction (PG-MDP)}, a software co-design at \textbf{no area cost} and no additional instruction bandwidth which identifies frequently memory-independent loads and labels them by emitting an alternate opcode, causing them to bypass MDP queries entirely and always schedule as early as possible. In the event that a labelled load incorrectly passes a store to the same address, a rollback is triggered as usual, but no new MDP entry is created. PG-MDP reduces average runtime MDP queries by 79\% and false dependencies by 77\% across SPEC2017 CPU intspeed. Crucially, by reducing the working set to only genuinely memory dependent loads, very small Store Set-like predictors are able to match the performance of much larger ones: on a small simulated core, PG-MDP improves geomean IPC of a 64 entry XiangShan Store Sets predictor \cite{xiangshan-gem5} by 1.47\%, falling within 0.5\% IPC of a 1024 entry predictor, as shown in Figure \ref{fig:ssitsweep}.
 
@@ -255,7 +250,7 @@ We exploit this with \textbf{profile-guided memory dependence prediction (PG-MDP
 This paper makes the following contributions:
 \begin{itemize}
         \item[$\bullet$] \textbf{Reframes MDP Aliasing:} We show that for Store Sets-Like predictors, the dominant source of false dependencies does not stem from insufficient predictor capacity per se, but rather an unnecessarily large working set that captures both memory dependent and independent loads. We demonstrate that framing MDP aliasing as a capacity problem is misleading, and that shrinking the working set is as effective as growing the predictor.
-        \item[$\bullet$] \textbf{Introduces PG-MDP:} By leveraging profile-guided memory dependence prediction, we reduce dynamic MDP queries by 79\% on average, across Spec2017 CPU intspeed, and false dependencies by 77\%.
+        \item[$\bullet$] \textbf{Introduces PG-MDP:} By leveraging profile-guided memory dependence prediction, we reduce dynamic MDP queries by 79\% on average, across SPEC2017 CPU intspeed, and false dependencies by 77\%.
         \item[$\bullet$] \textbf{Closes Store Sets Table Size Gap For Free:} By shrinking the MDP working set to only memory dependent loads, PG-MDP allows a 64-entry XiangShan Store Set \cite{xiangshan-gem5} predictor to match the performance of 1024 entries within half a percent, achieving a geomean 1.47\% (up to 5.6\%) IPC gain on a small simulated core.
 \end{itemize}
 
@@ -267,9 +262,15 @@ This section outlines the fundamental concepts in scheduling memory operations i
 \label{sec:lsq}
 A key structure in out-of-order execution is the load-store queue (LSQ), used to hold in-flight memory operations and perform memory disambiguation. When load instructions dispatch, they are inserted into the load queue (LQ), and query the memory dependence predictor (MDP) for a predicted store(s) to wait on before execution. Once the source operands are ready and all predicted dependent stores have executed, loads search backwards through the store queue (SQ) for store-forwarding opportunities. If no matching addresses are found, loads obtain their data from the cache.
 
-When a load searches the SQ, not all earlier stores may have resolved their addresses. As the majority of the time a store's address will not match with the load's, it is often profitable to speculatively ignore these stores and issue the load as soon as possible. When the unresolved store eventually receives it's address, it searches forward through the LQ to find loads with matching addresses which have already executed. If an overlap is found, the load has read stale data from the cache and a memory order violation has occurred. The processor must flush all in-flight instructions from the load onwards and re-fetch.
+\begin{figure}[t]
+    \scalebox{0.6}{\input{figures/lsq.tex}}
+    \caption{Diagram of components used to schedule memory operations in out-of-order cores. Memory operations are inserted into the IQ according to register dependencies and any predicted memory dependencies, and inserted into the LSQ by program order. When loads execute they search the SQ for forwarding opportunities. When stores execute they search the LQ for memory order violations.}
+    \label{fig:lsq}
+\end{figure}
 
-The goal of the MDP is to minimise violation events while maximising the available ILP, allowing memory independent loads to issue as soon as possible and dependent loads to wait only for the necessary stores. When a load is incorrectly stalled on a store that does not resolve to the same address this is called a false dependency. Simple MDP algorithms typically prioritise reducing the rate of violations over the rate of false dependencies.
+When a load searches the SQ, not all earlier stores may have resolved their addresses. As the majority of the time a store's address will not match with the load's, it is often profitable to speculatively ignore these stores and issue the load as soon as possible. When the unresolved store eventually receives its address, it searches forward through the LQ to find loads with matching addresses which have already executed. If an overlap is found, the load has read stale data from the cache and a memory order violation has occurred. The processor must flush all in-flight instructions from the load onwards and re-fetch.
+
+The goal of the MDP is to minimize violation events while maximizing available ILP, allowing memory independent loads to issue as soon as possible and dependent loads to wait only for the necessary stores. When a load is incorrectly stalled on a store that does not resolve to the same address this is called a false dependency. Simple MDP algorithms typically prioritise reducing the rate of violations over the rate of false dependencies.
 
 \subsection{Store Sets}
 A seminal paper in memory dependence prediction is 'Memory Dependence Prediction using Store Sets' \cite{storesets}. This is the MDP algorithm implemented in the open source Gem5 simulator \cite{gem5}. Store Sets works by using Store Set IDs (SSID) to track dependent load-store pairs, assigning each instruction the same ID value in the PC-indexed Store Set ID Table (SSIT). The SSIDs are then used to index the Last-Fetched Store Table (LFST), which holds the sequence number of the most recently issued store with an SSID mapping to that LFST entry. Newly issued loads then access the LFST via their SSID to find the store they're predicted to be dependent on. If a load PC does not map to a valid SSID entry, it is predicted to be memory independent. To forget old dependencies and reduce table pressure, the SSIT and LFST are cyclically cleared after a certain number of issued memory operations.
@@ -277,9 +278,9 @@ A seminal paper in memory dependence prediction is 'Memory Dependence Prediction
 Store Sets is extremely area efficient, delivering a large portion of available performance with a tiny hardware budget. Its small size and simplicity make it well suited to area-constrained processors. However, especially at smaller sizes, Store Sets struggles with false dependencies due hash collisions. When a memory independent load hashes to an existing SSID entry, it is incorrectly made dependent on the corresponding store for that entry. The clear period can be made shorter to offset this, but this comes at the trade-off of a higher rate of memory order violations as the predictor must re-learn true dependencies more often. Furthermore, many loads exhibit non-consistent memory dependencies. A load in a loop may only be dependent on a store every other iteration, and as Store Sets has no way to disambiguate these cases it conservatively predicts the load as dependent in every iteration.
 
 \subsection{XiangShan Store Sets}
-XiangShan is an open-source high-performance RISCV processor RTL implementation \cite{xiangshan-paper,openxiangshan}. XiangShan represents the cutting edge in open-source superscalar processor design, and comes with a Gem5 fork modified to closer model the RTL implementation \cite{xiangshan-gem5}. This Gem5 fork implements a variation of the Store Sets predictor that offers a closer representation to implementations found in real processors. From here on this is referred to as XS Store Sets.
+XiangShan is an open-source high-performance RISCV processor RTL implementation \cite{openxiangshan}. XiangShan represents the cutting edge in open-source superscalar processor design, and comes with a Gem5 fork modified to closer model the RTL implementation \cite{xiangshan-gem5}. This Gem5 fork implements a variation of the Store Sets predictor that offers a closer representation to implementations found in real processors. From here on this is referred to as XS Store Sets.
 
-The main optimisation over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple dependent stores at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. There are further small optimisations to allocation policy which we omit here.
+The main optimization over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple dependent stores at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. There are further small optimizations to allocation policy which we omit here.
 
 \subsection{PHAST}
 PHAST is a newer predictor which achieves much greater accuracy than Store Sets and other previously proposed MDP algorithms \cite{phast}. PHAST uses a TAGE-like structure to record a geometric series of branch history lengths between dependent load-store pairs. On dispatch, load instructions search all history length tables in parallel and selects the predicted dependency on the longest path (or predicts no dependency if no tables hit). This scheme addresses the previous problems in Store Sets by using multi-way tagged associative entries to reduce hash collisions, and predicting dependencies based on branch context to capture more elaborate dependency patterns. At a storage budget of 14.5KB, PHAST is shown to achieve within 1.5\% accuracy of an ideal predictor.
@@ -300,7 +301,7 @@ The profile-derived store distance for each load is found by recording every per
 
 Loads are then filtered by whether their profiled store distance is within a selected threshold. The premise PG-MDP is that loads with an either infinite or sufficiently long store distances are good candidates to be labelled. The optimal store distance threshold for a specific target processor is found via binary search, choosing the threshold with the best average performance over train inputs. By using a representative selection of workloads to perform the search with, a single optimal store distance threshold can be found for the target processor rather than individual thresholds for each workload, meaning the search only has to be performed once.
 
-The heuristic of filtering for long store distances captures four different types of behaviours:
+The heuristic of filtering for long store distances captures four different types of behaviors:
 \begin{itemize}
         \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e. have infinite store distance).
         \item[$\bullet$] \textbf{(2) Rarely dependent loads:} Loads which observe short dependent store distances in <5\% of executions.
@@ -308,13 +309,13 @@ The heuristic of filtering for long store distances captures four different type
         \item[$\bullet$] \textbf{(4) Fast-to-Resolve Dependencies:} Loads which have in-flight yet resolved dependent stores, allowing forwarding. 
 \end{itemize}
 
-Loads with behaviour type (1) are always labelled regardless of the threshold value. Whether a load exhibits behaviours (2) to (4) depends on the target processor. For instance, a processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will be labelled. The proportion of loads that exhibit type (4) behaviour is even further target specific, but is still correlated with a longer store distance as this puts more time between dispatching the store and issuing the load, making it more likely the store's address will be resolved when needed.
+Loads with behavior type (1) are always labelled regardless of the threshold value. Whether a load exhibits behaviors (2) to (4) depends on the target processor. For instance, a processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will be labelled. The proportion of loads that exhibit type (4) behavior is even further target specific, but is still correlated with a longer store distance as this puts more time between dispatching the store and issuing the load, making it more likely the store's address will be resolved when needed.
 
 
 \subsection{Why Profiles?}
 \label{sec:profiles}
 
-While profile-guided optimisation (PGO) has long offered performance benefits, the technique has historically struggled to achieve adoption due to complicating the compilation workflow \cite{fdocompilation}. PGO also introduces concerns about the accuracy of generated profiles, and the potential to harm performance should real input differ too much from the train input.
+While profile-guided optimization (PGO) has long offered performance benefits, the technique has historically struggled to achieve adoption due to complicating the compilation workflow \cite{fdocompilation}. PGO also introduces concerns about the accuracy of generated profiles, and the potential to harm performance should real input differ too much from the train input.
 
 Addressing adoption, prior work shows that use of PGO has risen significantly in recent years \cite{unveilingpgo}. This can be seen in enterprise projects such as Firefox and Chrome web browsers, the Python interpreter and the GCC compiler. Performance-critical server workloads have also seen renewed attention to the benefits that PGO can provide \cite{bolt}. This enforces the use of profiles as a reasonable approach to designing new software-hardware co-designs.
 
@@ -326,16 +327,16 @@ To test how PG-MDP generalizes, we compare which loads are labelled by profiles 
     \label{fig:pgo}
 \end{figure}
 
-Lastly, Profiles are able to provide further benefits than static analysis. Of the four types of load behaviour referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behaviour in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behaviour, which pairs well with speculative execution where mistakes will not invalidate program semantics.
+Lastly, Profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyzes do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
 \section{Evaluation}
 
-This section presents the experimental results of applying PG-MDP to SPEC2017 CPU intspeed workloads. We first analyze in further detail how PG-MDP closes the performance gap between a small and large XS Store Set predictor, and demonstrate the extent to which the predictor working set can be reduced. This is followed by a breakdown of per-workload performance gains in the small core configuration, a power saving for the PHAST predictor on a large core, and lastly an estimation of the \textbf{impact of limited MDP read ports} on dispatch bandwidth for high-load density workloads.
+This section presents the experimental results of applying PG-MDP to SPEC2017 CPU intspeed workloads. We first analyze in further detail how PG-MDP closes the performance gap between a small and large XS Store Set predictor, and demonstrate the extent to which the predictor working set can be reduced. This is followed by a breakdown of per-workload performance gains in the small core configuration, a power saving for the PHAST predictor on a large core, and lastly an estimation of the impact of limited MDP read ports on dispatch bandwidth for high-load density workloads.
 
 \subsection{Experimental Design}
 \label{sec:models}
 
-We use an optimized Gem5 fork \cite{gem5-phast} that includes implementations of the XS Store Sets and PHAST predictors to simulate varying core size configurations. The full configuration for each model is detailed in Table \ref{table:cpu-models}. We evaluate each workload using up to 10 simpoints \cite{simpoint}, with an interval of 100M instructions and an additional warm-up of 10M instruction. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPAT \cite{mcpatpaper,mcpatrepo}, which models XS Store Sets or PHAST as applicable.
+We use an optimized Gem5 fork \cite{gem5-phast} that includes implementations of the XS Store Sets and PHAST predictors to simulate varying core size configurations. The full configuration for each model is detailed in Table \ref{table:cpu-models}. We evaluate each workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instruction. Gem5 is modified to bypass MDP lookups for labelled loads and to avoid creating new entries in the case of a memory order violation. Violating labelled loads still roll back as normal and do not alter program semantics. The Gem5 results are subsequently processed by an extended McPAT \cite{mcpatpaper}, which models XS Store Sets or PHAST as applicable.
 
 The small core configuration represents our intended use case of an area-constrained out-of-order core. The medium core configuration represents a middle ground where a larger MDP can be afforded, but the core is still too small for a more sophisticated predictor like PHAST to be viable. The large core implements PHAST instead of XS Store Sets, to analyze how PG-MDP might impact the state of the art.
 
@@ -377,13 +378,13 @@ The small core configuration represents our intended use case of an area-constra
 
 \end{table}
 
-\subsection{Closing Predictor Size Gap}
+\subsection{Closing The Predictor Size Gap}
 \label{sec:ipcgap}
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_full.pdf}
-\caption{SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}
+\caption{Impact of PG-MDP on IPC across SPEC2017 CPU intspeed for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}
 \label{fig:fullssitsweep}
 \end{figure*}
 
@@ -394,7 +395,7 @@ In the small core size configuration, 64 table entries with PG-MDP achieves an I
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/lookups_small.pdf}
-\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
+\caption{Percent change in MDP queries per kilo-instruction.}
 \label{fig:lookups}
 \end{figure*}
 
@@ -404,7 +405,7 @@ In the small core size configuration, 64 table entries with PG-MDP achieves an I
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/ipc_small.pdf}
-\caption{TODO: overview the important trend in each figure caption. IPC \% changes for each CPU model on each intspeed workload.}
+\caption{IPC \% improvement with PG-MDP for each workload on the small core configuration. A handful of workloads benefit significantly, whereas others are largely unchanged.}
 \label{fig:ipc}
 \end{figure*}
 
@@ -432,11 +433,11 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/falsedeps_small.pdf}
-\caption{Percent change of false dependencies.}
+\caption{Percent change of false dependencies per kilo-instruction. PG-MDP benefits workloads most that by default have a higher than average rate of false dependencies, but is still able to cut false dependencies across all workloads.}
 \label{fig:falsedeps}
 \end{figure*}
 
-In select cases PND labels can lead to a small performance regression due to false positives between the train and reference inputs, as discussed in Section \ref{sec:profiles}. False positive labels are loads which behave memory independent on train inputs but exhibit dependencies on ref inputs, causing an increase in memory order violations as seen in Figure \ref{fig:violations}. Although memory order violations are increased in all workloads, their impact is offset by the reduction in false dependencies. It is worth noting that violations are already rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can often still remain in negligible ranges compared to the rate of false dependencies.
+In select cases PG-MDP can lead to a small performance regression due to false positives between the train and reference inputs, as discussed in Section \ref{sec:profiles}. False positive labels are loads which behave memory independent on train inputs but exhibit dependencies on ref inputs, causing an increase in memory order violations as seen in Figure \ref{fig:violations}. Although memory order violations are increased in all workloads, their impact is offset by the reduction in false dependencies. It is worth noting that violations are already rare events, measured in mega-instructions rather than kilo-instructions, so even a 100\% increase can still remain in negligible ranges compared to the rate of false dependencies.
 
 The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:storedistances}. The optimal threshold may still provide a net performance gain while causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. Violations could also be mitigated by specialising the PGO technique to each workload rather than the processor, which is discussed further in Section \ref{sec:futurework}.
 
@@ -447,30 +448,27 @@ The degree to which violations increase is controlled by the threshold value dis
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/violations_small.pdf}
-\caption{Percent change of memory order violations. Values roughly equal between core sizes.}
+\caption{Percent change of memory order violations per Mega-instruction. Although relative \% changes are high, absolute values remain low.}
 \label{fig:violations}
 \end{figure*}
 
-\subsection{Power Savings \& PHAST}
+\subsection{Power Usage}
 
-Figure \ref{fig:small-power} shows the total core energy reduction of each workload on the small configuration with PG-MDP applied. Because PG-MDP is a zero-cost optimisation, it can be seen that IPC gains directly translate into correlated power savings with no offset introduced by additional area costs. 
+We use McPat to estimate PG-MDP's impact on power usage. On the small and medium cores, total core power is reduced near-exactly to the corresponding IPC gain (1.45\% for the 1.47\% IPC gain on the small core). This emphasizes how the performance achieved by PG-MDP does not come at any power or area trade-off. In theory, as reducing MDP queries lowers MDP runtime dynamic power, we should see an even further power reduction than this. However, as the MDP unit occupies such a small fraction of core power, any reduction in runtime dynamic power is negligible overall.
 
-Reducing MDP queries should in theory also offer a further power saving. However, we find that XS Store Sets already uses negligible power compared to the LSU and total core, that any reductions don't show up in final figures. Furthermore, XS Store Sets power usage is dominated by the sub-threshold leakage rather than runtime-dynamic cost (i.e.~accessing the tables), and so an average 78\% reduction in MDP queries only translates to an average 13\% reduction in total MDP power.
+However, the PHAST predictor incurs a greater power usage due to containing more tables and searching all of them in parallel on each prediction. On the large core configuration using a 14.5KB PHAST predictor, MDP power usage is equivalent to 1.75\% of the LSQ. With PG-MDP, average MDP queries are reduced by 57\%, and PHAST power usage reduced by 35\%. This brings the relative power usage down to 1.1\% of the LSQ, while maintaining IPC. Further power savings may be seen depending on the power gating model used, as McPat does estimate the possible advantage of accessing the predictor in fewer cycles.
 
-However, the PHAST predictor incurs a greater power usage due to containing more tables and searching them all in parallel. This makes PHAST's runtime-dynamic power usage about equal to sub-threshold leakage, and takes up a larger proportion of total LSU power usage. This is especially true for larger cores that contain larger predictors. Evaluating PG-MDP on the large core configuration is shown to maintain performance while reducing average PHAST power usage by 40\%.
-
-- don't think we need to plot any graphs for the large core as they're not interesting, can just include the numbers
-- talk about total portion of LSU power, how its still quite small, but maybe future-proofs PHAST better
+Overall this shows that PG-MDP can still be applied to large cores with state of the art predictors without harming IPC, and tackle some of the increased power usage these predictors incur too.
 
 \subsection{Read Port Impact Estimation}
-Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, the processor can dispatch (that is, allocate instructions into out-of-order structures) up to two memory operations per cycle. Gem5 does not model this behaviour by default, as this is a low-level detail that is difficult to faithfully represent at the level of abstraction Gem5 simulates. Given the importance of this aspect to our proposed technique, we provide an estimation of the potential impact on IPC when the number of MDP read ports is limited. The dispatch stage is modelled to block when the number of unlabelled memory operations dispatched within a cycle exceeds the maximum number of read ports, which we model in the small core as 2. It is assumed that predictions always arrive within a single cycle, and so read port usage is reset to zero every cycle. 
+Real processors have a limited number of read ports for each predictor component. If the memory dependence predictor has two ports, the processor can dispatch (that is, allocate instructions into out-of-order structures) up to two memory operations per cycle. Gem5 does not model this behavior by default, as this is a low-level detail that is difficult to faithfully represent at the level of abstraction Gem5 simulates. Given the importance of this aspect to our proposed technique, we provide an estimation of the potential impact on IPC when the number of MDP read ports is limited. The dispatch stage is modelled to block when the number of unlabelled memory operations dispatched within a cycle exceeds the maximum number of read ports, which we model in the small core as 2. It is assumed that predictions always arrive within a single cycle, and so read port usage is reset to zero every cycle. 
 
 Figure \ref{fig:readports} shows IPC vs XS Store Set size with read ports implemented. In this case, PG-MDP provides an additional benefit by allowing a higher maximum throughput of load instructions per cycle, as labelled loads do not query the MDP and do not occupy read ports. The geomean IPC gain with 64 table entries increases to 1.71\% from 1.47\%, bringing performance to match that of a base 1024 entry predictor near-exactly. There is now also a small gain in the larger table sizes too, whereas before PG-MDP had no effect. This suggests there are further performance gains beyond reducing false dependencies that PG-MDP can provide to a real processor pipeline, especially when the MDP may take multiple cycles to return a prediction. 
 
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth,height=0.3\textheight, keepaspectratio]{figures/geomean_ipc_vs_ssit_scatter_readports.pdf}
-\caption{SPEC2017 CPU intspeed geomean IPC with and without PG-MDP for varying XS Store Set sizes. PG-MDP is able to effectively improve small predictor performance to within levels near-equal to large predictors for both a small and medium sized core.}
+\caption{Impact of PG-MDP on IPC across intspeed when simulating a limited number of MDP read ports. IPC gains are amplified as well as spread to larger tables sizes.}
 \label{fig:readports}
 \end{figure*}
 
@@ -491,7 +489,7 @@ Figure \ref{fig:readports} shows IPC vs XS Store Set size with read ports implem
 
 \section{Related Work}
 
-\emph{Improving Memory Dependence Prediction with Static Analysis} \cite{arcs} tackles the same problem as this paper, but using static analysis to determine which load instructions to label. It demonstrates small IPC gains in select cases, but with an overall best-case geomean improvement of less than 0.1\%. Furthermore, due to relying on static analysis it also sees notable performance regressions elsewhere, hurting viability. In comparison, by leveraging profiles we are able to achieve much higher IPC gains while also avoiding regressions. Our technique is also resistant to regressions on larger or more sophisticated MDP algorithms such as PHAST \cite{phast}, which \cite{improvingmdp} is not.
+\emph{Improving Memory Dependence Prediction with Static Analysis} \cite{arcs} tackles the same problem as this paper, but using static analysis to determine which load instructions to label. It demonstrates small IPC gains in select cases, but with an overall best-case geomean improvement of less than 0.1\%. Furthermore, due to relying on static analysis it also sees notable performance regressions elsewhere, hurting viability. In comparison, by leveraging profiles we are able to achieve much higher IPC gains while also avoiding regressions. Our technique is also resistant to regressions on larger or more sophisticated MDP algorithms such as PHAST \cite{phast}, which \cite{arcs} is not.
 
 \emph{Feedback-directed Memory Disambiguation Through Store Distance Analysis} \cite{storedistance} proposes a similar profile-guided co-design to this paper, but with a more aggressive use case. In their work, the MDP is replaced altogether and load instructions are extended to include 4-bit distance fields indicating the store queue position they're likely to be dependent on. This achieves high accuracy compared to Store Sets, but comes at the cost of higher instruction bandwidth to encode predicted store distances, which is usually infeasible in modern processor designs where instruction bandwidth is critical. Larger processors would also likely require more bits to encode longer store queue distances. Furthermore, \cite{storedistance} could be more sensitive to profile accuracy than our work, as loads which do not appear in the profile must be assumed to be memory independent. In contrast, our technique is able to leave unseen loads to execute as normal. 
 
@@ -521,7 +519,7 @@ As a profiled method that instruments each load and store instruction, PG-MDP ma
 
 \emph{Per-Workload Threshold Selection} could achieve higher performance than per-core thresholds. As the threshold is untied to any architectural state, it is possible to select a different optimal store distance threshold for each individual workload. We chose not to do this for this work to prove that meaningful performance gains were possible with a generic threshold, and that the PG-MDP technique did not require a threshold search for each compiled program. However, there are use cases where this is feasible, and it would be worthwhile to evaluate the potential performance available for the additional compilation cost.
 
-\emph{Just-in-Time Compilers (JITs)} are a widely used run-time based compilation technique for dynamic languages. PG-MDP could pair  well with these compilers for various reasons. Firstly, the additional workflow complexity of profiling can be automated by the run-time optimiser. Secondly, JITs make speculative optimisations about observed program behaviour, and so could aggressively apply ISA labels to any loads which read from addresses not recently stored to. Lastly, dynamic languages tend to be implemented with many memory independent pointer-chasing loads. This suggests these workloads could have a high potential for performance gains from using PG-MDP.
+\emph{Just-in-Time Compilers (JITs)} are a widely used run-time based compilation technique for dynamic languages. PG-MDP could pair  well with these compilers for various reasons. Firstly, the additional workflow complexity of profiling can be automated by the run-time optimiser. Secondly, JITs make speculative optimizations about observed program behavior, and so could aggressively apply ISA labels to any loads which read from addresses not recently stored to. Lastly, dynamic languages tend to be implemented with many memory independent pointer-chasing loads. This suggests these workloads could have a high potential for performance gains from using PG-MDP.
 
 \emph{Serverless Workloads} are characterised as a collection of many short-lived workloads which only execute a few times, then not again for a long time with lots of unrelated code in-between. This effectively makes their execution always cold on the target processor, so high performance is difficult to achieve. When memory dependence predictors cannot learn dependencies fast enough to deliver performance gains (which is especially a concern for modern TAGE-like predictors such as PHAST ), it may be preferable to disable memory dependence prediction entirely and conservatively stall loads on any unresolved stores. In this case, PG-MDP could potentially deliver substantial IPC gains, even on large cores, by allowing likely-independent loads to still issue immediately.
 

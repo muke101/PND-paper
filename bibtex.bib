@@ -23,6 +23,14 @@ keywords = {LLVM, alias analysis, dynamic checks, loop-versioning, optimizations
   month =        {April},
   year =         2026}
 
+@inproceedings{dcpt,
+author={Marius Grannaes, Magnus Jahre, Lasse Natvig},
+title = {Storage Efficient Hardware Prefetching using Delta-Correlating Predicting Tables},
+year = {2011},
+journal = {Journal of Instruction-Level Parallelism},
+url = {https://jilp.org/dpc/online/papers/02grannaes.pdf}
+}
+
 @inproceedings{mcpatpaper,
 author = {Li, Sheng and Ahn, Jung Ho and Strong, Richard D. and Brockman, Jay B. and Tullsen, Dean M. and Jouppi, Norman P.},
 title = {{McPAT: an integrated power, area, and timing modeling framework for multicore and manycore architectures}},
@@ -46,10 +54,8 @@ series = {MICRO 42}
   month =        {April},
   year =         2026}
 
-@INPROCEEDINGS{xiangshan-paper,
-  author={Xu, Yinan and Yu, Zihao and Tang, Dan and Chen, Guokai and Chen, Lu and Gou, Lingrui and Jin, Yue and Li, Qianruo and Li, Xin and Li, Zuojun and Lin, Jiawei and Liu, Tong and Liu, Zhigang and Ta\
-n, Jiazhan and Wang, Huaqiang and Wang, Huizhe and Wang, Kaifan and Zhang, Chuanqi and Zhang, Fawang and Zhang, Linjuan and Zhang, Zifei and Zhao, Yangyang and Zhou, Yaoyang and Zhou, Yike and Zou, Jiangr\
-ui and Cai, Ye and Huan, Dandan and Li, Zusong and Zhao, Jiye and Chen, Zihao and He, Wei and Quan, Qiyuan and Liu, Xingwu and Wang, Sa and Shi, Kan and Sun, Ninghui and Bao, Yungang},
+@INPROCEEDINGS{openxiangshan,
+  author={Xu, Yinan and Yu, Zihao and Tang, Dan and Chen, Guokai and Chen, Lu and Gou, Lingrui and Jin, Yue and Li, Qianruo and Li, Xin and Li, Zuojun and Lin, Jiawei and Liu, Tong and Liu, Zhigang and Tan, Jiazhan and Wang, Huaqiang and Wang, Huizhe and Wang, Kaifan and Zhang, Chuanqi and Zhang, Fawang and Zhang, Linjuan and Zhang, Zifei and Zhao, Yangyang and Zhou, Yaoyang and Zhou, Yike and Zou, Jiangrui and Cai, Ye and Huan, Dandan and Li, Zusong and Zhao, Jiye and Chen, Zihao and He, Wei and Quan, Qiyuan and Liu, Xingwu and Wang, Sa and Shi, Kan and Sun, Ninghui and Bao, Yungang},
   booktitle={2022 55th IEEE/ACM International Symposium on Microarchitecture (MICRO)},
   title={{Towards Developing High Performance RISC-V Processors Using Agile Methodology}},
   year={2022},
@@ -58,13 +64,6 @@ ui and Cai, Ye and Huan, Dandan and Li, Zusong and Zhao, Jiye and Chen, Zihao an
   pages={1178-1199},
   doi={10.1109/MICRO56248.2022.00080}
 }
-
-@Misc{openxiangshan,
-  author =       {XiangShan Team},
-  title =        {{XiangShan Github Repo}},
-  howpublished = {\url{https://github.com/OpenXiangShan/}},
-  month =        {April},
-  year =         2026}
 
 @inproceedings{constable,
 author = {Bera, Rahul and Ranganathan, Adithya and Rakshit, Joydeep and Mahto, Sujit and Nori, Anant V. and Gaur, Jayesh and Olgun, Ataberk and Kanellopoulos, Konstantinos and Sadrosadati, Mohammad and Subramoney, Sreenivas and Mutlu, Onur},
@@ -163,6 +162,44 @@ isbn="978-3-031-66146-4"
   year={2007}
 }
 
+@inproceedings{fdocompilation,
+author = {Chen, Dehao and Vachharajani, Neil and Hundt, Robert and Liao, Shih-wei and Ramasamy, Vinodha and Yuan, Paul and Chen, Wenguang and Zheng, Weimin},
+title = {Taming hardware event samples for FDO compilation},
+year = {2010},
+isbn = {9781605586359},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1772954.1772963},
+doi = {10.1145/1772954.1772963},
+abstract = {Feedback-directed optimization (FDO) is effective in improving application runtime performance, but has not been widely adopted due to the tedious dual-compilation model, the difficulties in generating representative training data sets, and the high runtime overhead of profile collection. The use of hardware-event sampling to generate estimated edge profiles overcomes these drawbacks. Yet, hardware event samples are typically not precise at the instruction or basic-block granularity. These inaccuracies lead to missed performance when compared to instrumentation-based FDO@. In this paper, we use multiple hardware event profiles and supervised learning techniques to generate heuristics for improved precision of basic-block-level sample profiles, and to further improve the smoothing algorithms used to construct edge profiles. We demonstrate that sampling-based FDO can achieve an average of 78\% of the performance gains obtained using instrumentation-based exact edge profiles for SPEC2000 benchmarks, matching or beating instrumentation-based FDO in many cases. The overhead of collection is only 0.74\% on average, while compiler based instrumentation incurs 6.8\%-53.5\% overhead (and 10x overhead on an industrial web search application), and dynamic instrumentation incurs 28.6\%-1639.2\% overhead.},
+booktitle = {Proceedings of the 8th Annual IEEE/ACM International Symposium on Code Generation and Optimization},
+pages = {42–52},
+numpages = {11},
+keywords = {sampling profile, performance counters, feedback-directed optimization},
+location = {Toronto, Ontario, Canada},
+series = {CGO '10}
+}
+
+@misc{unveilingpgo,
+      title={From Profiling to Optimization: Unveiling the Profile Guided Optimization}, 
+      author={Bingxin Liu and Yinghui Huang and Jianhua Gao and Jianjun Shi and Yongpeng Liu and Yipin Sun and Weixing Ji},
+      year={2025},
+      eprint={2507.16649},
+      archivePrefix={arXiv},
+      primaryClass={cs.PF},
+      url={https://arxiv.org/abs/2507.16649}
+}
+
+@misc{bolt,
+      title={BOLT: A Practical Binary Optimizer for Data Centers and Beyond}, 
+      author={Maksim Panchenko and Rafael Auler and Bill Nell and Guilherme Ottoni},
+      year={2018},
+      eprint={1807.06735},
+      archivePrefix={arXiv},
+      primaryClass={cs.PL},
+      url={https://arxiv.org/abs/1807.06735}
+}
+
 @misc{gem5,
       title={{The gem5 Simulator: Version 20.0+}},
       author={Jason Lowe-Power et al.},
@@ -189,9 +226,14 @@ isbn="978-3-031-66146-4"
     title={{CPU micro-archiecture cheat sheet by Cardyak}},
     howpublished={\url{https://x.com/Cardyak/status/1326107264252583936}}
 }
-@misc{ittage,
-    title={{Xiangshan Gem5 repo with original implementation of the ITTAGE algorithm in Gem5.}},
+@misc{openxiangshan-gem5,
+    title={{Repo for the OpenXiangShan Gem5 Fork}},
     howpublished={\url{https://github.com/OpenXiangShan/GEM5}}
+}
+
+@misc{gem5-phast,
+    title={{Repo for the PHAST Gem5 Fork}},
+    howpublished={\url{https://gitlab.com/muke101/gem5-phast}}
 }
 
 
@@ -346,7 +388,7 @@ month={6},
 url={https://jmgorius.com/pdf/ENS_Rennes_DIT_Prelab_2020_paper.pdf}
 }
 
-@interproceedings{storequeueskipping,
+@inproceedings{storequeueskipping,
 author = {Jean-Michel Gorius},
 title = {Static Memory Dependence Analysis for Hardware Optimizations},
 year = {2020},
@@ -383,23 +425,7 @@ numpages = {9},
 location = {Rhodes, Greece},
 series = {ICS '99}
 }
-@inproceedings{FDO,
-author = {Chen, Dehao and Vachharajani, Neil and Hundt, Robert and Liao, Shih-wei and Ramasamy, Vinodha and Yuan, Paul and Chen, Wenguang and Zheng, Weimin},
-title = {{Taming Hardware Event Samples for FDO Compilation}},
-year = {2010},
-isbn = {9781605586359},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/1772954.1772963},
-doi = {10.1145/1772954.1772963},
-abstract = {Feedback-directed optimization (FDO) is effective in improving application runtime performance, but has not been widely adopted due to the tedious dual-compilation model, the difficulties in generating representative training data sets, and the high runtime overhead of profile collection. The use of hardware-event sampling to generate estimated edge profiles overcomes these drawbacks. Yet, hardware event samples are typically not precise at the instruction or basic-block granularity. These inaccuracies lead to missed performance when compared to instrumentation-based FDO@. In this paper, we use multiple hardware event profiles and supervised learning techniques to generate heuristics for improved precision of basic-block-level sample profiles, and to further improve the smoothing algorithms used to construct edge profiles. We demonstrate that sampling-based FDO can achieve an average of 78\% of the performance gains obtained using instrumentation-based exact edge profiles for SPEC2000 benchmarks, matching or beating instrumentation-based FDO in many cases. The overhead of collection is only 0.74\% on average, while compiler based instrumentation incurs 6.8\%-53.5\% overhead (and 10x overhead on an industrial web search application), and dynamic instrumentation incurs 28.6\%-1639.2\% overhead.},
-booktitle = {Proceedings of the 8th Annual IEEE/ACM International Symposium on Code Generation and Optimization},
-pages = {42–52},
-numpages = {11},
-keywords = {feedback-directed optimization, performance counters, sampling profile},
-location = {Toronto, Ontario, Canada},
-series = {CGO '10}
-}
+
 @article{10.1145/2678373.2665740,
 author = {Woodruff, Jonathan and Watson, Robert N.M. and Chisnall, David and Moore, Simon W. and Anderson, Jonathan and Davis, Brooks and Laurie, Ben and Neumann, Peter G. and Norton, Robert and Roe, Michael},
 title = {{The CHERI Capability Model: Revisiting RISC in an Age of Risk}},
@@ -464,23 +490,6 @@ numpages = {2},
 keywords = {SimPoint, simulation, clustering, sampling, fast-forwarding}
 }
 
-@inproceedings{simpoint,
-author = {Perelman, Erez and Hamerly, Greg and Van Biesbrouck, Michael and Sherwood, Timothy and Calder, Brad},
-title = {{Using SimPoint for Accurate and Efficient Simulation}},
-year = {2003},
-isbn = {1581136641},
-publisher = {Association for Computing Machinery},
-address = {New York, NY, USA},
-url = {https://doi.org/10.1145/781027.781076},
-doi = {10.1145/781027.781076},
-abstract = {Modern architecture research relies heavily on detailed pipeline simulation. Simulating the full execution of a single industry standard benchmark at this level of detail takes on the order of months to complete. This problem is exacerbated by the fact that to properly perform an architectural evaluation requires multiple benchmarks to be evaluated across many separate runs. To address this issue we recently created a tool called SimPoint that automatically finds a small set of Simulation Points to represent the complete execution of a program for efficient and accurate simulation. In this paper we describe how to use the SimPoint tool, and introduce an improved SimPoint algorithm designed to significantly reduce the simulation time required when the simulation environment relies upon fast-forwarding.},
-booktitle = {Proceedings of the 2003 ACM SIGMETRICS International Conference on Measurement and Modeling of Computer Systems},
-pages = {318–319},
-numpages = {2},
-keywords = {simulation, SimPoint, sampling, clustering, fast-forwarding},
-location = {San Diego, CA, USA},
-series = {SIGMETRICS '03}
-}
 @inproceedings{limits,
 	doi = {10.1109/iiswc47752.2019.9042108},
 
@@ -497,6 +506,22 @@ series = {SIGMETRICS '03}
 	title = {{Branch Prediction Is Not A Solved Problem: Measurements, Opportunities, and Future Directions}},
 
 	booktitle = {2019 {IEEE} International Symposium on Workload Characterization ({IISWC})}
+}
+
+@INPROCEEDINGS{branchnet,
+  author={Zangeneh, Siavash and Pruett, Stephen and Lym, Sangkug and Patt, Yale N.},
+  booktitle={2020 53rd Annual IEEE/ACM International Symposium on Microarchitecture (MICRO)}, 
+  title={BranchNet: A Convolutional Neural Network to Predict Hard-To-Predict Branches}, 
+  year={2020},
+  volume={},
+  number={},
+  pages={118-130},
+  keywords={Training;Deep learning;Runtime;Correlation;History;Convolutional neural networks;Noise measurement},
+  doi={10.1109/MICRO50266.2020.00022}}
+
+@misc{cpusizes,
+title = {Cardyaks Microarchitecture Cheat Sheet},
+url = {https://docs.google.com/spreadsheets/d/18ln8SKIGRK5_6NymgdB9oLbTJCFwx0iFI-vUs6WFyuE/}
 }
 
 @article{mdp-tage,

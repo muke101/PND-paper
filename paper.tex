@@ -146,6 +146,7 @@
 \newcommand{\aj}[1]{{\color{cyan} AJ: {#1}}}
 \newcommand{\sk}[1]{{\color{purple} SK: {#1}}}
 \newcommand{\ar}[1]{{\color{brown} AR: {#1}}}
+\newcommand{\MARTIN}[1]{{\color{red} \textbf{MB: {#1}}}}
 %\pagestyle{plain}
 
 %%
@@ -184,7 +185,7 @@
 
 Memory Dependence Prediction (MDP) is a speculative technique to determine which stores, if any, a given load will depend on. Area-constrained cores are increasingly relevant in various applications such as energy-efficient or edge systems, and often have limited space for MDP tables. This leads to a high rate of false dependencies as memory independent loads alias with unrelated predictor entries, causing unnecessary stalls in the processor pipeline. 
 
-The conventional way to address this problem is with greater predictor size or complexity, but this is unattractive on area-constrained cores. This paper proposes that targeting the \textbf{predictor working set} is as effective as growing the predictor, and can deliver performance competitive with large predictors while still using very small predictors. This paper introduces profile-guided memory dependence prediction (PG-MDP), a software co-design to label consistently memory independent loads via their opcode and remove them from the MDP working set. These loads bypass querying the MDP when dispatched and always issue as soon as possible. Across SPEC2017 CPU intspeed, PG-MDP reduces the rate of MDP queries by 79\%, false dependencies by 77\%, and improves geomean IPC for a small simulated core by 1.47\% (to within 0.5\% of using 16x the predictor entries), with \textbf{no area cost} and no additional instruction bandwidth.
+The conventional way to address this problem is with greater predictor size or complexity, but this is unattractive on area-constrained cores. This paper proposes that targeting the \textbf{predictor working set} is as effective as growing the predictor, and can deliver performance competitive with large predictors while still using very small predictors. This paper introduces profile-guided memory dependence prediction (PG-MDP), a software co-design\MARTIN{Should this not be: hardware/software co-design?} to label consistently memory independent loads via their opcode and remove them from the MDP working set. These loads bypass querying the MDP when dispatched and always issue as soon as possible. Across SPEC2017 CPU intspeed, PG-MDP reduces the rate of MDP queries by 79\%,\MARTIN{Here we say:  MDP queries down 79\%, false dependencies down 77\%. Section \ref{sec:ipcgap} says queries down 77\%. FIX!} false dependencies by 77\%, and improves geomean IPC for a small simulated core by 1.47\% (to within 0.5\% of using 16x the predictor entries), with \textbf{no area cost} and no additional instruction bandwidth.
 
 \end{abstract} 
 
@@ -251,7 +252,7 @@ This paper makes the following contributions:
 \begin{itemize}
         \item[$\bullet$] \textbf{Reframes MDP Aliasing:} We show that for Store Sets-Like predictors, the dominant source of false dependencies does not stem from insufficient predictor capacity per se, but rather an unnecessarily large working set that captures both memory dependent and independent loads. We demonstrate that framing MDP aliasing as a capacity problem is misleading, and that shrinking the working set is as effective as growing the predictor.
         \item[$\bullet$] \textbf{Introduces PG-MDP:} By leveraging profile-guided memory dependence prediction, we reduce dynamic MDP queries by 79\% on average, across SPEC2017 CPU intspeed, and false dependencies by 77\%.
-        \item[$\bullet$] \textbf{Closes Store Sets Table Size Gap For Free:} By shrinking the MDP working set to only memory dependent loads, PG-MDP allows a 64-entry XiangShan Store Set \cite{xiangshan-gem5} predictor to match the performance of 1024 entries within half a percent, achieving a geomean 1.47\% (up to 5.6\%) IPC gain on a small simulated core.
+        \item[$\bullet$] \textbf{Closes Store Sets Table Size Gap For Free:} By shrinking the MDP working set to only memory dependent loads, PG-MDP allows a 64-entry XiangShan Store Set \cite{xiangshan-gem5} predictor to match the performance of 1024 entries within half a percent, achieving a geomean 1.47\% (up to 5.6\% \MARTIN{But Section \ref{sec:ipc} says "up to 5.4\%". Reconcile.}) IPC gain on a small simulated core.
 \end{itemize}
 
 \section{Background}
@@ -323,7 +324,7 @@ To test how PG-MDP generalizes, we compare which loads are labelled by profiles 
 
 \begin{figure}[!t]
     \input{figures/pgo.tex}
-    \caption{Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Most labels are true positives/negatives when compared to the reference inputs, and very few are false positives.}
+    \caption{Comparison of labelled (static) loads between profiles generated from train and ref inputs with a store distance threshold of 13. Most labels are true positives/negatives when compared to the reference inputs, and very few are false positives.\MARTIN{Fig. 3 uses threshold 13, but Table 1 gives the small core threshold as 8 (13 is the medium core). If Fig. 3 is meant to support the small-core story, either use 8 or state why 13 is shown.}}
     \label{fig:pgo}
 \end{figure}
 

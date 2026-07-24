@@ -1,0 +1,363 @@
+MICRO 2026 Paper #1358 Reviews and Comments
+===========================================================================
+Paper #1358 PG-MDP: Profile-Guided Memory Dependence Prediction for
+Area-Constrained Cores
+
+
+Review #1358A
+===========================================================================
+
+Is the paper violating the submission format?
+---------------------------------------------
+1. The paper meets the submission format rules.
+
+Reviewer expertise
+------------------
+2. Knowledgeable: I used to work in this area and/or I try to keep up with
+   the literature but might not know the latest developments
+
+Reviewer Confidence
+-------------------
+1. High confidence: I understand the key aspects of the paper to a great
+   extent.
+
+Paper summary
+-------------
+- Out-of-order issue processors require memory-dependence prediction (MDP) to synchronize loads with dependent in-flight stores.
+
+- A small out-of-order core may use a Store Sets predictor for MDP due to its simplicity. Store sets predictor suffers from unwanted aliasing at lower table sizes.
+
+- This paper proposes a scheme for reducing such unwanted aliasing by prohibiting loads, which never/seldom depend on prior inflight stores, from accessing/modifying the dependence predictor. 
+
+- Independent loads are identified using a profiling compiler, and annotated in the program binary (without increasing the instruction footprint). Annotated loads bypass MDP, avoiding unwanted aliasing.
+
+Strengths
+---------
+- A high percentage of loads are independent of prior in-flight stores, and such independent loads are difficult to distinguish from other loads in smaller cores due area/power constraints. The authors propose to perform this identification offline, which is both simple and effective.
+
+Weaknesses
+----------
+- W1: Unwanted aliasing may be controlled effectively using a simple all-hardware scheme.
+
+How easy is the paper easy to read and understand?
+--------------------------------------------------
+1. Very clear: I had no trouble understanding the work.
+
+Novelty of Work
+---------------
+3. Limited novelty: small tweak or incremental improvement
+
+Evaluation methodology
+----------------------
+2. Acceptable: Reasonable methodology and results to demonstrate value of
+   idea
+
+Pre-Rebuttal Overall merit
+--------------------------
+3. Minor revision -- Reasonable paper with incremental improvement or with
+   some deficiencies which could be addressed by a revision.
+
+Comments for authors
+--------------------
+I liked reading your paper. I have the following comments:
+
+C1: In relation to W1, can we use a bloom filter to identify dependent loads? I can think of a scheme where only violating (dependent) loads are added to the filter. This filter can be accessed after instructions are decoded, and independent loads can bypass MDP just like your scheme. This filtering scheme obviates profiling and ISA changes, and therefore is naturally more robust. 
+
+In my opinion, a comparison to such an online filtering scheme, or a careful rebuttal against it if you think it is infeasible/impractical, would allow me to better-judge the benefit of your scheme. It should also improve the quality of your paper in general.
+
+C2: You only show MDP performance with a Store Sets predictor. In my opinion, for small cores, a simple scheme, where loads are always speculated, may work well. 
+
+C3: Memory order violations are sensitive to issue queue's scheduling policy/aggressiveness. I missed this parameter in the paper.
+
+Questions/Issues for the authors to address in the rebuttal/revision
+--------------------------------------------------------------------
+In relation to C1, can you please provide a comparison to an online filtering scheme, or a careful rebuttal against it?
+
+In relation to C2, can you please add results for the scheme where loads are always speculated? Note this scheme obviates MDP, and therefore is even more lucrative for area-constrained cores.
+
+In relation to C3, can you please explain how ready instructions are scheduled by the issue queue?
+
+
+
+Review #1358B
+===========================================================================
+
+Is the paper violating the submission format?
+---------------------------------------------
+1. The paper meets the submission format rules.
+
+Reviewer expertise
+------------------
+1. Expert: I have written one or more papers on this topic and/or I
+   currently work in this area.
+
+Reviewer Confidence
+-------------------
+1. High confidence: I understand the key aspects of the paper to a great
+   extent.
+
+Paper summary
+-------------
+The paper proposes to label static loads in the program binary, to hint whether or not they should query the Memory Dependence Predictor (MDP).  Many loads don't need MDP, and signaling that to the hardware has two benefits:
+
+1. The primary target of this work is area-constrained cores that can only afford a small MDP.  A small MDP causes a lot of aliasing, and many loads are falsely stalled as a consequence.  By labeling loads that don't need MDP, they don't query the MDP at all and thus don't have the chance to falsely stall.
+
+2. By filtering out unnecessary MDP searches: (a) MDP power consumption reduces. (b) Dispatch stalls, due to more loads in the dispatch bundle than MDP read ports, are reduced.  This helps both small and large cores.
+
+Labeling is done using profiling rather than static analysis.  A dynamic load's *store distance* is defined as the number of dynamic stores between the nearest conflicting store and the load.  Store distances are collected for all instances of a static load.  A single store distance is selected for the static load, such that 95% of all per-execution store distances are greater than the selected store distance.  A static load is labeled as memory independent (don't use MDP) if its selected store distance is above a threshold.  The threshold is tuned based on performance observation of many workloads on the targeted processor, i.e., the threshold is processor-specific (because of its window size) and not workload-specific (although future work discusses the latter).
+
+In the small core, Fig. 4, on average: A *64-entry SSIT with hints* performs the same as a *128-entry SSIT without hints*.  Both are close to a 1024-entry SSIT w/ or w/out hints.
+
+Strengths
+---------
+1. Simple, nice, and profitable idea: label loads in the binary that don't need to use the MDP, thus avoiding false stalls when there is a lot of aliasing in a small MDP table, or reduce power and read port stalls for large MDP tables.
+
+2. Section 6 covers potential pitfalls well and suggests certain avenues.
+
+Weaknesses
+----------
+1. The primary contribution over [16] appears to be *profiling* and *95-percentile store distance* instead of *static analysis* and *always-independent* (<- need to read [16] to verify).  I haven't read [16], but the abstract conveys the identical objective of marking loads as independent in order to avoid unnecessary MDP lookups and false dependencies.  Given the main idea is already published, this would seem to demand a quantitative comparison with [16].
+
+2. The primary use-case is area-constrained cores, yet area savings is not reported.  I'd expect the whole-core area savings to be minute.  Note that the 64-entry SSIT with hints is iso-performance with the 128-entry SSIT without hints (Fig. 4).  This will be ~2x area savings (maybe higher) in the MDP, but perhaps insignificant when considering whole-core area, even for this small core.
+
+3. The hints are free in this paper due to using RISC-V, which has room for extensions (4 hint instruction opcodes, for example).  A complete paper would show the performance impact of increasing static and dynamic instruction count for fixed-length ISAs like ARM (could be quite high overhead) or adding a byte per labeled load for variable length ISAs.
+
+4. The paper doesn't discuss the RISC-V ISA modification and doesn't elaborate on whether there is an actual profiling compiler and assembler with hints vs. doing everything with simulator infrastructure.
+
+How easy is the paper easy to read and understand?
+--------------------------------------------------
+1. Very clear: I had no trouble understanding the work.
+
+Novelty of Work
+---------------
+3. Limited novelty: small tweak or incremental improvement
+
+Evaluation methodology
+----------------------
+3. Fair: Reasonable methodology but need more results
+
+Pre-Rebuttal Overall merit
+--------------------------
+4. Major revision -- Fair work but with concerns. Satisfactory revision is
+   critical for acceptance in the program
+
+Comments for authors
+--------------------
+Please see other sections of this review.  Here are some additional comments / revisions:
+
+- Section 2.2 (e.g., lines 241 and 242): Use the term "dispatch" instead of "issue" in this discussion.  Other parts of the paper use dispatch to mean insertion into IQ, LQ/SQ, and ROB, and issue to mean issuing from the IQ to the execution lanes.  The SSIT and LFST (or other MDP) are consulted in the frontend before the IQ, in order to synchronize stores-stores and store-loads via store inum tags (or a dependency matrix) in the IQ.  This is conveyed by the authors in the caption of Fig. 2.  Line 247: just don't use "issued" in this sentence, as the periodic clearing may be based on dispatched, issued, or retired instructions... I'd use dispatched or retired, over issued, if I were you.  Issue is buried in the complex OOO backend and execution lanes.  Dispatched is close to where the MDP exists.
+
+- It is customary, and likely mathematically more "correct" (see H&P textbook), to use harmonic mean for averaging IPCs in Fig. 4.  Arithmetic mean for quantities (time, cycles, CPI, joules), harmonic mean for rates (IPC, IPS, Watts), geometric mean for ratios and speedups.  Harmonic mean of IPC converts IPCs to CPIs, then arithmetic mean of CPI, then overall reciprocal of that to convert back to IPC... so it's the equivalent of an arithmetic mean transformation for rates.
+
+Questions/Issues for the authors to address in the rebuttal/revision
+--------------------------------------------------------------------
+Summary of requested revisions: (1) quantitative comparison with [16], (2) MDP and whole-core area savings w.r.t. iso-performance 64-entry and 128-entry SSITs, (3) performance impact of hint bytes or scavenge ARM/x86, (4) details about RISC-V mods and compiler/assembler, (5) two things under "Comments for authors".
+
+1. The primary contribution over [16] appears to be *profiling* and *95-percentile store distance* instead of *static analysis* and *always-independent* (<- authors, please confirm or correct this).  I haven't read [16], but the abstract conveys the identical objective of marking loads as independent in order to avoid unnecessary MDP lookups and false dependencies.  Given the main idea is already published, this would seem to demand a quantitative comparison with [16].
+
+Section 5 (Related Work) says of [16]: "...*Furthermore, due to relying on static analysis it also sees notable performance regressions elsewhere*..."  I would have expected static analysis to not hurt performance w.r.t. baseline, due to needing to prove independence (no false positives).  Is the regression due to per-function static analysis, and not global program analysis?  Or because of dynamically linked libraries?
+
+Abstract of [16]:
+"*This paper explores the potential of communicating information gained by static analysis from compilers to Out-of-Order (OoO) machines, focusing on the memory dependence predictor (MDP). The MDP enables loads to issue without all in-flight store addresses being known, with minimal memory order violations. We use LLVM to find loads with no dependencies and label them via their opcode. These labelled loads skip making lookups into the MDP, improving prediction accuracy by reducing false dependencies. We communicate this information in a minimally intrusive way, i.e. without introducing additional hardware costs or instruction bandwidth, providing these improvements without any additional overhead in the CPU. We find that across pure C/++ Spec2017 workloads, a significant number of load instructions can skip interacting with the MDP and lead to a performance gain. These results point to greater possibilities for static analysis as a source of near zero cost performance gains in future CPU designs.*"
+
+2. The primary use-case is area-constrained cores, yet area savings is not reported.  For iso-performance (discussed shortly) and the small core, compare MDP area savings and whole-core area savings.  I'd expect the whole-core area savings to be minute.  Note that the *64-entry SSIT with hints* is iso-performance with the *128-entry SSIT without hints* (Fig. 4), and both are close to 1024-entry SSIT.  This will be ~2x area savings (maybe higher, maybe lower) in the MDP, but perhaps insignificant when considering whole-core area, even for this small core.
+
+3. The hints are free in this paper due to using RISC-V, which has room for extensions (4 hint instruction opcodes, for example).  A complete paper would show the performance impact of increasing static and dynamic instruction count for fixed-length ISAs like ARM (could be quite high overhead) or adding a byte per labeled load for variable length ISAs.  For a revision, I would recommend either (1) quantifying the performance impact of adding 1 byte (x86) or 4 bytes (ARM) per labeled load (unsure how to append a single bit in the context of byte-addressable memory systems...) or (2) showing how ARM and/or x86 can be scavenged for labeling loads.
+
+4. Please explain/clarify two missing items: (1) The RISC-V ISA modification. (2) Clarify whether there is an actual profiling compiler (and is it LLVM, gcc, or other?) and an assembler that emits labeled loads in the program binary, as opposed to a hypothetical toolchain and doing everything with simulator infrastructure (use simulation tools to profile loads, create a simulator input file of labeled loads, simulator reads in the labeled-loads input file into a simulator data structure, this data structure is consulted in the Decode stage).
+
+5. Address the text and Fig. 4 (harmonic mean IPC) revisions under "Comments for authors".
+
+----
+
+Questions:
+
+6. Have you explored filtering stores from the MDP as well, or are you concerned more about false positives with them?
+
+
+
+Review #1358C
+===========================================================================
+
+Is the paper violating the submission format?
+---------------------------------------------
+1. The paper meets the submission format rules.
+
+Reviewer expertise
+------------------
+2. Knowledgeable: I used to work in this area and/or I try to keep up with
+   the literature but might not know the latest developments
+
+Reviewer Confidence
+-------------------
+2. Medium confidence: I understand much of the paper but not all of it.
+
+Paper summary
+-------------
+This paper introduces PG-MDP, a profile-guided memory dependence prediction framework that targets device under strict power and area requirements. The proposed work mainly solves the issue of memory dependence prediction by tracking memory independent loads that are not included in the Memory Dependence Prediction working set. The authors report 1.47% improved geomean IPC across SPEC2017 benchmark suite.
+
+Strengths
+---------
++ The paper is focused on an interesting topic and proposes an idea that shows substantial improvements in the reduction of false dependencies.
+
+Weaknesses
+----------
+- Although the methodology of the proposed approach is appreciated, I believe that discussion around the technique needs further improvement.
+- The authors do not present any verification strategy of the approach.
+- It is difficult to distinguish the research contributions of this work. The paper reads more as a engineering report.
+
+How easy is the paper easy to read and understand?
+--------------------------------------------------
+2. Could be better: some non-trivial bits are missing or difficult to
+   understand; the writing is rough in some places.
+
+Novelty of Work
+---------------
+3. Limited novelty: small tweak or incremental improvement
+
+Evaluation methodology
+----------------------
+3. Fair: Reasonable methodology but need more results
+
+Pre-Rebuttal Overall merit
+--------------------------
+5. Reject -- Serious problems that entirely compromise the paper. Revision
+   will not help.
+
+Comments for authors
+--------------------
+Overall, the topic is interesting and the idea shows some improvement in the reducion of false dependencies. However, I believe that implementation details needs to be heavily refined. Points such as the actual flow and technique, the new opcodes that authors included and details about the development of the framework needs to be re-introduced. A point that has not been discussed is the verification strategy of the technique. How the authors tackled the verification aspect of this work?
+
+Until I reached Section 6.4, I was wondering about the overhead of this approach. The authors mention that the instrumentation overhead is not significant, but the memory footprint of tracking address accesses may become a bottleneck. Is there any estimate of its impact?
+
+Finally, I believe the paper could benefit from a section that shows the research directions or contributions of this work. The paper reads more as an engineering report rather than a research paper.
+
+
+
+Review #1358D
+===========================================================================
+
+Is the paper violating the submission format?
+---------------------------------------------
+1. The paper meets the submission format rules.
+
+Reviewer expertise
+------------------
+2. Knowledgeable: I used to work in this area and/or I try to keep up with
+   the literature but might not know the latest developments
+
+Reviewer Confidence
+-------------------
+1. High confidence: I understand the key aspects of the paper to a great
+   extent.
+
+Paper summary
+-------------
+The paper proposes a hardware/software co-design to reduce the size of the memory dependence predictor (MDP) while maintaining performance. The key idea is to utilize profiling (with training inputs) to detect loads that can safely skip querying the MDP (independent with older yet to be executed stores); this information is encoded into a newly introduced ISA instruction so that the hardware can skip the query and also entry creation upon memory order violation.
+
+Strengths
+---------
+- Simple design
+- Paper is easy to follow
+
+Weaknesses
+----------
+- Performance improvement is marginal relative to the cost
+- Profiling pipeline is underspecified
+- Workload coverage is too narrow
+
+How easy is the paper easy to read and understand?
+--------------------------------------------------
+1. Very clear: I had no trouble understanding the work.
+
+Novelty of Work
+---------------
+3. Limited novelty: small tweak or incremental improvement
+
+Evaluation methodology
+----------------------
+2. Acceptable: Reasonable methodology and results to demonstrate value of
+   idea
+
+Pre-Rebuttal Overall merit
+--------------------------
+4. Major revision -- Fair work but with concerns. Satisfactory revision is
+   critical for acceptance in the program
+
+Comments for authors
+--------------------
+The paper was easy to follow and the mechanism is simple and indeed storage-wise cheap. Identifying independent loads to avoid unnecessary waits due to aliasing in the store sets table on an area-constrained core sounds reasonable.
+
+Here are some of the concerns I have.
+
+I think the performance gain is marginal for what it needs to do: instrumentation, profiling run, recompilation, ISA extension and hardware modification. A comparison against cost-effective pure hardware solutions I think are necessary to justify the changes.
+
+The paper currently considers XS store sets and PHAST, but we can find cheap alternatives in the literature. For instance Alpha 21264's load wait table and store vectors (esp the tagged SVT in TACO paper) to name a few. Comparing against these techniques with equivalent hardware budget would strengthen the paper's claim.
+
+The profiling part misses important details. Conventional PGO techniques collects program-level information or microarchitectural stats via performance counters or alike. This paper seems to require store distance (in SQ slots), a microarchitectural quantity that requires simulator access of the target core? The paper does not say what tool produces the profile or how this would ship in a real scenario. If the authors approximate store distance with dynamic instruction distance or something, this should be stated.
+
+I'm not sure if SPEC CPU2017 intspeed is the right workload mix. These are compute-bound (mostly C/C++ I guess) and relatively easy case for PGO and MDP. Small efficiency cores actually run more: JIT'd JavaScript (e.g. V8 on Speedometer), interpreters (e.g. CPython on pyperformance), mobile ML inference (e.g. MLPerf Tiny). I guess JIT'd code is hard for any profile-guided technique. I think the paper would be stronger if it would evaluate on these workloads.
+
+I think an additional experiment to demonstrate that a single global store distance threshold suffices would be nice to have.
+
+
+
+Review #1358E
+===========================================================================
+
+Is the paper violating the submission format?
+---------------------------------------------
+1. The paper meets the submission format rules.
+
+Reviewer expertise
+------------------
+2. Knowledgeable: I used to work in this area and/or I try to keep up with
+   the literature but might not know the latest developments
+
+Reviewer Confidence
+-------------------
+2. Medium confidence: I understand much of the paper but not all of it.
+
+Paper summary
+-------------
+This paper proposed profile-guided memory dependence prediction, a profile-guided co-design to label load instructions through their opcode and prevent them from making MDP queries. This reduces the predictor working set and allow a small XS Store Set predictor to match the performance of a large predictor at no area or instruction bandwidth cost. PG-MDP reduces false memory dependencies and delivers a geomean IPC gain of 1.47% in a simulated area-constrained core.
+
+Weaknesses
+----------
+(1) Early-stage work that needs more time to mature enough for MICRO
+
+How easy is the paper easy to read and understand?
+--------------------------------------------------
+2. Could be better: some non-trivial bits are missing or difficult to
+   understand; the writing is rough in some places.
+
+Novelty of Work
+---------------
+2. Moderate novelty: meaningful extension or combination of ideas
+
+Evaluation methodology
+----------------------
+3. Fair: Reasonable methodology but need more results
+
+Pre-Rebuttal Overall merit
+--------------------------
+5. Reject -- Serious problems that entirely compromise the paper. Revision
+   will not help.
+
+Comments for authors
+--------------------
+Thank you for submitting to MICRO 2026. Please see my comments below:
+
+(1) In Section 6 you call your simulated processor model unrealistic of a real world processor. Why not use a realistic one then?  
+
+(2) You mention in TAble 1 a large core configuration but I haven't seen any results on that. Did I miss something?
+
+(3) I liked your future work section and the honest behind Sections 6 and 7. But that makes me inclined to ask for those future work scenarios you describe in order to make this work complete
+and ready for MICRO-level publication. The workloads you describe in Section 7 make a lot of sense in evaluating this work
+
+(4) If [9] is your main competitor then it makes sense to have a direct comparison with that work. 
+
+(5) Very narrow performance gain that could be improved with the directions you mention in your Future Work section
+
+(6) In general you describe a good idea but it needs heavier evaluation to provide a solid case for a MICRO-level publication.
+

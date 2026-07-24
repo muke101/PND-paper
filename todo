@@ -1,0 +1,21 @@
+reword to be more favourable
+ISA - can say RISC-V, can look at what others do, can cite paper about x86, we dont have a toolchain but thats ok
+profiling - estimate overhead (and explain optimisations), how store distances are collected, how it is 'shipped'
+small comments:
+- 'future directions', might suggest theres potential in software codesigns for reducing predictor working sets
+- bars of always and never speculated (+PGMDP), storesets and PGMDP, maybe PHAST?
+- area costs: cite ISCA paper to say that small cores probably already have something rougthly equivalent in storage 128 entries already, so PGMDP would just give a 3.5% IPC gain for free, and while you could half/quarter your MDP for equal or not as better perforamnce, the area savings are small. so we're not arguing for an area saving, we're saying cores *already* have tiny MDPs so these gains come as they are. this helps with the bloom filter too because we're no longer saving area but giving gains without saying you need anything extra.
+- comparison against ARCS and [9]
+new results and models
+switch template
+switch submission number
+dep check shift?
+minimum required read ports
+
+bloom - good arguments to be made against it but begs for an actual evaluation which i really dont wanna do. wait for rebuttal or try and get ahead of it? address it and implement in rebuttal?
+
+reframe:
+SSBench cites tiny MDPs even for large cores. A big reason for this is likely the requirement of many MDP read ports to avoid stalling dispatch, for instance XiangShan has 8 read ports. Power and iso-comparisons are also big reasons on small cores. This suggests the perforamnce delivered by 128 SSIT entries with XS Store Sets is actually very realistic, and a generous estimation to the baseline storage budget for area-constrained cores. We evaluate small *and* medium with 128 SSIT entries. While there are potential hardware solutions to this problem (constable, renaming, bloom filters), PG-MDP is able to offer these gains without introducing any additional storage or complexity, and without penalties that come from collisions and warmup. 
+
+-MDP constraints (payoff through ILP, high number of read ports, power on small cores)
+-128 SSIT entries -> 0.3KB, SSBench suggests 

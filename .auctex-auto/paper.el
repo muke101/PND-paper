@@ -49,15 +49,11 @@
     "fig:pgo"
     "sec:models"
     "table:cpu-models"
-    "sec:ipcgap"
-    "fig:fullssitsweep"
-    "fig:lookups"
     "sec:ipc"
     "fig:ipc"
     "fig:x264"
     "fig:falsedeps"
     "fig:violations"
-    "fig:readports"
     "sec:futurework")
    (LaTeX-add-bibliographies
     "bibtex")

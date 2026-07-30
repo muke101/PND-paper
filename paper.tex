@@ -430,7 +430,8 @@ To test how PG-MDP generalizes, we compare which loads are labelled by profiles 
 Lastly, profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
 \subsection{\sk{To add once this section explains more in depth the mechanism}}
-\sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}
+\sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}\MARTIN{Sebastian's comment talks about RISCV, but
+  evaluation is AArch64-compiled SPECspeed ...}
 
 Because loads are removed from the working set via their instruction encoding, PG-MDP compares favorably even against cheap and targeted hardware alternatives. A Bloom filter of dependent load PCs, for instance, would still be queried by all loads, and so inherits the same multi-porting constraint currently found in the MDP. It would then also suffer from saturation at any reasonable hardware budget, and would have to be periodically cleared and re-trained to adapt to program phase changes, limiting the accuracy it can achieve while still incurring additional hardware.
 
@@ -603,6 +604,29 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a prof
 % \input{code/502.gcc.txt}
 % \input{code/505.mcf.txt}
 
+
+\emph{The Alpha 21264 Load Wait Table} \cite{kessler1999alpha} is
+among the earliest deployed memory dependence predictors. It consists
+of a 1024-entry, one-bit-per-entry table indexed by the low-order bits
+of a load's fetch PC. When the store queue detects that a load has
+issued ahead of an older store to the same address, the machine
+squashes and sets the bit for that load. On subsequent fetches, a load
+whose bit is set is held until all older stores have resolved their
+addresses. The structure is therefore a membership test over violating
+load PCs: it admits no false negatives for behavior it has learned,
+and its false positives cost performance rather than
+correctness. Because entries are only ever set and never individually
+cleared, the table saturates over time and must be flushed wholesale
+at a fixed period (and on context switches), trading stale entries
+against the squashes required to relearn true dependencies. A Bloom
+filter of violating load PCs is the natural generalisation of this
+design, using $k$ hash functions to reduce false positives at a fixed
+bit budget. Both share the defining property that the tracked set is
+the \emph{dependent} minority, so every load must query the structure
+to establish non-membership, and both learn only from mis-speculations
+already paid for. PG-MDP inverts this: the \emph{independent} majority
+is identified offline and carried in the instruction encoding,
+requiring no lookup, no storage, and no periodic clearing.
 
 \end{document}
 \endinput

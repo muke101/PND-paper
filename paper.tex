@@ -617,6 +617,29 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a prof
 % \input{code/505.mcf.txt}
 
 
+\emph{The Alpha 21264 Load Wait Table} \cite{kessler1999alpha} is
+among the earliest deployed memory dependence predictors. It consists
+of a 1024-entry, one-bit-per-entry table indexed by the low-order bits
+of a load's fetch PC. When the store queue detects that a load has
+issued ahead of an older store to the same address, the machine
+squashes and sets the bit for that load. On subsequent fetches, a load
+whose bit is set is held until all older stores have resolved their
+addresses. The structure is therefore a membership test over violating
+load PCs: it admits no false negatives for behavior it has learned,
+and its false positives cost performance rather than
+correctness. Because entries are only ever set and never individually
+cleared, the table saturates over time and must be flushed wholesale
+at a fixed period (and on context switches), trading stale entries
+against the squashes required to relearn true dependencies. A Bloom
+filter of violating load PCs is the natural generalisation of this
+design, using $k$ hash functions to reduce false positives at a fixed
+bit budget. Both share the defining property that the tracked set is
+the \emph{dependent} minority, so every load must query the structure
+to establish non-membership, and both learn only from mis-speculations
+already paid for. PG-MDP inverts this: the \emph{independent} majority
+is identified offline and carried in the instruction encoding,
+requiring no lookup, no storage, and no periodic clearing.
+
 \end{document}
 \endinput
 %%

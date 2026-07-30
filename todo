@@ -11,7 +11,5 @@ dep check shift?
 important:
 -graphs and captions
 -rewrite eval
--read port results
--generlisation results
--switch template
+-switch template (martin)
 -switch submission number

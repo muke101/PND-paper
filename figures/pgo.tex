@@ -14,15 +14,15 @@
         ymax=100,
         %bar width=6pt, % Adjusted bar width
         enlarge x limits=0.05,
-        legend style={at={(0.5,-0.25)}, anchor=north, legend columns=-1},
-        ylabel={\% of load instructions},
+        legend style={at={(0.5,-0.35)}, anchor=north, legend columns=-1},
+        ylabel={\% Of Load Instructions},
         symbolic x coords={
-            perlbench,
-            gcc,
-            mcf, lbm, omnetpp, xalancbmk,
-            x264,
-            deepsjeng, leela, nab,
-            xz,
+            600.perlbench\_s,
+            602.gcc\_s,
+            605.mcf\_s, 620.omnetpp\_s, 623.xalancbmk\_s,
+            625.x264\_s,
+            631.deepsjeng\_s, 641.leela\_s, %648.exchange2\_s
+            657.xz\_s,
             % Average
         },
         xtick=data,
@@ -35,74 +35,65 @@
 
     % Data for Bar 2 (center)
 \addplot+[ybar, fill=TP, draw=black] plot coordinates{
-         (perlbench,64.71)
-         (gcc,72.47)
-         (mcf,71.35)
-         (lbm,62.53)
-         (omnetpp,78.59)
-         (xalancbmk,52.24)
-         (x264,78.54)
-         (deepsjeng,70.02)
-         (leela,66.70)
-         (nab,75.89)
-         (xz,73.77)
+         (600.perlbench\_s,64.71)
+         (602.gcc\_s,72.47)
+         (605.mcf\_s,71.35)
+         (620.omnetpp\_s,78.59)
+         (623.xalancbmk\_s,52.24)
+         (625.x264\_s,78.54)
+         (631.deepsjeng\_s,70.02)
+         (641.leela\_s,66.70)
+         %(648.exchange2\_s,66.70)
+         (657.xz\_s,73.77)
 };
 
 \addplot+[ybar, fill=TN, draw=black] plot coordinates{
-         (perlbench,23.66)
-         (gcc,15.07)
-         (mcf,23.72)
-         (lbm,35.01)
-         (omnetpp,20.10)
-         (xalancbmk,12.65)
-         (x264,17.58)
-         (deepsjeng,27.38)
-         (leela,28.86)
-         (nab,14.80)
-         (xz,24.50)
+         (600.perlbench\_s,23.66)
+         (602.gcc\_s,15.07)
+         (605.mcf\_s,23.72)
+         (620.omnetpp\_s,20.10)
+         (623.xalancbmk\_s,12.65)
+         (625.x264\_s,17.58)
+         (631.deepsjeng\_s,27.38)
+         (641.leela\_s,28.86)
+         (657.xz\_s,24.50)
 };
 
 \addplot+[ybar, fill=FP, draw=black] plot coordinates{
-         (perlbench,1.19)
-         (gcc,0.77)
-         (mcf,0.47)
-         (lbm,0.00)
-         (omnetpp,0.21)
-         (xalancbmk,0.80)
-         (x264,0.59)
-         (deepsjeng,0.30)
-         (leela,1.06)
-         (nab,0.24)
-         (xz,0.55)
+         (600.perlbench\_s,1.19)
+         (602.gcc\_s,0.77)
+         (605.mcf\_s,0.47)
+         (620.omnetpp\_s,0.21)
+         (623.xalancbmk\_s,0.80)
+         (625.x264\_s,0.59)
+         (631.deepsjeng\_s,0.30)
+         (641.leela\_s,1.06)
+         (657.xz\_s,0.55)
 };
 
 \addplot+[ybar, fill=FN, draw=black] plot coordinates{
-         (perlbench,2.31)
-         (gcc,0.95)
-         (mcf,4.47)
-         (lbm,1.55)
-         (omnetpp,1.09)
-         (xalancbmk,0.98)
-         (x264,0.42)
-         (deepsjeng,1.45)
-         (leela,0.72)
-         (nab,2.03)
-         (xz,1.18)
+         (600.perlbench\_s,2.31)
+         (602.gcc\_s,0.95)
+         (605.mcf\_s,4.47)
+         (620.omnetpp\_s,1.09)
+         (623.xalancbmk\_s,0.98)
+         (625.x264\_s,0.42)
+         (631.deepsjeng\_s,1.45)
+         (641.leela\_s,0.72)
+         (657.xz\_s,1.18)
 };
 
 
 \addplot+[ybar, fill=M, draw=black] plot coordinates{
-         (perlbench,8.13)
-         (gcc,10.74)
-         (mcf,0.00)
-         (lbm,0.90)
-         (omnetpp,0.00)
-         (xalancbmk,33.32)
-         (x264,2.87)
-         (deepsjeng,0.85)
-         (leela,2.65)
-         (nab,7.04)
-         (xz,0.00)
+         (600.perlbench\_s,8.13)
+         (602.gcc\_s,10.74)
+         (605.mcf\_s,0.00)
+         (620.omnetpp\_s,0.00)
+         (623.xalancbmk\_s,33.32)
+         (625.x264\_s,2.87)
+         (631.deepsjeng\_s,0.85)
+         (641.leela\_s,2.65)
+         (657.xz\_s,0.00)
 };
     \end{axis}
 \end{tikzpicture}

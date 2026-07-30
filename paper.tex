@@ -431,7 +431,8 @@ To test how PG-MDP generalizes, we compare which loads are labelled by profiles 
 Lastly, profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
 \subsection{\sk{To add once this section explains more in depth the mechanism}}
-\sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}
+\sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}\MARTIN{Sebastian's comment talks about RISCV, but
+  evaluation is AArch64-compiled SPECspeed ...}
 
 \section{Evaluation}
 

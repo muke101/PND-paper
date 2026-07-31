@@ -380,30 +380,25 @@ XiangShan is an open-source high-performance RISCV processor RTL implementation 
 The main optimization over original Store Sets is using multiple 'slots' for each LFST entry, thereby recording multiple dependent stores at once. This allows a load to track multiple dependencies with only one SSID. This is useful in situations where a load is dependent on different stores in different program contexts, or may have partial address overlap with multiple stores. There are further small optimizations to allocation policy which we omit here.
 
 \section{Method}
+\label{sec:method}
 
-%matches memory operation addresses which is well trodden work as in asan/tsan
-%our results use full insturmentation but with modest compute overhead and neglible memory due to optimisation.
-%this is trivial compared to other proposed co-design schemes like branchnet 
-%possible optimisations if its still too much: compile-time insturmentation like actual tsan, only activate comparison for hot regions like JITs, take samples rather than do every comparison
-
+%todo: revise
 This section presents the profile-guided memory dependence prediction (PG-MDP) technique. We put forward the concepts of store distances, distance thresholds, and how these are combined to find reliably memory independent loads. We then motivate the use of profiles to determine load labels, outlining the benefits provided over static analysis.
 
-The PG-MDP workflow follows a standard profile-guided optimization pattern. Programs are first compiled with instrumentation then profiled using train inputs. 
-\aj{To answer the reviewers, I suggest to add a dedicated subsection on how the profiling is actually implemented. Which tool is used to instrument the code, what does the instrumentation do (i.e. collect target addresses (all addresses or within a certain window?), where are these addresses stored or analyzed on-the-fly?, how big is the profiling footprint? }
-During profiling, PG-MDP tracks reads and the most recent writes to memory addresses. Loads which have sufficiently long 'store distances' (detailed below) at least 95\% of the time are determined to be sufficiently memory independent, and during profile-guided recompilation they are 'labelled' by being emitted as alternate opcodes, encoding an ISA hint without incurring additional instruction bandwidth. These new opcodes have the exact same semantics as the equivalent original load, but signal to the processor that they should skip querying the memory dependence predictor and issue as soon as possible. If they really do observe a dependency and trigger a memory order violation, this still causes a rollback as normal but no new entry is added in the MDP.
+%The PG-MDP workflow follows a standard profile-guided optimization pattern. Programs are first compiled with instrumentation then profiled using train inputs. During profiling, PG-MDP tracks reads and the most recent writes to memory addresses. Loads which have sufficiently long 'store distances' (detailed below) at least 95\% of the time are determined to be sufficiently memory independent, and during profile-guided recompilation they are 'labelled' by being emitted as alternate opcodes, encoding an ISA hint without incurring additional instruction bandwidth. These new opcodes have the exact same semantics as the equivalent original load, but signal to the processor that they should skip querying the memory dependence predictor and issue as soon as possible. If they really do observe a dependency and trigger a memory order violation, this still causes a rollback as normal but no new entry is added in the MDP.
 
-\subsection{Store Distances \& Labelling Thresholds}
+\subsection{Store Distances \& Target Load Behaviors}
 \label{sec:storedistances}
 
-As overviewed in Section \ref{sec:lsq}, when loads are issued in out-of-order execution they search the store queue (SQ) for older stores with overlapping addresses. Informally, a load's \emph{store distance} refers to the number of prior SQ entries between the load and the dependent stores. A load depending on the most recent prior store has a store distance of 1. Formally, let $x$ be the address of a load, and let the SQ contain store addresses $y_1, y_2, \dots, y_n$ ordered from youngest ($y_1$) to oldest ($y_n$). The \emph{store distance} is defined as the minimum index $i$ such that $x = y_i$. If no such index exists, the store distance is $\infty$.
+This paper uses store distance to refer to the number of stores in program order between a load and its dependent store. A load depending on the most recent prior store has a store distance of 1. This concept readily maps onto processor architecture because, as overviewed in Section \ref{sec:lsq}, stores in the store queue (SQ) are also inserted in program order, so a load's store distance in program order is synonymous to the number of prior SQ entries between the load and the dependent store. Formally, let $x$ be the address of a load, and let the SQ contain store addresses $y_1, y_2, \dots, y_n$ ordered from youngest ($y_1$) to oldest ($y_n$). The \emph{store distance} is defined as the minimum index $i$ such that $x = y_i$. If no such index exists, the store distance is $\infty$.
 
-The profile-derived store distance for each load is found by recording every per-execution store distance on train inputs. Store distances that occur in 95\% or more executions across all train inputs are selected as that load's profiled store distance. When multiple store distances are observed, with no single distance occurring in at least 95\% of executions, the shortest observed distance is conservatively chosen. 
+The profile-derived store distance for each load is found by counting per-execution it's store distance on train inputs. Store distances that occur in 95\% or more executions across all train inputs are selected as that load's profiled store distance. If multiple store distances are observed and at least two occur in more than 5\% of executions, the shortest observed distance is chosen regardless of individual frequency.
 
-Loads are then filtered by whether their profiled store distance is within a selected threshold. The premise of PG-MDP is that loads with an either infinite or sufficiently long store distances are good candidates to be labelled. The optimal store distance threshold for a specific target processor is found via binary search, choosing the threshold with the best average performance over train inputs. By using a representative selection of workloads to perform the search with, a single optimal store distance threshold can be found for the target processor rather than individual thresholds for each workload, meaning the search only has to be performed once.
+Loads are then filtered by whether their profiled store distance is above a selected threshold. The premise of PG-MDP is that loads with an either infinite or sufficiently long store distance are good candidates to be labelled. As the optimal threshold is tightly related to the SQ of the target processor, a single optimal threshold can be selected on a per-processor basis in tandem with tuning the hardware structures.
 
 The heuristic of filtering for long store distances captures four different types of behaviors:
 \begin{itemize}
-        \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e. have infinite store distance).
+        \item[$\bullet$] \textbf{(1) Memory independent loads:} Loads which read constant data (i.e. has infinite store distance).
         \item[$\bullet$] \textbf{(2) Rarely dependent loads:} Loads which observe short dependent store distances in $<$5\% of executions.
         \item[$\bullet$] \textbf{(3) Structurally independent loads:} Loads with no dependent stores in-flight at the time the load is issued.
         \item[$\bullet$] \textbf{(4) Fast-to-Resolve Dependencies:} Loads which have in-flight yet resolved dependent stores, allowing forwarding. 
@@ -411,15 +406,24 @@ The heuristic of filtering for long store distances captures four different type
 
 Loads with behavior type (1) are always labelled regardless of the threshold value. Whether a load exhibits behaviors (2) to (4) depends on the target processor. For instance, a processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will be labelled. The proportion of loads that exhibit type (4) behavior is even further target specific, but is still correlated with a longer store distance as this puts more time between dispatching the store and issuing the load, making it more likely the store's address will be resolved when needed.
 
+\subsection{Profiler Implementation}
+%matches memory operation addresses which is well trodden work as in asan/tsan
+%our results use full insturmentation but with modest compute overhead and neglible memory due to optimisation.
+%this is trivial compared to other proposed co-design schemes like branchnet 
+%possible optimisations if its still too much: compile-time insturmentation like actual tsan, only activate comparison for hot regions like JITs, take samples rather than do every comparison
 
-\subsection{Why Profiles?} %or, 'profile overhead' that also considers toolchain complexitiy?
+There are several options available to generate store distance profiles. For total precision, this paper uses binary insturmentation to compare the accessed memory address of each load with a queue of previous stores matching the store queue size of the target processor (26 on the small core). Any load that doesn't find a matching address within this range is considered to have no dependency. 
+
+The core algorithm to precisely determine each load's store distance must be done 
+
+\subsection{Motivating Profiles}
 \label{sec:profiles}
 
 While profile-guided optimization (PGO) has long offered performance benefits, the technique has historically struggled to achieve adoption due to complicating the compilation workflow \cite{fdocompilation}. PGO also introduces concerns about the accuracy of generated profiles, and the potential to harm performance should real input differ too much from the train input.
 
-Addressing adoption, prior work shows that use of PGO has risen significantly in recent years \cite{unveilingpgo}. This can be seen in enterprise projects such as Firefox and Chrome web browsers, the Python interpreter and the GCC compiler. Performance-critical server workloads have also seen renewed attention to the benefits that PGO can provide \cite{bolt}. This enforces the use of profiles as a reasonable approach to designing new software-hardware co-designs.
+However, prior work shows that use of PGO has risen significantly in recent years \cite{unveilingpgo}. This can be seen in enterprise projects such as Firefox and Chrome web browsers, the Python interpreter and the GCC compiler. Performance-critical server workloads have also seen renewed attention to the benefits that PGO can provide \cite{bolt}. This enforces the use of profiles as a reasonable approach to designing new hardware-software co-designs.
 
-To test how PG-MDP generalizes, we compare which loads are labelled by profiles generated from both train and reference inputs for intspeed, shown in Figure \ref{fig:pgo}. 'Positive' means the load is labelled and 'negative' means it is not, and so true positives are loads which are labelled in both profiles, false positives are loads only labelled in the train profile, and likewise for negatives. 'Missing' means the load does not appear in the train workload. These results suggest that profiles generated from train inputs do generalize effectively to reference inputs, with the majority of labelled loads as either true positives (TP) or true negatives (TN). Some missed potential is seen with false negatives (FN), but minimal harmful labels are introduced as false positives (FP). It is also important to note that in the case of load instructions which are unseen in the train inputs, these are never labelled and hence execute as normal. This allows PG-MDP to be more tolerant to workloads with high code coverage variation between inputs.
+To show that PG-MDP generalizes, we compare which loads are labelled by profiles generated from both train and reference inputs for intspeed, shown in Figure \ref{fig:pgo}. 'Positive' means the load is labelled and 'negative' means it is not, and so true positives are loads which are labelled in both profiles, false positives are loads only labelled in the train profile, and likewise for negatives. 'Missing' means the load does not appear in the train workload. These results suggest that profiles generated from train inputs do generalize effectively to reference inputs, with the majority of labelled loads as either true positives (TP) or true negatives (TN). Some missed potential is seen with false negatives (FN), but minimal harmful labels are introduced as false positives (FP). It is also important to note that in the case of load instructions which are unseen in the train inputs, these are never labelled and hence execute as normal. This allows PG-MDP to be more tolerant to workloads with high code coverage variation between inputs.
 
 \begin{figure}[!t]
     \input{figures/pgo.tex}
@@ -429,12 +433,11 @@ To test how PG-MDP generalizes, we compare which loads are labelled by profiles 
 
 Lastly, profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
-\subsection{\sk{To add once this section explains more in depth the mechanism}}
+\subsection{Encoding Labels}
 \sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}\MARTIN{Sebastian's comment talks about RISCV, but
   evaluation is AArch64-compiled SPECspeed ...}
 
-Because loads are removed from the working set via their instruction encoding, PG-MDP compares favorably even against cheap and targeted hardware alternatives. A Bloom filter of dependent load PCs, for instance, would still be queried by all loads, and so inherits the same multi-porting constraint currently found in the MDP. It would then also suffer from saturation at any reasonable hardware budget, and would have to be periodically cleared and re-trained to adapt to program phase changes, limiting the accuracy it can achieve while still incurring additional hardware.
-
+Because loads are removed from the working set via their instruction encoding, PG-MDP compares favorably even against cheap and targeted hardware alternatives. A Bloom filter of dependent load PCs, for instance, would still be queried by all loads, and so inherits the same multi-porting constraint discussed in Section \ref{sec:introduction}. It would then also suffer from saturation at any reasonable hardware budget, and so would have to be periodically cleared and re-trained to adapt to program phase changes, limiting the accuracy it can achieve despite still incurring additional hardware.
 
 \section{Evaluation}
 
@@ -539,7 +542,7 @@ In select cases PG-MDP can lead to a small performance regression due to false p
   \centering
   \includegraphics[width=2\columnwidth,keepaspectratio]{figures/violations.pdf}
 \caption{Percent change of violations per mega-instruction. Violations are largely reduced due to higher throughput, but in some cases increased due to profile mismatches. In all cases except $654.roms\_s$, this does not negate performance gains.}
-\label{fig:falsedeps}
+\label{fig:violations}
 \end{figure*}
 
 The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:storedistances}. The optimal threshold may still provide a net performance gain while causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. Violations could also be mitigated by specialising the PGO technique to each workload rather than the processor, which is discussed further in Section \ref{sec:futurework}.

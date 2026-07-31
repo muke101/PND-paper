@@ -60,6 +60,7 @@
     "fig:ssitsweep"
     "sec:lsq"
     "fig:lsq"
+    "sec:method"
     "sec:storedistances"
     "sec:profiles"
     "fig:pgo"
@@ -71,6 +72,7 @@
     "fig:ipc_medium"
     "sec:violations"
     "fig:falsedeps"
+    "fig:violations"
     "fig:readports"
     "sec:futurework")
    (LaTeX-add-bibliographies

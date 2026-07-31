@@ -4,9 +4,15 @@
  "bibtex"
  (lambda ()
    (LaTeX-add-bibitems
+    "kessler1999alpha"
+    "compaq_alpha21264_manual"
+    "ssbench"
+    "vtage"
+    "xiangshan"
     "roadnottaken"
     "mcpatrepo"
     "dcpt"
+    "armarm-f-c"
     "mcpatpaper"
     "xiangshan-gem5"
     "openxiangshan"
@@ -56,6 +62,8 @@
     "bellard2005qemu"
     "atom"
     "pin"
-    "Mose25"))
+    "Mose25"
+    "liu24"
+    "liu26b"))
  '(or :bibtex :latex))
 

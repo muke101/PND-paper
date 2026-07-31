@@ -386,8 +386,6 @@ The main optimization over original Store Sets is using multiple 'slots' for eac
 %todo: revise
 This section presents the profile-guided memory dependence prediction (PG-MDP) technique. We put forward the concepts of store distances, distance thresholds, and how these are combined to find reliably memory independent loads. We then motivate the use of profiles to determine load labels, outlining the benefits provided over static analysis.
 
-%The PG-MDP workflow follows a standard profile-guided optimization pattern. Programs are first compiled with instrumentation then profiled using train inputs. During profiling, PG-MDP tracks reads and the most recent writes to memory addresses. Loads which have sufficiently long 'store distances' (detailed below) at least 95\% of the time are determined to be sufficiently memory independent, and during profile-guided recompilation they are 'labelled' by being emitted as alternate opcodes, encoding an ISA hint without incurring additional instruction bandwidth. These new opcodes have the exact same semantics as the equivalent original load, but signal to the processor that they should skip querying the memory dependence predictor and issue as soon as possible. If they really do observe a dependency and trigger a memory order violation, this still causes a rollback as normal but no new entry is added in the MDP.
-
 \subsection{Store Distances \& Target Load Behaviors}
 \label{sec:storedistances}
 
@@ -408,7 +406,6 @@ The heuristic of filtering for long store distances captures four different type
 Loads with behavior type (1) are always labelled regardless of the threshold value. Whether a load exhibits behaviors (2) to (4) depends on the target processor. For instance, a processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will be labelled. The proportion of loads that exhibit type (4) behavior is even further target specific, but is still correlated with a longer store distance as this puts more time between dispatching the store and issuing the load, making it more likely the store's address will be resolved when needed.
 
 \subsection{Profiler Implementation \& Overhead}
-%possible optimisations if its still too much: compile-time insturmentation like actual tsan, only activate comparison for hot regions like JITs, take samples rather than do every comparison
 
 For total precision this paper uses binary insturmentation on train inputs to derive store distances. The core of store distance computation is load and store memory address comparison, widely used in existing techniques such as address and thread sanitizers \ref{asan}. The restricted scope of PG-MDP permits a simpler algorithm still. The memory address of each executed store is recorded in a FIFO queue of the same capacity as the store distance threshold of the target processor (e.g. 8). When executing a load the queue is searched to find the first prior occurrence of a matching address, if any. Each static load holds an entry in a PC-index hash map recording both the number of times a match did and did not occur. After program completion the hash map of load instructions is filtered for loads that did not find matches in the queue in at least 95\% of executions. The resulting list is then the load PCs to be labelled. For ease of implementation, load labels in this work are implemented in simulation using a text file of load addresses. In real deployment this list would be be used to patch the program binary at the specified addresses with alternate opcodes. As instruction bandwidth is unchanged this would yield identical results.
 
@@ -435,9 +432,22 @@ To show that PG-MDP generalizes, we compare which loads are labelled by profiles
 
 Lastly, profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
+To communicate to the processor which loads PG-MDP selects, we
+have proposed introducing new opcodes in the ISA to label loads
+at zero area or bandwidth overhead. While more feasible for some
+ISAs such as RISCV, this may be difficult to implement in other
+pre-existing ISAs such as X86 due to limited available encoding
+space. Alternate proposals to this problem have been offered in
+[10]. Further options include introducing some level of overhead
+to apply our proposed technique, such as extending load opcodes
+to include a label bit, or reserving a bit in the register operand and
+
+adjusting register allocation accordingly
 \subsection{Encoding Labels}
-\sk{Our mechanism requires only a binary ISA annotation that distinguishes conventional loads from labeled loads. In our RISC-V prototype, this annotation is realized through a new load instruction encoding. Other ISAs could provide the same semantic distinction using an available encoding, a reserved opcode, or an ISA-specific extension mechanism.}\MARTIN{Sebastian's comment talks about RISCV, but
-  evaluation is AArch64-compiled SPECspeed ...}\sk{Yes, because at the time I put this comment, there was a section about threats to validity that talked about labelling loads for RISC-V, which for led me (and a MICRO reviewer) to think this was done in RISCV}
+% reference manuals for RISC-V and ideally AArch64.
+% can be target specific
+
+PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labelled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major 'custom' opcodes for target-specific use, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type and S-type layouts and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labelled and non-labelled loads, while remaining meaningless on other targets.
 
 Because loads are removed from the working set via their instruction encoding, PG-MDP compares favorably even against cheap and targeted hardware alternatives. A Bloom filter of dependent load PCs, for instance, would still be queried by all loads, and so inherits the same multi-porting constraint discussed in Section \ref{sec:introduction}. It would then also suffer from saturation at any reasonable hardware budget, and so would have to be periodically cleared and re-trained to adapt to program phase changes, limiting the accuracy it can achieve despite still incurring additional hardware.
 
@@ -615,30 +625,6 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a prof
 % \input{code/502.gcc.txt}
 % \input{code/505.mcf.txt}
 
-
-%\emph{The Alpha 21264 Load Wait Table} \cite{kessler1999alpha} is
-%among the earliest deployed memory dependence predictors. It consists
-%of a 1024-entry, one-bit-per-entry table indexed by the low-order bits
-%of a load's fetch PC. When the store queue detects that a load has
-%issued ahead of an older store to the same address, the machine
-%squashes and sets the bit for that load. On subsequent fetches, a load
-%whose bit is set is held until all older stores have resolved their
-%addresses. The structure is therefore a membership test over violating
-%load PCs: it admits no false negatives for behavior it has learned,
-%and its false positives cost performance rather than
-%correctness. Because entries are only ever set and never individually
-%cleared, the table saturates over time and must be flushed wholesale
-%at a fixed period (and on context switches), trading stale entries
-%against the squashes required to relearn true dependencies. A Bloom
-%filter of violating load PCs is the natural generalisation of this
-%design, using $k$ hash functions to reduce false positives at a fixed
-%bit budget. Both share the defining property that the tracked set is
-%the \emph{dependent} minority, so every load must query the structure
-%to establish non-membership, and both learn only from mis-speculations
-%already paid for. PG-MDP inverts this: the \emph{independent} majority
-%is identified offline and carried in the instruction encoding,
-%requiring no lookup, no storage, and no periodic clearing.
-
 For experimental purposes, suitable custom load and store instructions
 could be implemented in RISC-V by mirroring the standard LOAD and
 STORE instruction families under the custom-0 and custom-1 major
@@ -677,3 +663,5 @@ labelled site.
 \endinput
 %%
 %% End of file `sample-sigconf.tex'.
+
+In the Loads and Stores group, loads are distinguished by a two-bit opc field, and opc=1x is left Unallocated for integer loads at size=1x and for SIMD&FP loads at size ∈ {01,10,11} — encodings that would denote a sign-extending load no wider than the value loaded, and are therefore vacuous. This hole recurs across all six load/store register classes [C4-297 to C4-310], yielding flagged variants of 32- and 64-bit integer loads and of 16-, 32-, and 64-bit floating-point loads in every addressing mode. The 8- and 128-bit SIMD&FP forms share a single size encoding and have no such slot; where 128-bit coverage is required, the unallocated opc=11 point in the load/store pair classes [C4-294 to C4-296] admits a flagged LDP Q.

@@ -1,12 +1,9 @@
 ISA - can say RISC-V, can look at what others do, can cite paper about x86, we dont have a toolchain but thats ok
 profiling - estimate overhead (and explain optimisations), how store distances are collected, how it is 'shipped'
+
 small comments:
-- 'future directions', might suggest theres potential in software codesigns for reducing predictor working sets
-- more hardware techniques in future work
 - bars of always and never speculated (+PGMDP), storesets and PGMDP, maybe PHAST?
 - ablation of load types
-- comparison against ARCS and [9], types of deps in method 
 
 important:
 -graphs and captions
--PHAST in related work

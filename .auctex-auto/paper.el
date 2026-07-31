@@ -6,7 +6,7 @@
    (TeX-add-to-alist 'LaTeX-provided-class-options
                      '(("elsarticle" "") ("article" "") ("acmart" "sigconf" "screen" "review") ("IEEEtran" "10pt" "conference")))
    (TeX-add-to-alist 'LaTeX-provided-package-options
-                     '(("cite" "") ("amssymb" "") ("amsfonts" "") ("algorithmic" "") ("graphicx" "") ("textcomp" "") ("url" "hyphens") ("fancyhdr" "") ("hyperref" "hidelinks" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("xcolor" "dvipsnames" "") ("multirow" "") ("amsmath" "") ("tikz" "")))
+                     '(("xcolor" "dvipsnames" "") ("cite" "") ("amssymb" "") ("amsfonts" "") ("algorithmic" "") ("graphicx" "") ("textcomp" "") ("url" "hyphens") ("fancyhdr" "") ("hyperref" "hidelinks" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("multirow" "") ("amsmath" "") ("tikz" "")))
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "ead")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
@@ -32,7 +32,6 @@
     "algorithmic"
     "graphicx"
     "textcomp"
-    "xcolor"
     "url"
     "fancyhdr"
     "hyperref"

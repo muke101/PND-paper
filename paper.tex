@@ -627,6 +627,40 @@ already paid for. PG-MDP inverts this: the \emph{independent} majority
 is identified offline and carried in the instruction encoding,
 requiring no lookup, no storage, and no periodic clearing.
 
+For experimental purposes, suitable custom load and store instructions
+could be implemented in RISC-V by mirroring the standard LOAD and
+STORE instruction families under the custom-0 and custom-1 major
+opcodes. These opcode spaces are designated for non-standard custom
+extensions and will be avoided by future standard extensions. The
+custom instructions could retain the ordinary I-type and S-type
+layouts, including the same register fields, immediates, access
+widths, and ISA semantics, while carrying an additional implementation
+hint. This approach would permit simple decoder remapping to the
+corresponding ordinary load or store micro-operation plus a control
+bit, with no additional dynamic instruction and unambiguous
+architectural equivalence when the hint is ignored. This encoding
+should be regarded only as a convenient vehicle for prototyping and
+evaluation, rather than as a fully specified or standards-track ISA
+extension. A complete proposal would also need to define exception and
+memory-ordering behaviour, and compressed encodings.
+
+An analogous experimental implementation is possible in AArch64,
+although A64 does not provide a general-purpose custom-opcode space
+corresponding to RISC-V's custom-0 and custom-1. For simulation or
+implementation studies, selected currently unallocated encodings could
+be assigned privately to MDI variants of the required load and store
+instructions and decoded as the corresponding ordinary memory
+operation plus an MDI control bit. This retains simple decoder
+remapping and introduces no additional dynamic instruction, but the
+encodings would be non-standard, target-specific, and unsuitable for
+portable binaries. A standards-oriented design would instead use an
+allocated architectural hint immediately before the ordinary load or
+store, allowing an aware front end to associate or fuse the pair while
+an unaware implementation treats the hint as a no-op. The latter
+approach has architectural precedent in instructions such as STSHH,
+but adds one 32-bit instruction to the code and fetch stream at every
+labelled site.
+
 \end{document}
 \endinput
 %%

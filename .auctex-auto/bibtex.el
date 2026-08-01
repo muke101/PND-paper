@@ -12,6 +12,7 @@
     "roadnottaken"
     "mcpatrepo"
     "dcpt"
+    "riscv-custom"
     "armarm-f-c"
     "mcpatpaper"
     "xiangshan-gem5"

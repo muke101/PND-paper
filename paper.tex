@@ -612,22 +612,22 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a prof
 % \input{code/502.gcc.txt}
 % \input{code/505.mcf.txt}
 
-An analogous experimental implementation is possible in AArch64,
-although A64 does not provide a general-purpose custom-opcode space
-corresponding to RISC-V's custom-0 and custom-1. For simulation or
-implementation studies, selected currently unallocated encodings could
-be assigned privately to MDI variants of the required load and store
-instructions and decoded as the corresponding ordinary memory
-operation plus an MDI control bit. This retains simple decoder
-remapping and introduces no additional dynamic instruction, but the
-encodings would be non-standard, target-specific, and unsuitable for
-portable binaries. A standards-oriented design would instead use an
-allocated architectural hint immediately before the ordinary load or
-store, allowing an aware front end to associate or fuse the pair while
-an unaware implementation treats the hint as a no-op. The latter
-approach has architectural precedent in instructions such as STSHH,
-but adds one 32-bit instruction to the code and fetch stream at every
-labelled site.
+%% An analogous experimental implementation is possible in AArch64,
+%% although A64 does not provide a general-purpose custom-opcode space
+%% corresponding to RISC-V's custom-0 and custom-1. For simulation or
+%% implementation studies, selected currently unallocated encodings could
+%% be assigned privately to MDI variants of the required load and store
+%% instructions and decoded as the corresponding ordinary memory
+%% operation plus an MDI control bit. This retains simple decoder
+%% remapping and introduces no additional dynamic instruction, but the
+%% encodings would be non-standard, target-specific, and unsuitable for
+%% portable binaries. A standards-oriented design would instead use an
+%% allocated architectural hint immediately before the ordinary load or
+%% store, allowing an aware front end to associate or fuse the pair while
+%% an unaware implementation treats the hint as a no-op. The latter
+%% approach has architectural precedent in instructions such as STSHH,
+%% but adds one 32-bit instruction to the code and fetch stream at every
+%% labelled site.
 
 \end{document}
 \endinput

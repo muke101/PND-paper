@@ -69,10 +69,10 @@
     "table:cpu-models"
     "sec:ipc"
     "fig:ipc"
+    "fig:falsedeps"
     "fig:x264"
     "fig:ipc_medium"
-    "sec:violations"
-    "fig:falsedeps"
+    "fig:lookups"
     "fig:violations"
     "fig:readports"
     "sec:futurework")

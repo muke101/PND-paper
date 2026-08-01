@@ -432,22 +432,9 @@ To show that PG-MDP generalizes, we compare which loads are labelled by profiles
 
 Lastly, profiles are able to provide further benefits than static analysis. Of the four types of load behavior referred to in Section \ref{sec:storedistances}, only two (types (1) and (3)) could theoretically be captured by perfect alias analysis. Type (2) would further require perfect memory dependence analysis, and there exists no analysis in conventional compiler design that attempts to capture the behavior in type (4). It is also important to note that the alias and dependence analysis offered by industrial compilers today is far from perfect \cite{roadnottaken}. Whereas stronger analyses do exist \cite{svf, affine}, these are either only effective in domain-specific languages or do not scale to large programs, making them either less applicable or less feasible. In contrast, profiles allow much greater flexibility and coverage of load behavior, which pairs well with speculative execution where mistakes will not invalidate program semantics.
 
-To communicate to the processor which loads PG-MDP selects, we
-have proposed introducing new opcodes in the ISA to label loads
-at zero area or bandwidth overhead. While more feasible for some
-ISAs such as RISCV, this may be difficult to implement in other
-pre-existing ISAs such as X86 due to limited available encoding
-space. Alternate proposals to this problem have been offered in
-[10]. Further options include introducing some level of overhead
-to apply our proposed technique, such as extending load opcodes
-to include a label bit, or reserving a bit in the register operand and
-
-adjusting register allocation accordingly
 \subsection{Encoding Labels}
-% reference manuals for RISC-V and ideally AArch64.
-% can be target specific
 
-PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labelled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major 'custom' opcodes for target-specific use, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type and S-type layouts and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labelled and non-labelled loads, while remaining meaningless on other targets.
+PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labelled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major custom opcodes for target-specific use, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type and S-type layouts and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labelled and non-labelled loads, while remaining meaningless on other targets. In both cases the ISA is able to be modified in a way where targets that benefit from PG-MDP can use labelled loads, and targets that don't see no difference.
 
 Because loads are removed from the working set via their instruction encoding, PG-MDP compares favorably even against cheap and targeted hardware alternatives. A Bloom filter of dependent load PCs, for instance, would still be queried by all loads, and so inherits the same multi-porting constraint discussed in Section \ref{sec:introduction}. It would then also suffer from saturation at any reasonable hardware budget, and so would have to be periodically cleared and re-trained to adapt to program phase changes, limiting the accuracy it can achieve despite still incurring additional hardware.
 
@@ -625,23 +612,6 @@ This paper proposed profile-guided memory dependence prediction (PG-MDP), a prof
 % \input{code/502.gcc.txt}
 % \input{code/505.mcf.txt}
 
-For experimental purposes, suitable custom load and store instructions
-could be implemented in RISC-V by mirroring the standard LOAD and
-STORE instruction families under the custom-0 and custom-1 major
-opcodes. These opcode spaces are designated for non-standard custom
-extensions and will be avoided by future standard extensions. The
-custom instructions could retain the ordinary I-type and S-type
-layouts, including the same register fields, immediates, access
-widths, and ISA semantics, while carrying an additional implementation
-hint. This approach would permit simple decoder remapping to the
-corresponding ordinary load or store micro-operation plus a control
-bit, with no additional dynamic instruction and unambiguous
-architectural equivalence when the hint is ignored. This encoding
-should be regarded only as a convenient vehicle for prototyping and
-evaluation, rather than as a fully specified or standards-track ISA
-extension. A complete proposal would also need to define exception and
-memory-ordering behaviour, and compressed encodings.
-
 An analogous experimental implementation is possible in AArch64,
 although A64 does not provide a general-purpose custom-opcode space
 corresponding to RISC-V's custom-0 and custom-1. For simulation or
@@ -663,5 +633,3 @@ labelled site.
 \endinput
 %%
 %% End of file `sample-sigconf.tex'.
-
-In the Loads and Stores group, loads are distinguished by a two-bit opc field, and opc=1x is left Unallocated for integer loads at size=1x and for SIMD&FP loads at size ∈ {01,10,11} — encodings that would denote a sign-extending load no wider than the value loaded, and are therefore vacuous. This hole recurs across all six load/store register classes [C4-297 to C4-310], yielding flagged variants of 32- and 64-bit integer loads and of 16-, 32-, and 64-bit floating-point loads in every addressing mode. The 8- and 128-bit SIMD&FP forms share a single size encoding and have no such slot; where 128-bit coverage is required, the unallocated opc=11 point in the load/store pair classes [C4-294 to C4-296] admits a flagged LDP Q.

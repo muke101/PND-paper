@@ -667,7 +667,7 @@ url = {https://docs.google.com/spreadsheets/d/18ln8SKIGRK5_6NymgdB9oLbTJCFwx0iFI
   year={1994}
 }
 
-@article{pin,
+@article{basicblockcounting,
   title={Pin: building customized program analysis tools with dynamic instrumentation},
   author={Luk, Chi-Keung and Cohn, Robert and Muth, Robert and Patil, Harish and Klauser, Artur and Lowney, Geoff and Wallace, Steven and Reddi, Vijay Janapa and Hazelwood, Kim},
   journal={Acm sigplan notices},
@@ -698,9 +698,48 @@ url = {https://docs.google.com/spreadsheets/d/18ln8SKIGRK5_6NymgdB9oLbTJCFwx0iFI
   url =          {}
 }
 
+@article{10.1145/1064978.1065034,
+author = {Luk, Chi-Keung and Cohn, Robert and Muth, Robert and Patil, Harish and Klauser, Artur and Lowney, Geoff and Wallace, Steven and Reddi, Vijay Janapa and Hazelwood, Kim},
+title = {Pin: building customized program analysis tools with dynamic instrumentation},
+year = {2005},
+issue_date = {June 2005},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+volume = {40},
+number = {6},
+issn = {0362-1340},
+url = {https://doi.org/10.1145/1064978.1065034},
+doi = {10.1145/1064978.1065034},
+abstract = {Robust and powerful software instrumentation tools are essential for program analysis tasks such as profiling, performance evaluation, and bug detection. To meet this need, we have developed a new instrumentation system called Pin. Our goals are to provide easy-to-use, portable, transparent, and efficient instrumentation. Instrumentation tools (called Pintools) are written in C/C++ using Pin's rich API. Pin follows the model of ATOM, allowing the tool writer to analyze an application at the instruction level without the need for detailed knowledge of the underlying instruction set. The API is designed to be architecture independent whenever possible, making Pintools source compatible across different architectures. However, a Pintool can access architecture-specific details when necessary. Instrumentation with Pin is mostly transparent as the application and Pintool observe the application's original, uninstrumented behavior. Pin uses dynamic compilation to instrument executables while they are running. For efficiency, Pin uses several techniques, including inlining, register re-allocation, liveness analysis, and instruction scheduling to optimize instrumentation. This fully automated approach delivers significantly better instrumentation performance than similar tools. For example, Pin is 3.3x faster than Valgrind and 2x faster than DynamoRIO for basic-block counting. To illustrate Pin's versatility, we describe two Pintools in daily use to analyze production software. Pin is publicly available for Linux platforms on four architectures: IA32 (32-bit x86), EM64T (64-bit x86), Itanium®, and ARM. In the ten months since Pin 2 was released in July 2004, there have been over 3000 downloads from its website.},
+journal = {SIGPLAN Not.},
+month = jun,
+pages = {190–200},
+numpages = {11},
+keywords = {program analysis tools, instrumentation, dynamic compilation}
+}
+
+@inproceedings{10.1145/1065010.1065034,
+author = {Luk, Chi-Keung and Cohn, Robert and Muth, Robert and Patil, Harish and Klauser, Artur and Lowney, Geoff and Wallace, Steven and Reddi, Vijay Janapa and Hazelwood, Kim},
+title = {Pin: building customized program analysis tools with dynamic instrumentation},
+year = {2005},
+isbn = {1595930566},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/1065010.1065034},
+doi = {10.1145/1065010.1065034},
+booktitle = {Proceedings of the 2005 ACM SIGPLAN Conference on Programming Language Design and Implementation},
+pages = {190–200},
+numpages = {11},
+keywords = {program analysis tools, instrumentation, dynamic compilation},
+location = {Chicago, IL, USA},
+series = {PLDI '05}
+}
+
+@inproceedings{asan,title	= {AddressSanitizer: A Fast Address Sanity Checker},author	= {Konstantin Serebryany and Derek Bruening and Alexander Potapenko and Dmitry Vyukov},year	= {2012},URL	= {https://www.usenix.org/conference/usenixfederatedconferencesweek/addresssanitizer-fast-address-sanity-checker},booktitle	= {USENIX ATC 2012}}
+
 @INPROCEEDINGS{liu24,
   author={Liu, Chang and Wang, Dongsheng and Lyu, Yongqiang and Qiu, Pengfei and Jin, Yu and Lu, Zhuoyuan and Zhang, Yinqian and Qu, Gang},
-  booktitle={ 30th} #hpca , 
+  booktitle={ 30th},
   title={Uncovering and Exploiting AMD Speculative Memory Access Predictors for Fun and Profit}, 
   year={2024},
   month = mar,

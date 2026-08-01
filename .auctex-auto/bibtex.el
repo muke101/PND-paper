@@ -62,8 +62,11 @@
     "fang2005instruction"
     "bellard2005qemu"
     "atom"
-    "pin"
+    "basicblockcounting"
     "Mose25"
+    "10.1145/1064978.1065034"
+    "10.1145/1065010.1065034"
+    "asan"
     "liu24"
     "liu26b"))
  '(or :bibtex :latex))

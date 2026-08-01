@@ -346,7 +346,16 @@ We achieve this with \textbf{profile-guided memory dependence prediction (PG-MDP
 \subsection{Contributions}
 This paper makes the following contributions:
 \begin{itemize}
-        \item[$\bullet$] \textbf{Reframes MDP Aliasing:} We show that the dominant source of false dependencies in memory dependence prediction does not stem solely from insufficient predictor capacity, but equally from an unnecessarily large predictor working set that captures both memory dependent and independent loads. We demonstrate that framing MDP aliasing as only a capacity problem is misleading, and that shrinking the working set is as effective as growing the predictor. 
+  
+\item[$\bullet$] \textbf{Reframes MDP Aliasing:} We show that the
+  dominant source of false dependencies in memory dependence
+  prediction does not stem solely from insufficient predictor
+  capacity, but equally from an unnecessarily large predictor working
+  set that captures both memory dependent and independent loads. We
+  demonstrate that framing MDP aliasing as only a capacity problem is
+  misleading, and that shrinking the working set is as effective as
+  growing the predictor on area-constrained cores.
+
         \item[$\bullet$] \textbf{Introduces PG-MDP:} By leveraging profile-guided memory dependence prediction, we reduce dynamic MDP load queries by 80\% on average across SPECspeed 2017, and false dependencies by 84\%.
         \item[$\bullet$] \textbf{Delivers Zero-Storage IPC Gains:} Using gem5 \cite{gem5} to simulate a core of comparable size to efficiency-focused processors found in production today, we demonstrate a 4.6\% IPC gain evaluated against a 300B (~3x expected real-world budget) XiangShan-variant Store Sets predictor (referred to as XS Store Sets) \cite{xiangshan-gem5}, without incurring any additional predictor capacity or power costs.
 \end{itemize}
@@ -430,7 +439,36 @@ Lastly, profiles are able to provide further benefits than static analysis. Of t
 
 \subsection{Encoding Labels}
 
-PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labeled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major custom opcodes for target-specific use \cite{riscv-custom}, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type layout and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labeled and non-labeled loads, while remaining meaningless on other targets. In both cases the ISA is able to be modified in a way where targets that benefit from PG-MDP can use labeled loads, and targets that don't see no difference. For other ISAs such as x86 where finding encoding space may not be possible, \cite{cooperative} proposes a bitmask in the program binary coupled with pre-decode logic as instructions enter the i-cache. This will incur overhead but would still maintain the critical requirement of not increasing instruction bandwidth.
+PG-MDP requires only a binary ISA annotation that distinguishes
+conventional loads from labeled loads, and so comes with no increase
+in instruction bandwidth or change to binary layout. This is
+practically implementable in both RISC-V and AArch64, which provides
+coverage for the majority of efficiency-focused cores deployed
+today. RISC-V reserves four major custom opcodes for target-specific
+use \cite{riscv-custom}, and so standard $LOAD$ instructions could be
+mirrored to just one of these while retaining the ordinary I-type
+layout and other ISA semantics.  In AArch64, load/store register
+encodings use a two-bit $opc$ field alongside a two-bit $size$
+field. At $size \in \{10, 11\}$ the point $opc = 11$ is unallocated in
+every addressing-mode class, as it would denote a sign-extending load
+no wider than the value loaded. This yields one spare encoding each
+for the 32- and 64-bit integer loads, sufficient to express the
+labeled variants required by PG-MDP.  This leaves open an additional
+bit that could be used to distinguish labeled and unlabeled loads,
+while remaining unallocated on other targets. Byte and halfword loads
+have no such slot, as all four $opc$ values are allocated at $size \in
+\{00, 01\}$.  In both cases the ISA is able to be modified in a way
+where targets that benefit from PG-MDP can use labeled loads, and
+targets that don't see no difference. For other ISAs such as x86 where
+finding encoding space may not be possible, \cite{cooperative}
+proposes a bitmask in the program binary coupled with pre-decode logic
+as instructions enter the i-cache. This will incur overhead but would
+still maintain the critical requirement of not increasing instruction
+bandwidth.
+
+Because the label is a hint with no architectural effect, a binary
+compiled for one target executes correctly on any other, with only
+reduced benefit if the threshold is mismatched.
 
 \section{Evaluation}
 
@@ -568,7 +606,25 @@ This evaluation should not be confused with a claim of how many MDP read ports r
 
 \emph{Constable: Improving Performance and Power Efficiency by Safely Eliminating Load Instruction Execution} \cite{constable} is a pure hardware technique to track and eliminate stable loads which consistently read the same value from memory, i.e. behavior type (1) specified in Section \ref{sec:storedistances}. This technique is able to eliminate both the memory read and address calculation, greatly improving pipeline efficiency. It also demonstrates a broad coverage across a variety of workloads, improving geomean IPC by 5.1\% on a high-performance core. For high-performance cores this technique would be effective for reducing the MDP working set, however as discussed in Section \ref{sec:introduction}, expensive hardware techniques are less viable on area-constrained cores due to area \& power demands, as well as requiring abundant ILP to effectively return on investment.
 
-\emph{Load-Wait Tables} A load-wait table is a very simple type of memory dependence predictor found in the Alpha 21264 \cite{kessler1999alpha}. It consists of a PC-indexed bitvector which tracks whether a given load has ever triggered a memory order violation, stalling it on all prior stores on hit and issuing as soon as possible on miss. This aims to answer the same question in hardware that PG-MDP does in software, i.e. is a given load memory independent. One might imagine a combined approach of filtering the working set of a more sophisticated predictor with a small load-wait table. We argue that PG-MDP still compares favorably against such a scheme; a load-wait table would still be queried by all loads, and so inherits the same multi-porting constraint discussed in Section \ref{sec:introduction}. It would then also suffer from table saturation at any reasonable hardware budget, and so would need to be periodically cleared and re-trained to adapt to program phase changes. This would cause spikes in false dependencies during saturation and spikes in memory order violations after clearing, limiting the accuracy it can achieve despite still incurring additional hardware costs.
+\emph{Load-Wait Tables} A load-wait table is a very simple type of
+memory dependence predictor found in the Alpha 21264
+\cite{kessler1999alpha}. It consists of a PC-indexed bitvector which
+tracks whether a given load has ever triggered a memory order
+violation, stalling it on all prior stores on hit and issuing as soon
+as possible on miss. This aims to answer the same question in hardware
+that PG-MDP does in software, i.e. is a given load memory
+independent. One might imagine a combined approach of filtering the
+working set of a more sophisticated predictor with a small load-wait
+table. We argue that PG-MDP still compares favorably against such a
+scheme; a load-wait table would still be queried by all loads, and so
+would require its own multi-porting, reintroducing in a new structure
+the constraint PG-MDP removes entirely.  It would then also suffer
+from table saturation at any reasonable hardware budget, and so would
+need to be periodically cleared and re-trained to adapt to program
+phase changes. This would cause spikes in false dependencies during
+saturation and spikes in memory order violations after clearing,
+limiting the accuracy it can achieve despite still incurring
+additional hardware costs.
 
 \emph{Other Memory Dependence Prediction Algorithms} Besides Store Sets and load-wait tables \cite{storesets,kessler1999alpha}, other MDP algorithms include Store Vectors, MDP-TAGE, and PHAST/MASCOT \cite{storevectors, mdp-tage, mdp-tage2, phast, Mose25} (MASCOT is an extension of PHAST, but with a focus on speculative-memory bypassing and performs similarly for strictly MDP). Each of these algorithms offer different trade-offs and advantages. We choose to evaluate a Store Sets-based predictor because it achieves the highest performance of (feasible) predictors in the literature for small cores \cite{mdp-tage2}. We chose XS Store Sets \cite{xiangshan-gem5} specifically as it is, to the best of our knowledge, the most modern implementation of Store Sets and closest available representation of MDP algorithms found in real processors.
 

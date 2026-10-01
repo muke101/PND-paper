@@ -1,9 +1,4 @@
-ISA - can say RISC-V, can look at what others do, can cite paper about x86, we dont have a toolchain but thats ok
-profiling - estimate overhead (and explain optimisations), how store distances are collected, how it is 'shipped'
-
-small comments:
 - bars of always and never speculated (+PGMDP), storesets and PGMDP, maybe PHAST?
 - ablation of load types
-
-important:
--graphs and captions
+- bloom filter, sweep sizes
+- find threshold with train. is running under gem5 necessary? maybe you could just find via statistical analysis the average optimal threshold

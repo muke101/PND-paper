@@ -481,7 +481,7 @@ This section presents the experimental design and results of applying PG-MDP to 
 \subsection{Experimental Design}
 \label{sec:models}
 
-We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. Violating labeled loads still roll back as normal and do not alter program semantics.
+We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. \textcolor{blue}{Results show the weighted average of the intervals. Some benchmarks run with different inputs, represented with an input number at the end of their label.} gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. Violating labeled loads still roll back as normal and do not alter program semantics.
 
 The modeled small core is intended to resemble out-of-order efficiency cores deployed today, such as Apple's M-series efficiency cores. We stress that this correspondence is only approximate, as gem5 is a model with its own micro-architectural assumptions and features. The design class is modeled with a configuration that is appropriate to gem5 rather than by replicating any single processor. We configure XS Store Sets to use 128 SSIT entries and 64 LFST entries with two slots each, coming to a baseline-favourable 300B of MDP storage.
 
@@ -553,7 +553,7 @@ Listing \ref{fig:x264} uses an example function from $625.x264\_s$ to demonstrat
 }
 \begin{lstlisting}[language=C,
                    float,
-                   caption={\protect\RevATarget{1} Example function from 625.x264\_s},
+                   caption={\protect Example function from 625.x264\_s},
                    label=fig:x264]
 void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2, 
               int i_width, int i_height )
@@ -574,7 +574,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 \label{fig:ipc_medium}
 \end{figure*}
 
-Figure \ref{fig:ipc_medium} shows the same MDP size sweep with and without PG-MDP evaluated on the medium core. As expected, the greater available ILP increases PG-MDP's impact on performance. However this is out-competed by using a larger MDP which diminishes opportunities for PG-MDP to reduce false dependencies, reducing the total IPC gain from 4.6\% to 3.6\%. As such while PG-MDP is still able to deliver gains to larger cores, these results confirm that the technique is best suited to smaller cores that cannot afford larger MDPs.
+\textcolor{blue}{PG-MDP is more effective on small predictors where aliasing happens more frequently. To demonstrate this we performed the following analysis presented in Figure \ref{fig:ipc_medium}. We vary the size of the MDP (x axis) and show how performance differs with and without PG-MDP, when} evaluated on the medium core. As expected, the greater available ILP increases PG-MDP's impact on performance. However this is out-competed by using a larger MDP which diminishes opportunities for PG-MDP to reduce false dependencies, reducing the total IPC gain from 4.6\% to 3.6\%. As such while PG-MDP is still able to deliver gains to larger cores, these results confirm that the technique is best suited to smaller cores that cannot afford larger MDPs.
 
 %Lastly we note that in select cases PG-MDP can lead to a small performance regression due to false positives between the train and reference inputs. False positive labels are loads which behave memory independent on train inputs but exhibit dependencies on ref inputs, causing an increase in memory order violations. The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:storedistances}. The optimal threshold may still provide a net performance gain while causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. Violations could also be mitigated by specializing the PGO technique to each workload rather than the processor, which is discussed further in Section \ref{sec:futurework}.
 %
@@ -605,7 +605,7 @@ Because PG-MDP reduces the MDP working set so significantly, it could permit des
 \label{fig:readports}
 \end{figure*}
 
-Figure \ref{fig:readports} shows the geomean IPC of the small core with and without PG-MDP against the number of MDP read ports. In the baseline, 5 read ports are required for maximum performance, whereas PG-MDP sees higher IPC with only 3, and comes within 1\% of the maximum baseline performance with only 2. This suggests shrinking the working set can help overcome this design constraint in MDP, and could also make growing the predictor more feasible.
+Figure \ref{fig:readports} shows the geomean IPC of the small core \textcolor{blue}{for the XS Store Sets predictor with and without PG-MDP. We vary the number of read ports of the MDP (x axis)}. In the baseline, 5 read ports are required for maximum performance, whereas PG-MDP sees higher IPC with only 3 \textcolor{blue}{ports}, and comes within 1\% of the maximum baseline performance with only 2 \textcolor{blue}{ports}. This suggests shrinking the working set can help overcome this design constraint in MDP, and could also make growing the predictor more feasible.
 
 This evaluation should not be confused with a claim of how many MDP read ports real processors require. We do not evaluate predictor latency, nor the low level techniques that may or may not hide that latency, and so these results must be understood in a relative sense, i.e. through the comparison between baseline and PG-MDP, instead of as an absolute claim. 
 

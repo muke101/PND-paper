@@ -237,6 +237,48 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, positioning, arrows.meta, calc, decorations.pathreplacing, matrix}
 
+% Reviewer colors
+\definecolor{reviewer1}{rgb}{0.10,0.25,0.65} % royal blue
+\definecolor{reviewer2}{rgb}{0.65,0.35,0.10} % brown
+\definecolor{reviewer3}{rgb}{0.75,0.15,0.40} % magenta/rose
+\definecolor{reviewer4}{rgb}{0.20,0.55,0.35} % teal-green
+\definecolor{reviewer5}{rgb}{0.35,0.35,0.35} % dark gray
+
+% Small reviewer/question badge
+\newcommand{\rev}[3][]{%
+  \tikz[baseline=(X.base)]{
+    \node[
+      draw=#2,
+      fill=white,
+      text=#2,
+      rounded corners=2pt,
+      inner xsep=1pt,
+      inner ysep=2pt,
+      font=\sffamily\bfseries\footnotesize,
+      #1
+    ] (X) {#3};
+  }%
+}
+
+% Convenient reviewer-specific commands (so they can see which change is for them)
+\newcommand{\RevA}[1]{\rev{reviewer1}{A--Q#1}}
+\newcommand{\RevB}[1]{\rev{reviewer2}{B--Q#1}}
+\newcommand{\RevC}[1]{\rev{reviewer3}{C--Q#1}}
+\newcommand{\RevD}[1]{\rev{reviewer4}{D--Q#1}}
+\newcommand{\RevE}[1]{\rev{reviewer5}{E--Q#1}}
+
+% Hyperlinks and targets so that the rebuttal letter directly moves the reviewer to the change.
+\newcommand{\RevALink}[1]{\hyperlink{R1-#1}{\RevA{#1}}}
+\newcommand{\RevATarget}[1]{\hypertarget{R1-#1}{\RevA{#1}}}
+\newcommand{\RevBLink}[1]{\hyperlink{R2-#1}{\RevB{#1}}}
+\newcommand{\RevBTarget}[1]{\hypertarget{R2-#1}{\RevB{#1}}}
+\newcommand{\RevCLink}[1]{\hyperlink{R3-#1}{\RevC{#1}}}
+\newcommand{\RevCTarget}[1]{\hypertarget{R3-#1}{\RevC{#1}}}
+\newcommand{\RevDLink}[1]{\hyperlink{R4-#1}{\RevD{#1}}}
+\newcommand{\RevDTarget}[1]{\hypertarget{R4-#1}{\RevD{#1}}}
+\newcommand{\RevELink}[1]{\hyperlink{R5-#1}{\RevE{#1}}}
+\newcommand{\RevETarget}[1]{\hypertarget{R5-#1}{\RevE{#1}}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Ensure letter paper
@@ -504,7 +546,15 @@ Figure \ref{fig:ipc} shows the percent IPC changes in each SPECspeed workload fo
 
 Listing \ref{fig:x264} uses an example function from $625.x264\_s$ to demonstrate why PG-MDP is impactful. The code is a simplified version of $pixel\_avg$, a hot function that causes a large portion of false dependencies. The loads on $src1$ and $src2$ never observe memory dependencies during program execution. As the loop is both short in instructions and part of a tight nest, these loads easily fall on the critical path during execution. Due to hash collisions, the loads are falsely made dependent on unrelated stores and the loop is unnecessarily serialized. Furthermore, the loop is compiled into three distinct variants that load different data sizes depending on remaining pixels, increasing both static load and store count pressure and making hash collisions more likely. Using PG-MDP, loads from all iterations across all access sizes are free to issue in parallel, significantly improving ILP. Altogether this represents a perfect use case for PG-MDP and is a significant contributor to the resulting performance gain. 
 
-\begin{lstlisting}[language=C,  label=fig:x264]
+{
+\captionsetup[lstlisting]{
+    labelfont={color=blue},
+    textfont={color=blue}
+}
+\begin{lstlisting}[language=C,
+                   float,
+                   caption={\protect\RevATarget{1} Example function from 625.x264\_s},
+                   label=fig:x264]
 void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2, 
               int i_width, int i_height )
 {
@@ -515,6 +565,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
     }
 }
 \end{lstlisting}
+}
 
 \begin{figure*}[t]
   \centering

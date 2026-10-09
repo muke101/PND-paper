@@ -28,7 +28,7 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. For evaluation, the reference inputs were used (See Section III-B and III-C). 
+\textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
 
 \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. 
 

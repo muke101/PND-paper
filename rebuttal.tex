@@ -1,0 +1,58 @@
+We thank the reviewers for their time and suggestions. This rebuttal addresses the concerns, and points to the modifications (in \textcolor{blue}{blue}) in the revised manuscript.
+
+\vspace{-0.2cm}
+\begin{center}
+\textbf{--- Review\_1425A ---}
+\end{center}
+\vspace{-0.2cm}
+
+\textbf{Listing improperly floated.} Thanks for noticing. We have fixed this issue.
+
+\textbf{Figures 6 and 9} We have added an introduction to these figures and re-worked the text.
+
+\textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section IV-A.
+
+\vspace{-0.2cm}
+\begin{center}
+\textbf{--- Review\_1425B ---}
+\end{center}
+\vspace{-0.2cm}
+
+\textbf{Only improves performance in about half of the benchmarks} The apparent regressions in Figure 4 are due to the hatched bars being visually misleading. In actuality, all but two of the workloads have a performance regression, both of only 0.3\%. All other workloads improve or maintain IPC. We have annotated all bars regardless of \% change to make this clear.
+
+\textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
+
+\vspace{-0.2cm}
+\begin{center}
+\textbf{--- Review\_1425C ---}
+\end{center}
+\vspace{-0.2cm}
+
+\textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
+
+\textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. 
+
+\textbf{x86.} \textcolor{red}{To complete! Need clarification probably in the text.}
+
+\textbf{When are MDP misprediction is flushed.} Upon detection, when a store discovers that a younger load has executed prematurely and violated memory ordering.
+
+
+\vspace{-0.2cm}
+\begin{center}
+\textbf{--- Review\_1425D ---}
+\end{center}
+\vspace{-0.2cm}
+
+\textbf{Comparison to other approaches.} \textcolor{red}{TODO.}
+
+
+\vspace{-0.2cm}
+\begin{center}
+\textbf{--- Review\_1425E ---}
+\end{center}
+\vspace{-0.2cm}
+
+\textbf{Complexity.} \textcolor{red}{TODO.}
+
+
+\clearpage

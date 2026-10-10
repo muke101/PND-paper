@@ -237,6 +237,48 @@
 \usepackage{tikz}
 \usetikzlibrary{shapes.geometric, positioning, arrows.meta, calc, decorations.pathreplacing, matrix}
 
+% Reviewer colors
+\definecolor{reviewer1}{rgb}{0.10,0.25,0.65} % royal blue
+\definecolor{reviewer2}{rgb}{0.65,0.35,0.10} % brown
+\definecolor{reviewer3}{rgb}{0.75,0.15,0.40} % magenta/rose
+\definecolor{reviewer4}{rgb}{0.20,0.55,0.35} % teal-green
+\definecolor{reviewer5}{rgb}{0.35,0.35,0.35} % dark gray
+
+% Small reviewer/question badge
+\newcommand{\rev}[3][]{%
+  \tikz[baseline=(X.base)]{
+    \node[
+      draw=#2,
+      fill=white,
+      text=#2,
+      rounded corners=2pt,
+      inner xsep=1pt,
+      inner ysep=2pt,
+      font=\sffamily\bfseries\footnotesize,
+      #1
+    ] (X) {#3};
+  }%
+}
+
+% Convenient reviewer-specific commands (so they can see which change is for them)
+\newcommand{\RevA}[1]{\rev{reviewer1}{A--Q#1}}
+\newcommand{\RevB}[1]{\rev{reviewer2}{B--Q#1}}
+\newcommand{\RevC}[1]{\rev{reviewer3}{C--Q#1}}
+\newcommand{\RevD}[1]{\rev{reviewer4}{D--Q#1}}
+\newcommand{\RevE}[1]{\rev{reviewer5}{E--Q#1}}
+
+% Hyperlinks and targets so that the rebuttal letter directly moves the reviewer to the change.
+\newcommand{\RevALink}[1]{\hyperlink{R1-#1}{\RevA{#1}}}
+\newcommand{\RevATarget}[1]{\hypertarget{R1-#1}{\RevA{#1}}}
+\newcommand{\RevBLink}[1]{\hyperlink{R2-#1}{\RevB{#1}}}
+\newcommand{\RevBTarget}[1]{\hypertarget{R2-#1}{\RevB{#1}}}
+\newcommand{\RevCLink}[1]{\hyperlink{R3-#1}{\RevC{#1}}}
+\newcommand{\RevCTarget}[1]{\hypertarget{R3-#1}{\RevC{#1}}}
+\newcommand{\RevDLink}[1]{\hyperlink{R4-#1}{\RevD{#1}}}
+\newcommand{\RevDTarget}[1]{\hypertarget{R4-#1}{\RevD{#1}}}
+\newcommand{\RevELink}[1]{\hyperlink{R5-#1}{\RevE{#1}}}
+\newcommand{\RevETarget}[1]{\hypertarget{R5-#1}{\RevE{#1}}}
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 % Ensure letter paper
@@ -439,7 +481,7 @@ This section presents the experimental design and results of applying PG-MDP to 
 \subsection{Experimental Design}
 \label{sec:models}
 
-We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. Violating labeled loads still roll back as normal and do not alter program semantics.
+We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. \textcolor{blue}{Results show the weighted average of the intervals. Some benchmarks run with different inputs, represented with an input number at the end of their label.} gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. Violating labeled loads still roll back as normal and do not alter program semantics.
 
 The modeled small core is intended to resemble out-of-order efficiency cores deployed today, such as Apple's M-series efficiency cores. We stress that this correspondence is only approximate, as gem5 is a model with its own micro-architectural assumptions and features. The design class is modeled with a configuration that is appropriate to gem5 rather than by replicating any single processor. We configure XS Store Sets to use 128 SSIT entries and 64 LFST entries with two slots each, coming to a baseline-favourable 300B of MDP storage.
 
@@ -504,7 +546,15 @@ Figure \ref{fig:ipc} shows the percent IPC changes in each SPECspeed workload fo
 
 Listing \ref{fig:x264} uses an example function from $625.x264\_s$ to demonstrate why PG-MDP is impactful. The code is a simplified version of $pixel\_avg$, a hot function that causes a large portion of false dependencies. The loads on $src1$ and $src2$ never observe memory dependencies during program execution. As the loop is both short in instructions and part of a tight nest, these loads easily fall on the critical path during execution. Due to hash collisions, the loads are falsely made dependent on unrelated stores and the loop is unnecessarily serialized. Furthermore, the loop is compiled into three distinct variants that load different data sizes depending on remaining pixels, increasing both static load and store count pressure and making hash collisions more likely. Using PG-MDP, loads from all iterations across all access sizes are free to issue in parallel, significantly improving ILP. Altogether this represents a perfect use case for PG-MDP and is a significant contributor to the resulting performance gain. 
 
-\begin{lstlisting}[language=C,  label=fig:x264]
+{
+\captionsetup[lstlisting]{
+    labelfont={color=blue},
+    textfont={color=blue}
+}
+\begin{lstlisting}[language=C,
+                   float,
+                   caption={\protect Example function from 625.x264\_s},
+                   label=fig:x264]
 void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2, 
               int i_width, int i_height )
 {
@@ -515,6 +565,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
     }
 }
 \end{lstlisting}
+}
 
 \begin{figure*}[t]
   \centering
@@ -523,7 +574,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 \label{fig:ipc_medium}
 \end{figure*}
 
-Figure \ref{fig:ipc_medium} shows the same MDP size sweep with and without PG-MDP evaluated on the medium core. As expected, the greater available ILP increases PG-MDP's impact on performance. However this is out-competed by using a larger MDP which diminishes opportunities for PG-MDP to reduce false dependencies, reducing the total IPC gain from 4.6\% to 3.6\%. As such while PG-MDP is still able to deliver gains to larger cores, these results confirm that the technique is best suited to smaller cores that cannot afford larger MDPs.
+\textcolor{blue}{PG-MDP is more effective on small predictors where aliasing happens more frequently. To demonstrate this we performed the following analysis presented in Figure \ref{fig:ipc_medium}. We vary the size of the MDP (x axis) and show how performance differs with and without PG-MDP, when} evaluated on the medium core. As expected, the greater available ILP increases PG-MDP's impact on performance. However this is out-competed by using a larger MDP which diminishes opportunities for PG-MDP to reduce false dependencies, reducing the total IPC gain from 4.6\% to 3.6\%. As such while PG-MDP is still able to deliver gains to larger cores, these results confirm that the technique is best suited to smaller cores that cannot afford larger MDPs.
 
 %Lastly we note that in select cases PG-MDP can lead to a small performance regression due to false positives between the train and reference inputs. False positive labels are loads which behave memory independent on train inputs but exhibit dependencies on ref inputs, causing an increase in memory order violations. The degree to which violations increase is controlled by the threshold value discussed in Section \ref{sec:storedistances}. The optimal threshold may still provide a net performance gain while causing small regressions in specific workloads, and a larger threshold could instead be chosen to ensure regressions never occur. Violations could also be mitigated by specializing the PGO technique to each workload rather than the processor, which is discussed further in Section \ref{sec:futurework}.
 %
@@ -554,7 +605,7 @@ Because PG-MDP reduces the MDP working set so significantly, it could permit des
 \label{fig:readports}
 \end{figure*}
 
-Figure \ref{fig:readports} shows the geomean IPC of the small core with and without PG-MDP against the number of MDP read ports. In the baseline, 5 read ports are required for maximum performance, whereas PG-MDP sees higher IPC with only 3, and comes within 1\% of the maximum baseline performance with only 2. This suggests shrinking the working set can help overcome this design constraint in MDP, and could also make growing the predictor more feasible.
+Figure \ref{fig:readports} shows the geomean IPC of the small core \textcolor{blue}{for the XS Store Sets predictor with and without PG-MDP. We vary the number of read ports of the MDP (x axis)}. In the baseline, 5 read ports are required for maximum performance, whereas PG-MDP sees higher IPC with only 3 \textcolor{blue}{ports}, and comes within 1\% of the maximum baseline performance with only 2 \textcolor{blue}{ports}. This suggests shrinking the working set can help overcome this design constraint in MDP, and could also make growing the predictor more feasible.
 
 This evaluation should not be confused with a claim of how many MDP read ports real processors require. We do not evaluate predictor latency, nor the low level techniques that may or may not hide that latency, and so these results must be understood in a relative sense, i.e. through the comparison between baseline and PG-MDP, instead of as an absolute claim. 
 

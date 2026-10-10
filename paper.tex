@@ -537,9 +537,16 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
 
 Figure \ref{fig:ipc} shows the percent IPC changes in each SPECspeed workload for the small core configuration. It can be seen that IPC gains have an uneven spread across workloads, with some seeing large benefits (up to 25\%) and others next to none. This correlates with the magnitude of false dependencies before and after applying PG-MDP seen in Figure \ref{fig:falsedeps}. The largest gainers such as $607.cactuBSSN\_s$ and $625.x264\_s$ all exhibit relatively higher false dependencies per kilo-instruction in the base case, and see this cut down significantly by over 80\% with PG-MDP. Figure \ref{fig:lookups} further shows the reduction in dynamic MDP load queries per kilo-instruction, demonstrating the impact on predictor working set. Figure \ref{fig:violations} shows the change in memory order violations.
 
+% \begin{figure*}[t]
+%   \centering
+%   \includegraphics[width=2\columnwidth, keepaspectratio]{figures/falsedeps.pdf}
+% \caption{Percent change of false dependencies per kilo-instruction. PG-MDP benefits workloads most that by default have a higher than average rate of false dependencies, but is still able to cut false dependencies across all workloads.}
+% \label{fig:falsedeps}
+% \end{figure*}
+
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=2\columnwidth, keepaspectratio]{figures/falsedeps.pdf}
+  \includegraphics[width=2\columnwidth, keepaspectratio]{figures/falsedeps_violations.pdf}
 \caption{Percent change of false dependencies per kilo-instruction. PG-MDP benefits workloads most that by default have a higher than average rate of false dependencies, but is still able to cut false dependencies across all workloads.}
 \label{fig:falsedeps}
 \end{figure*}
@@ -569,7 +576,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=2\columnwidth, keepaspectratio]{figures/ssit_sweep_medium.pdf}
+  \includegraphics[width=2\columnwidth, keepaspectratio]{figures/ssit_sweep.pdf}
   \caption{Base and improved IPC across SPECspeed 2017 for increasing XS Store Sets \cite{xiangshan-gem5} sizes on a medium core (ROB=256). IPC gains increase over the small core, but for the baseline MDP size (256 entries), IPC improvement is still 1\% smaller.} 
 \label{fig:ipc_medium}
 \end{figure*}
@@ -587,12 +594,12 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 \label{fig:lookups}
 \end{figure*}
 
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=2\columnwidth,keepaspectratio]{figures/violations.pdf}
-\caption{Percent change of violations per mega-instruction. Theoretically violations may increase due to behavior differences in the train inputs, but we instead find they decrease across workloads. Annotations omit changes $<$ 0.5\%.}
-\label{fig:violations}
-\end{figure*}
+% \begin{figure*}[t]
+%   \centering
+%   \includegraphics[width=2\columnwidth,keepaspectratio]{figures/violations.pdf}
+% \caption{Percent change of violations per mega-instruction. Theoretically violations may increase due to behavior differences in the train inputs, but we instead find they decrease across workloads. Annotations omit changes $<$ 0.5\%.}
+% \label{fig:violations}
+% \end{figure*}
 
 \subsection{Reducing MDP Read Ports}
 
@@ -608,6 +615,15 @@ Because PG-MDP reduces the MDP working set so significantly, it could permit des
 Figure \ref{fig:readports} shows the geomean IPC of the small core \textcolor{blue}{for the XS Store Sets predictor with and without PG-MDP. We vary the number of read ports of the MDP (x axis)}. In the baseline, 5 read ports are required for maximum performance, whereas PG-MDP sees higher IPC with only 3 \textcolor{blue}{ports}, and comes within 1\% of the maximum baseline performance with only 2 \textcolor{blue}{ports}. This suggests shrinking the working set can help overcome this design constraint in MDP, and could also make growing the predictor more feasible.
 
 This evaluation should not be confused with a claim of how many MDP read ports real processors require. We do not evaluate predictor latency, nor the low level techniques that may or may not hide that latency, and so these results must be understood in a relative sense, i.e. through the comparison between baseline and PG-MDP, instead of as an absolute claim. 
+
+\subsection{GAPBS}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\columnwidth,keepaspectratio]{figures/gapbs_profile.pdf}
+  \caption{}
+\label{fig:readports}
+\end{figure}
 
 \section{Related Work}
 

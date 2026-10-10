@@ -6,11 +6,11 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Listing improperly floated.} Thanks for noticing. We have fixed this issue.
+\RevALink{1} \textbf{Listing improperly floated.} Thanks for noticing. We have fixed this issue.
 
-\textbf{Figures 6 and 9} We have added an introduction to these figures and re-worked the text.
+\RevALink{2} \textbf{Figures 6 and 9} We have added an introduction to these figures and re-worked the text.
 
-\textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section IV-A.
+\RevALink{3} \textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section IV-A.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -18,9 +18,13 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Only improves performance in about half of the benchmarks} The apparent regressions in Figure 4 are due to the hatched bars being visually misleading. In actuality, all but two of the workloads have a performance regression, both of only 0.3\%. All other workloads improve or maintain IPC. We have annotated all bars regardless of \% change to make this clear.
+\RevBLink{1} \textbf{Only improves performance in about half of the benchmarks} The apparent regressions in Figure 4 are due to the hatched bars being visually misleading. In actuality, all but two of the workloads have a performance regression, both of only 0.3\%. All other workloads improve or maintain IPC. We have annotated all bars regardless of \% change to make this clear.
 
-\textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
+\RevBLink{2} \textbf{Why does saving on ports help in constrained processors?} 
+
+\RevBLink{3} \textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
+
+\RevBLink{4} 
 
 \vspace{-0.2cm}
 \begin{center}

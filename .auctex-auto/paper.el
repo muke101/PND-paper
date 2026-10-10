@@ -90,6 +90,8 @@
     "fig:ipc_medium"
     "fig:lookups"
     "fig:readports"
+    "fig:gapbs-pgo"
+    "fig:mdp-comp"
     "sec:futurework")
    (LaTeX-add-bibliographies
     "bibtex")

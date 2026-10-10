@@ -24,7 +24,9 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 
 \RevBLink{3} \textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
 
-\RevBLink{4} 
+\RevBLink{4} \textbf{Applicability beyond Store Sets.} Recently proposed memory dependence predictors, such as PHAST and MASCOT, target high-performance cores and incur complexity that is unnecessary for constrained cores. In contrast, PG-MDP targets simpler, conservative memory dependence prediction techniques that prioritize avoiding pipeline flushes, often at the expense of introducing false dependencies. More importantly, PG-MDP is orthogonal to the underlying MDP: it targets false-dependence predictions regardless of whether they arise from aliasing or the predictor mechanism itself. Nonetheless, we have extended the evaluation with additional MDP designs (See \RevD{1}).
+
+\RevBLink{5} \textbf{How many memory units were simulated?} We modeled the processor with 6 load/store functional units. We have added this information to Table~\ref{table:cpu-models}.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -32,13 +34,13 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
+\RevCLink{1} \textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
 
-\textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. 
+\RevCLink{2} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. 
 
-\textbf{x86.} \textcolor{red}{To complete! Need clarification probably in the text.}
+\RevCLink{3} \textbf{Load labelling on x86.} \textcolor{red}{Encoding load labels in x86 is more challenging due to (1) its variable-length instruction encoding and (2) the diversity of instructions that support memory operands. Prior work on branch profiling~\cite{song22} proposed encoding a 2-bit hint using reserved instruction-encoding space. However, repurposing such space may introduce compatibility concerns with future ISA extensions. Alternatively, in 64-bit x86, load labels could potentially be encoded using otherwise ignored segment-override prefixes, at the cost of an additional byte per labeled instruction.} 
 
-\textbf{When are MDP misprediction is flushed.} Upon detection, when a store discovers that a younger load has executed prematurely and violated memory ordering.
+\RevCLink{4} \textbf{When are MDP misprediction flushed.} Upon detection, when a store discovers that a younger load has executed prematurely and violated memory ordering. We have included this information in the methodology (Section~\ref{sec:method}).
 
 
 \vspace{-0.2cm}
@@ -47,7 +49,13 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Comparison to other approaches.} \textcolor{red}{TODO.}
+\RevDLink{1} \textbf{Comparison to other approaches.} We have extended the evaluation with more memory dependence predictors: the original Store Sets~\cite{storesets}, Store Vectors~\cite{storevectors}, load wait table \textcolor{red}{CITE THE LOAD WAIT TABLE HERE}, and XS store sets filtered with a Load Wait Table (LWT) \textcolor{red}{Luke, check if the LWT meaning is correct} (Section \textcolor{red}{??}).
+
+\RevDLink{2} \textbf{Evaluation on additional workload classes.} We have included an evaluation of the GAPBS benchmark suite (Section~\textcolor{red}{??}).
+
+\RevDLink{3} \textbf{Clarification on PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
+
+\RevDLink{4} \textbf{Independently varying core resources and predictor capacity.} \textcolor{red}{TODO (or TODISCUSS)}.
 
 
 \vspace{-0.2cm}
@@ -56,7 +64,8 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\textbf{Complexity.} \textcolor{red}{TODO.}
+\RevELink{1} \textbf{Performance Gains and Hardware Overhead of PG-MDP.} As stated in \RevB{3}, the hardware overhead of PG-MDP consists of a single bit that forces the MDP to always return no dependency upon lookup. Consequently, PG-MDP introduces negligible additional hardware complexity. We have also extended our evaluation to include additional benchmarks (see \RevD{2}) and memory dependence predictor designs (see \RevD{1}), providing a broader assessment of PG-MDP's performance benefits.
+\textcolor{red}{Regarding the area, power, and delay overhead of increasing the baseline MDP size relative to the entire core, although we acknowledge the importance of this comparison, developing and validating an appropriate core-level model was not feasible within the limited rebuttal period. Therefore, we cannot reliably quantify the overhead of scaling the MDP relative to the entire core}.  \textcolor{reviewer4}{$\leftarrow$ This is probably putting a nail in our coffin... Dependending on what we answer to \RevB{2}, we could add something here, but not compare against the full core...}
 
 
 \clearpage

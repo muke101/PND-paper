@@ -10,7 +10,7 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 
 \RevALink{2} \textbf{Figures 6 and 9} We have added an introduction to these figures and re-worked the text.
 
-\RevALink{3} \textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section IV-A.
+\RevALink{3} \textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section~\ref{sec:models}.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -24,12 +24,10 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 
 \RevBLink{3} \textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
 
-\RevBLink{4} \textbf{Applicability beyond Store Sets.} The majority of IPC gain that PG-MDP delivers in our results does indeed come from aliasing, as shown by the change in IPC gain as Store Set size is scaled in Fig. 1. However as PG-MDP is orthogonal to the underlying MDP it is not only applicable to Store Sets and has potential to deliver gains with any capacity-constrained predictor, which as established is unanimous in the class of processors we target. 
+\RevB{4} \textbf{Applicability beyond Store Sets.} The majority of IPC gain that PG-MDP delivers in our results does indeed come from aliasing, as shown by the change in IPC gain as Store Set size is scaled in Fig. 1 and 6. However as PG-MDP is orthogonal to the underlying MDP it is not only applicable to Store Sets and has potential to deliver gains with any capacity-constrained predictor, which as established is unanimous in the class of processors we target. 
 % Recently proposed memory dependence predictors, such as PHAST and MASCOT, target high-performance cores and incur complexity that is unnecessary for constrained cores. In contrast, PG-MDP targets simpler, conservative memory dependence prediction techniques that prioritize avoiding pipeline flushes, often at the expense of introducing false dependencies. More importantly, PG-MDP is orthogonal to the underlying MDP: it targets false-dependence predictions regardless of whether they arise from aliasing or the predictor mechanism itself. 
 
-
-
-\RevBLink{5} \textbf{How many memory units were simulated?} We modeled the processor with 6 load/store functional units. We have added this information to Table~\ref{table:cpu-models}.
+\RevBLink{5} \textbf{How many memory units were simulated?} We modeled the processor with 6 load/store functional units. We have added this information to Table~\ref{table:cpu-models}. \textcolor{red}{ $\leftarrow$ TODO: check if correct, and add it.}
 
 \vspace{-0.2cm}
 \begin{center}
@@ -37,15 +35,15 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\RevCLink{1} \textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
+\RevC{1} \textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
 
-\RevCLink{2} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. 
+\RevCLink{2} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. We have included this information in Section~\ref{sec:XSstoresets}
 
-\RevCLink{3} \textbf{Load labelling on x86.} \textcolor{red}{Encoding load labels in x86 is more challenging due to (1) its variable-length instruction encoding and (2) the diversity of instructions that support memory operands. Prior work on branch profiling~\cite{song22} proposed encoding a 2-bit hint using reserved instruction-encoding space. However, repurposing such space may introduce compatibility concerns with future ISA extensions. Alternatively, in 64-bit x86, load labels could potentially be encoded using otherwise ignored segment-override prefixes, at the cost of an additional byte per labeled instruction.} 
+\RevCLink{3} \textbf{Load labelling on x86.} %\textcolor{red}{Encoding load labels in x86 is more challenging due to (1) its variable-length instruction encoding and (2) the diversity of instructions that support memory operands. Prior work on branch profiling~\cite{song22} proposed encoding a 2-bit hint using reserved instruction-encoding space. However, repurposing such space may introduce compatibility concerns with future ISA extensions. Alternatively, in 64-bit x86, load labels could potentially be encoded using otherwise ignored segment-override prefixes, at the cost of an additional byte per labeled instruction.} 
 
 TODO: going to rewrite III-D to make it clearer and expand with the option for byte prefixes. Then we should be able to just refer to that for this question.
 
-\RevCLink{4} \textbf{When are MDP misprediction flushed.} Upon detection, when a store executes and discovers that a younger load has executed prematurely and violated memory ordering. We have included this information in the methodology (Section~\ref{sec:method}).
+\RevCLink{4} \textbf{When are MDP misprediction flushed.} Upon detection, when a store executes and discovers that a younger load has executed prematurely and violated memory ordering. We have included this information in the methodology (Section~\ref{sec:models}).
 
 
 \vspace{-0.2cm}
@@ -54,13 +52,13 @@ TODO: going to rewrite III-D to make it clearer and expand with the option for b
 \end{center}
 \vspace{-0.2cm}
 
-\RevDLink{1} \textbf{Comparison to other approaches.} We have extended the evaluation to include comparison against more memory dependence prediction techniques. This includes the original Store Sets~\cite{storesets}, XS Store Sets filtered with a load-wait table~\cite{kessler1999alpha} (i.e. only loads that hit in the load-wait table index XS Store Sets), a reproduction of Feedback-Directed Memory Disambiguation Through Store Distance Analysis~\cite{storedistance}, and for completeness 'Always Speculate' and 'Never Speculate' runs. The evaluation shows that PG-MDP outperforms a load-wait table filter mechanism, even for a table with as much capacity as XS Store Sets itself. It further shows that \cite{storedistances} only delivers an additional 0.55\% IPC over PG-MDP despite incurring the cost of encoding an additional 5 bits in every load instruction (the fetch bandwidth performance penalty of which we have generously not modelled). 
+\RevDLink{1} \textbf{Comparison to other approaches.} We have extended the evaluation to include comparison against more memory dependence prediction techniques. This includes the original Store Sets~\cite{storesets}, XS Store Sets filtered with a load-wait table~\cite{kessler1999alpha} (i.e. only loads that hit in the load-wait table index XS Store Sets), a reproduction of Feedback-Directed Memory Disambiguation Through Store Distance Analysis~\cite{storedistance}, and for completeness 'Always Speculate' and 'Never Speculate' runs. The evaluation shows that PG-MDP outperforms a load-wait table filter mechanism, even for a table with as much capacity as XS Store Sets itself. It further shows that \cite{storedistance} only delivers an additional 0.55\% IPC over PG-MDP despite incurring the cost of encoding an additional 5 bits in every load instruction (the fetch bandwidth performance penalty of which we have generously not modelled). 
 
 % We have extended the evaluation with more memory dependence predictors: the original Store Sets~\cite{storesets}, Store Vectors~\cite{storevectors}, load wait table \textcolor{red}{CITE THE LOAD WAIT TABLE HERE}, and XS store sets filtered with a Load Wait Table (LWT) \textcolor{red}{Luke, check if the LWT meaning is correct} (Section \textcolor{red}{??}).
 
 \RevDLink{2} \textbf{Evaluation on additional workload classes.} 
 
-\RevDLink{3} \textbf{Clarification on PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
+\RevD{3} \textbf{Clarification on PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
 
 \RevDLink{4} \textbf{Independently varying core resources and predictor capacity.} While this can be inferred by the results already included we appreciate this is not very clear, so we have expanded Fig. 6 to include plots for both the small and medium cores. The impact of IPC can now be isolated by looking at a single x-value for both plots.
 

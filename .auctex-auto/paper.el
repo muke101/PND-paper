@@ -91,8 +91,10 @@
     "fig:ipc_medium"
     "fig:lookups"
     "fig:readports"
-    "table:mdp-params"
+    "sec:mdp-comp"
     "fig:mdp-comp"
+    "table:mdp-params"
+    "sec:gapbs"
     "fig:gapbs-pgo"
     "sec:relatedwork"
     "sec:futurework")

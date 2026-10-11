@@ -10,6 +10,8 @@
     "vtage"
     "xiangshan"
     "roadnottaken"
+    "uk2002"
+    "osm"
     "mcpatrepo"
     "dcpt"
     "riscv-custom"

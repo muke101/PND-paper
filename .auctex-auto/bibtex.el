@@ -13,6 +13,8 @@
     "mcpatrepo"
     "dcpt"
     "riscv-custom"
+    "gapbs"
+    "spec2017"
     "armarm-f-c"
     "mcpatpaper"
     "xiangshan-gem5"
@@ -68,6 +70,9 @@
     "10.1145/1065010.1065034"
     "asan"
     "liu24"
-    "liu26b"))
+    "liu26b"
+    "song22"
+    "speccpu17"
+    "GAPBS"))
  '(or :bibtex :latex))
 

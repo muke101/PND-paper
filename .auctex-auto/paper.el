@@ -8,16 +8,16 @@
    (TeX-add-to-alist 'LaTeX-provided-package-options
                      '(("xcolor" "dvipsnames" "") ("cite" "") ("amssymb" "") ("amsfonts" "") ("algorithmic" "") ("graphicx" "") ("textcomp" "") ("url" "hyphens") ("fancyhdr" "") ("hyperref" "hidelinks" "") ("soul" "") ("makecell" "") ("circuitikz" "") ("pgfplots" "") ("listings" "") ("color" "") ("caption" "") ("multirow" "") ("amsmath" "") ("tikz" "")))
    (add-to-list 'LaTeX-verbatim-environments-local "lstlisting")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "lstinline")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "href")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperimage")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperbaseurl")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "url")
-   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
    (add-to-list 'LaTeX-verbatim-macros-with-braces-local "ead")
-   (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "path")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "url")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "nolinkurl")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperbaseurl")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "hyperimage")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "href")
+   (add-to-list 'LaTeX-verbatim-macros-with-braces-local "lstinline")
    (add-to-list 'LaTeX-verbatim-macros-with-delims-local "path")
+   (add-to-list 'LaTeX-verbatim-macros-with-delims-local "lstinline")
    (TeX-run-style-hooks
     "latex2e"
     "hpca-template"
@@ -77,6 +77,7 @@
     "fig:ssitsweep"
     "sec:lsq"
     "fig:lsq"
+    "sec:XSstoresets"
     "sec:method"
     "sec:storedistances"
     "sec:profiles"
@@ -90,8 +91,10 @@
     "fig:ipc_medium"
     "fig:lookups"
     "fig:readports"
-    "fig:gapbs-pgo"
+    "table:mdp-params"
     "fig:mdp-comp"
+    "fig:gapbs-pgo"
+    "sec:relatedwork"
     "sec:futurework")
    (LaTeX-add-bibliographies
     "bibtex")

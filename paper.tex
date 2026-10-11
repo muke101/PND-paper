@@ -482,14 +482,14 @@ PG-MDP requires only a binary ISA annotation that distinguishes conventional loa
 
 \section{Evaluation}
 
-This section presents the experimental design and results of applying PG-MDP to SPECspeed 2017. We first demonstrate the extent to which the predictor working set can be reduced. We then present a breakdown of per-workload performance gains on the small core, and show how PG-MDP performs on a medium sized core scaled to double the size of the small core. Lastly we evaluate the minimum number of MDP read ports required with and without PG-MDP to achieve maximum performance.
+\textcolor{blue}{This section presents the experimental design used for evaluation, a breakdown of applying PG-MDP to SPECspeed 2017 \cite{spec2017}, a comparison of PG-MDP against other MDP mechanisms, and an evaluation of GAPBS \cite{gapbs} to show how PG-MDP can generalize on different classes of workloads. Within evaluation of SPECspeed 2017,} we demonstrate the extent to which the predictor working set can be reduced, present a breakdown of per-workload performance gains on the small core, show how PG-MDP performs on a medium sized core scaled to double the size of the small core, and evaluate the minimum number of MDP read ports required with and without PG-MDP to achieve maximum performance. 
 
 \subsection{Experimental Design}
 \label{sec:models}
 
 We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. %We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. \textcolor{blue}{Results show the weighted average of the intervals. Some benchmarks run with different inputs, represented with an input number at the end of their label.} 
-\RevATarget{3}\textcolor{blue}{We evaluate PG-MDP using the SPEC CPU 2017 Speed suite~\cite{speccpu17} with reference inputs \textcolor{red}{and GAPBS~\cite{GAPBS}?}. The benchmarks were \textcolor{red}{cross-compiled} for AArch64 using \textcolor{red}{COMPILER VERSION AND MAIN COMPILATION FLAGS}. For benchmarks with multiple reference inputs, we assign an incremental suffix to each benchmark–input combination. To reduce simulation time, we use SimPoint~\cite{simpoints} to select up to 10 representative intervals of 100 million instructions per benchmark–input combination, with an additional 10 million instructions for warm-up before each interval. We report results as the weighted average across the selected intervals.}
-gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. \RevCTarget{4} \textcolor{blue}{Memory ordering violations trigger a pipeline squash as soon as they are detected.} and violating labelled loads still roll back as normal to not alter program semantics.
+\RevATarget{3}\textcolor{blue}{We evaluate PG-MDP using the SPEC CPU 2017 Speed suite~\cite{spec2017} with reference inputs and GAPBS~\cite{gapbs}. The benchmarks were compiled for AArch64 using GCC 13 with O3 and LTO. For benchmarks with multiple reference inputs, we assign an incremental suffix to each benchmark–input combination. To reduce simulation time, we use SimPoint~\cite{simpoints} to select up to 10 intervals of 100 million instructions per benchmark–input combination for SPEC CPU 2017, up to 5 intervals of 200 million instructions for GAPBS, and for both suites an additional 10 million instructions for warm-up before each interval. We report results as the weighted average across the selected intervals.}
+gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. \RevCTarget{4} \textcolor{blue}{Memory ordering violations trigger a pipeline squash as soon as they are detected by an executing store} and violating labelled loads still roll back as normal to not alter program semantics.
 
 The modeled small core is intended to resemble out-of-order efficiency cores deployed today, such as Apple's M-series efficiency cores. We stress that this correspondence is only approximate, as gem5 is a model with its own micro-architectural assumptions and features. The design class is modeled with a configuration that is appropriate to gem5 rather than by replicating any single processor. We configure XS Store Sets to use 128 SSIT entries and 64 LFST entries with two slots each, coming to a baseline-favourable 300B of MDP storage.
 
@@ -506,6 +506,8 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
    \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{128\\77\\41\\26} & \makecell{256\\154\\85\\66}\\
    \hline
    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{6\\8} & \makecell{8\\12}\\
+   \hline
+   \textbf{\makecell{Function\\ Units}} & \makecell{Int ALU\\FP ALU:\\INT \& FP MulDiv\\Memory:} & \makecell{8\\6\\4\\6} & \makecell{10\\8\\6\\8}\\
    \hline
    \textbf{\makecell{XS Store Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{128\\64\\2\\125k} & \makecell{256\\128\\2\\125k}\\
    \hline
@@ -624,6 +626,36 @@ Because PG-MDP reduces the MDP working set so significantly, it could permit des
 
 This evaluation should not be confused with a claim of how many MDP read ports real processors require. We do not evaluate predictor latency, nor the low level techniques that may or may not hide that latency, and so these results must be understood in a relative sense, i.e. through the comparison between baseline and PG-MDP, instead of as an absolute claim. 
 
+\subsection{Comparison With Other Techniques}
+
+\begin{table}[h!]
+ \centering
+ \caption{Predictor Parameters}
+ \label{table:mdp-params}
+ \begin{tabular}{|c|c|c|}
+   \hline
+   \textbf{\makecell{Store Sets}} & \makecell{SSIT:\\LFST:\\Clear:} & \makecell{128\\128\\125k}\\ 
+   \hline
+   \textbf{\makecell{XS Store Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{128\\64\\2\\125k}\\ 
+   \hline
+   \textbf{\makecell{Load-Wait Table}} & \makecell{Entries:\\Clear:} & \makecell{2048\\125k}\\ 
+   \hline
+ \end{tabular}
+\end{table}
+
+\textcolor{blue}{ We evaluate additional MDP techniques on SPECspeed 2017 in Figure \ref{fig:mdp-comp} to show how PG-MDP applies beyond XS Store Sets and how it compares to similar techniques. We include blind speculation, no speculation, the original Store Sets \cite{storesets}, our existing XS Store Sets evaluation, XS Store Sets filtered with a Alpha 21264 load-wait table \cite{kessler1999alpha}, and a reproduction of work proposed in Feedback-Directed Memory Disambiguation Through Store Distance Analysis \cite{storedistance} (referred to as FDMD).}
+
+\textcolor{blue}{A load-wait table (LWT) is an early and simple type of memory dependence predictor proposed in the Alpha 21264 \cite{kessler1999alpha}. It consists of a PC-indexed bitvector which tracks whether a given load has ever triggered a memory order violation, stalling it on all prior stores on hit and issuing as soon as possible on miss. A LWT could be coupled with a modern memory dependence predictor to provide a hardware solution to the same problem that PG-MDP addresses, i.e. filtering memory independent loads from the MDP working set. This would have the advantage of dynamic run time training rather than relying on profiles, but comes at the cost of table saturation and periodic resets in the same fashion as Store Sets. We evaluate XS Store Sets filtered by a LWT of the same size as XS Store Sets itself at 2048 entries. The results show it fails to outperform PG-MDP applied to just XS Store Sets, despite the additional hardware budget. This demonstrates that in this case the benefits of learning dynamically do not outweigh the penalties of the hardware scheme.}
+
+\textcolor{blue}{FDMD \cite{storedistance} is an alternative profile-guided hardware-software co-design technique which provides predictions for all load instructions by encoding their dependent store distance in their immediate operand value. In our small core model it would require 5 bits to cover the whole store queue. The original proposal targets MIPS, which has 16 bit immediate operand fields on load instructions. For the ISAs we primarily target, AArch64 and RISCV, loads have at most 12 bit immediate operand fields or often none at all, instead using register offsets. This means implementing FDMD on these ISAs would require emission of additional address generation instructions and restricted register allocation for all loads. \textbf{We model FDMD without these penalties to represent a performance ceiling that a profile-guided memory dependence prediction mechanism could achieve.} FDMD is trained exactly as PG-MDP, using only SPECspeed 2017 train inputs to generate profiles. The results show that the ideal FDMD only provides 0.55\% additional performance over PG-MDP, demonstrating that PG-MDP is able to capture the majority of performance at no encoding cost on AArch64 or RISCV.}
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=2\columnwidth,keepaspectratio]{figures/mdp_comp.pdf}
+  \caption{}
+\label{fig:mdp-comp}
+\end{figure*}
+
 \subsection{GAPBS}
 
 \begin{figure}[t]
@@ -633,17 +665,10 @@ This evaluation should not be confused with a claim of how many MDP read ports r
 \label{fig:gapbs-pgo}
 \end{figure}
 
-\subsection{MDP Comparison}
-
-\begin{figure*}[t]
-  \centering
-  \includegraphics[width=2\columnwidth,keepaspectratio]{figures/mdp_comp.pdf}
-  \caption{}
-\label{fig:mdp-comp}
-\end{figure*}
 
 
 \section{Related Work}
+\label{sec:relatedwork}
 
 \emph{Improving Memory Dependence Prediction with Static Analysis} \cite{arcs} tackles the same problem as this paper, but by using static analysis to determine which load instructions to label. It demonstrates small ($<$1\%) IPC gains in select workloads, but with an overall best-case geomean improvement of less than 0.1\%. This is due to only reducing average false dependencies by 7.5\%, over 10x less than PG-MDP. Furthermore, due to relying on static analysis it also sees notable performance regressions elsewhere, hurting viability. In comparison, by leveraging profiles we are able to achieve much higher IPC gains while also avoiding significant regressions. 
 

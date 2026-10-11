@@ -238,20 +238,20 @@
 \usetikzlibrary{shapes.geometric, positioning, arrows.meta, calc, decorations.pathreplacing, matrix}
 
 % Reviewer colors
-\definecolor{reviewer1}{rgb}{0.10,0.25,0.65} % royal blue
-\definecolor{reviewer2}{rgb}{0.65,0.35,0.10} % brown
-\definecolor{reviewer3}{rgb}{0.75,0.15,0.40} % magenta/rose
-\definecolor{reviewer4}{rgb}{0.20,0.55,0.35} % teal-green
-\definecolor{reviewer5}{rgb}{0.35,0.35,0.35} % dark gray
+%\definecolor{reviewer1}{rgb}{0.10,0.25,0.65} % royal blue
+%\definecolor{reviewer2}{rgb}{0.65,0.35,0.10} % brown
+%\definecolor{reviewer3}{rgb}{0.75,0.15,0.40} % magenta/rose
+%\definecolor{reviewer4}{rgb}{0.20,0.55,0.35} % teal-green
+%\definecolor{reviewer5}{rgb}{0.35,0.35,0.35} % dark gray
 
 % Small reviewer/question badge
 \newcommand{\rev}[3][]{%
   \tikz[baseline=(X.base)]{
     \node[
-      draw=#2,
+      draw=none,
       fill=white,
       text=#2,
-      rounded corners=2pt,
+      rounded corners=0pt,
       inner xsep=1pt,
       inner ysep=2pt,
       font=\sffamily\bfseries\footnotesize,
@@ -261,11 +261,11 @@
 }
 
 % Convenient reviewer-specific commands (so they can see which change is for them)
-\newcommand{\RevA}[1]{\rev{reviewer1}{A--Q#1}}
-\newcommand{\RevB}[1]{\rev{reviewer2}{B--Q#1}}
-\newcommand{\RevC}[1]{\rev{reviewer3}{C--Q#1}}
-\newcommand{\RevD}[1]{\rev{reviewer4}{D--Q#1}}
-\newcommand{\RevE}[1]{\rev{reviewer5}{E--Q#1}}
+\newcommand{\RevA}[1]{\rev{blue}{RevA.#1}}
+\newcommand{\RevB}[1]{\rev{blue}{RevB.#1}}
+\newcommand{\RevC}[1]{\rev{blue}{RevC.#1}}
+\newcommand{\RevD}[1]{\rev{blue}{RevD.#1}}
+\newcommand{\RevE}[1]{\rev{blue}{RevE.#1}}
 
 % Hyperlinks and targets so that the rebuttal letter directly moves the reviewer to the change.
 \newcommand{\RevALink}[1]{\hyperlink{R1-#1}{\RevA{#1}}}
@@ -446,6 +446,7 @@ The heuristic of filtering for sufficiently long store distances captures four d
 Loads with behavior type (1) are always labeled regardless of the threshold value. Whether a load exhibits behaviors (2) to (4) depends on the target processor. For instance, a processor with a longer SQ will hold more in-flight stores at once, so only loads with longer store distances will be labeled. The proportion of loads that exhibit type (4) behavior is even further target specific, but is still correlated with a longer store distance as this puts more time between dispatching the store and issuing the load, making it more likely the store's address will be resolved when needed.
 
 \subsection{Profiler Implementation \& Overhead}
+\label{sec:profiler_impl}
 
 For total precision this paper uses binary instrumentation on train inputs to derive store distances. The core of store distance computation is load and store memory address comparison, widely used in existing techniques such as address sanitizers \cite{asan}. The restricted scope of PG-MDP permits a simpler algorithm still. The memory address of each executed store is recorded in a FIFO queue of the same capacity as the store distance threshold of the target processor (e.g. 8). When executing a load the queue is searched to find the first prior occurrence of a matching address, if any. Each static load holds an entry in a PC-indexed hash map recording both the number of times a match did and did not occur. After program completion the hash map of load instructions is filtered for loads that did not find matches in the queue in at least 95\% of executions. The resulting list is then the load PCs to be labeled. For ease of implementation, load labels in this work are implemented in simulation using a text file of load addresses. In real deployment this list would be used to patch the program binary at the specified addresses with alternate opcodes. As instruction bandwidth is unchanged this would yield identical results.
 
@@ -474,7 +475,7 @@ Lastly, profiles are able to provide further benefits than static analysis. Of t
 
 \subsection{Encoding Labels}
 
-PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labeled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major custom opcodes for target-specific use \cite{riscv-custom}, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type layout and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labeled and non-labeled loads, while remaining meaningless on other targets. In both cases the ISA is able to be modified in a way where targets that benefit from PG-MDP can use labeled loads, and targets that don't see no difference. \textcolor{blue}{The x86 ISA is more challenging due to variable-length instruction encoding and the diversity of instructions that support memory operands. Prior work \cite{cooperative} proposes solving this problem by emitting an additional read-only program binary section to record which load PCs are labeled, and then using on-chip pre-decode logic to apply label bits as instructions are loaded into the i-cache. This solution would maintain the critical requirement of not increasing instruction bandwidth, but would incur some hardware overhead, including area cost and possibly an additional cycle of latency to load cachelines into the L1I cache.}
+PG-MDP requires only a binary ISA annotation that distinguishes conventional loads from labeled loads, and so comes with no increase in instruction bandwidth or change to binary layout. This is practically implementable in both RISC-V and AArch64, which provides coverage for the majority of efficiency-focused cores deployed today. RISC-V reserves four major custom opcodes for target-specific use \cite{riscv-custom}, and so standard $LOAD$ instructions could be mirrored to just one of these while retaining the ordinary I-type layout and other ISA semantics. In AArch64, loads are distinguished by a two-bit $opc$ field, and $opc=1x$ is left unallocated as this would encode a meaningless sign-extension \cite[\S C4-294 to C4-296]{armarm-f-c}. This leaves open an additional bit that could be used to distinguish labeled and non-labeled loads, while remaining meaningless on other targets. In both cases the ISA is able to be modified in a way where targets that benefit from PG-MDP can use labeled loads, and targets that don't see no difference. \RevCTarget{3} \textcolor{blue}{The x86 ISA is more challenging due to variable-length instruction encoding and the diversity of instructions that support memory operands. Prior work \cite{cooperative} proposes solving this problem by emitting an additional read-only program binary section to record which load PCs are labeled, and then using on-chip pre-decode logic to apply label bits as instructions are loaded into the i-cache. This solution would maintain the critical requirement of not increasing instruction bandwidth, but would incur some hardware overhead, including area cost and possibly an additional cycle of latency to load cachelines into the L1I cache.}
 
 \subsection{\textcolor{blue}{Hardware overhead}}
 
@@ -497,7 +498,7 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
 
 \begin{table}[h!]
  \centering
- \caption{Parameters of processor components for each simulated model}
+ \caption{\protect \RevBTarget{5} Parameters of processor components for each simulated model}
  \label{table:cpu-models}
  \begin{tabular}{|c|c|c|c|}
    \hline
@@ -507,7 +508,7 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
    \hline
    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{6\\8} & \makecell{8\\12}\\
    \hline
-   \textbf{\makecell{Functional\\ Units}} & \makecell{Int ALU\\FP ALU:\\Int \& FP MulDiv\\Memory:} & \makecell{8\\6\\4\\6} & \makecell{10\\8\\6\\8}\\
+   \textcolor{blue}{\textbf{\makecell{Functional\\ Units}}} & \textcolor{blue}{\makecell{Int ALU\\FP ALU:\\Int \& FP MulDiv\\Memory:}} & \textcolor{blue}{\makecell{8\\6\\4\\6}} & \textcolor{blue}{\makecell{10\\8\\6\\8}}\\
    \hline
    \textbf{\makecell{XS Store Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{128\\64\\2\\125k} & \makecell{256\\128\\2\\125k}\\
    \hline
@@ -582,7 +583,7 @@ void pixel_avg( uint8_t *dst, uint8_t *src1,  uint8_t *src2,
 \begin{figure*}[t]
   \centering
   \includegraphics[width=2\columnwidth, keepaspectratio]{figures/ssit_sweep.pdf}
-  \caption{Base and improved IPC across SPECspeed 2017 for increasing XS Store Sets \cite{xiangshan-gem5} sizes on the medium (ROB=256) and small (ROB=128) cores. Higher ILP in the medium helps PG-MDP, but the larger baseline MDP size (256 entries) outweighs this and reduces overall IPC gain by 1\%.} 
+  \caption{\protect \RevDTarget{4} \textcolor{blue}{Base and improved IPC across SPECspeed 2017 for increasing XS Store Sets \cite{xiangshan-gem5} sizes on the medium (ROB=256) and small (ROB=128) cores.} Higher ILP in the medium helps PG-MDP, but the larger baseline MDP size (256 entries) outweighs this and reduces overall IPC gain by 1\%.} 
 \label{fig:ipc_medium}
 \end{figure*}
 
@@ -639,7 +640,7 @@ This evaluation should not be confused with a claim of how many MDP read ports r
  \end{tabular}
 \end{table}
 
-\textcolor{blue}{ We evaluate additional MDP techniques on SPECspeed 2017 in Figure \ref{fig:mdp-comp} to show how PG-MDP applies beyond XS Store Sets and how it compares to similar techniques. We include blind speculation, no speculation, the original Store Sets \cite{storesets}, our existing XS Store Sets evaluation, XS Store Sets filtered with a Alpha 21264 load-wait table \cite{kessler1999alpha}, and a reproduction of work proposed in Feedback-Directed Memory Disambiguation Through Store Distance Analysis \cite{storedistance} (referred to as FDMD).}
+\RevDTarget{1} \textcolor{blue}{We evaluate additional MDP techniques on SPECspeed 2017 in Figure \ref{fig:mdp-comp} to show how PG-MDP applies beyond XS Store Sets and how it compares to similar techniques. We include blind speculation, no speculation, the original Store Sets \cite{storesets}, our existing XS Store Sets evaluation, XS Store Sets filtered with a Alpha 21264 load-wait table \cite{kessler1999alpha}, and a reproduction of work proposed in Feedback-Directed Memory Disambiguation Through Store Distance Analysis \cite{storedistance} (referred to as FDMD).}
 
 \textcolor{blue}{A load-wait table (LWT) is a simple type of memory dependence predictor proposed in the Alpha 21264 \cite{kessler1999alpha}. It consists of a PC-indexed bitvector which tracks whether a given load has ever triggered a memory order violation, stalling it on all prior stores on hit and issuing as soon as possible on miss. A LWT could be coupled with a modern memory dependence predictor to provide a hardware solution for the same problem that PG-MDP addresses, i.e. filtering memory independent loads from the MDP working set. This would have the advantage of dynamic run time training rather than relying on profiles, but comes at the cost of table saturation and periodic resets in the same fashion as Store Sets. This approach also requires additional area which inherits the same multi-porting constraint described in Section \ref{sec:introduction}. We evaluate XS Store Sets filtered by a LWT of the same size as XS Store Sets itself at 2048 entries. The results show it fails to outperform PG-MDP applied to just XS Store Sets, despite the additional hardware budget. This demonstrates that in this case the benefits of learning dynamically do not outweigh the penalties of the hardware scheme.}
 
@@ -648,7 +649,7 @@ This evaluation should not be confused with a claim of how many MDP read ports r
 \subsection{GAPBS}
 \label{sec:gapbs}
 
-\textcolor{blue}{As a profile-guided method it is important to demonstrate that PG-MDP can be applied to different classes of workloads without harming performance, even if reducing false memory dependencies does not deliver gains. GAPBS \cite{gapbs} is chosen to test this due to covering workloads with irregular memory access patterns very different to most SPEC CPU 2017 workloads. However, being highly memory-bound means the potential performance from increasing available ILP is negligible, especially in area-constrained cores. The experimental design for GAPBS is as listed in Section \ref{sec:models}, except SimPoint is used by selecting up to 5 intervals of 200 million instructions due to the higher resource demands of the suite. We currently only evaluate IPC on a subset of GAPBS, with $sssp$, $tc$ and $bc.urand$ absent due to long checkpoint generation time. For training inputs, we select a web-crawl of the .uk domain (uk-2002, ~18M vertices) \cite{uk2002}, distances of roads in southwest Germany (OSM Baden-W\"urttemberg, ~3M vertices) \cite{osm}, a synthetic Kronecker graph with $2^{22}$ vertices and a synthetic uniform graph also with $2^{22}$ vertices. These training inputs are representative of the GAPBS reference inputs while still being significantly smaller and containing no overlap.}
+\RevDTarget{2} \textcolor{blue}{As a profile-guided method it is important to demonstrate that PG-MDP can be applied to different classes of workloads without harming performance, even if reducing false memory dependencies does not deliver gains. GAPBS \cite{gapbs} is chosen to test this due to covering workloads with irregular memory access patterns very different to most SPEC CPU 2017 workloads. However, being highly memory-bound means the potential performance from increasing available ILP is negligible, especially in area-constrained cores. The experimental design for GAPBS is as listed in Section \ref{sec:models}, except SimPoint is used by selecting up to 5 intervals of 200 million instructions due to the higher resource demands of the suite. We currently only evaluate IPC on a subset of GAPBS, with $sssp$, $tc$ and $bc.urand$ absent due to long checkpoint generation time. For training inputs, we select a web-crawl of the .uk domain (uk-2002, ~18M vertices) \cite{uk2002}, distances of roads in southwest Germany (OSM Baden-W\"urttemberg, ~3M vertices) \cite{osm}, a synthetic Kronecker graph with $2^{22}$ vertices and a synthetic uniform graph also with $2^{22}$ vertices. These training inputs are representative of the GAPBS reference inputs while still being significantly smaller and containing no overlap.}
 
 % \begin{figure*}[t]
 %   \centering

@@ -248,7 +248,7 @@
 \newcommand{\rev}[3][]{%
   \tikz[baseline=(X.base)]{
     \node[
-      draw=#2,
+      draw=none,
       fill=white,
       text=#2,
       rounded corners=2pt,
@@ -261,11 +261,11 @@
 }
 
 % Convenient reviewer-specific commands (so they can see which change is for them)
-\newcommand{\RevA}[1]{\rev{reviewer1}{A--Q#1}}
-\newcommand{\RevB}[1]{\rev{reviewer2}{B--Q#1}}
-\newcommand{\RevC}[1]{\rev{reviewer3}{C--Q#1}}
-\newcommand{\RevD}[1]{\rev{reviewer4}{D--Q#1}}
-\newcommand{\RevE}[1]{\rev{reviewer5}{E--Q#1}}
+\newcommand{\RevA}[1]{\rev{blue}{RevA.#1}}
+\newcommand{\RevB}[1]{\rev{blue}{RevB.#1}}
+\newcommand{\RevC}[1]{\rev{blue}{RevC.#1}}
+\newcommand{\RevD}[1]{\rev{blue}{RevD.#1}}
+\newcommand{\RevE}[1]{\rev{blue}{RevE.#1}}
 
 % Hyperlinks and targets so that the rebuttal letter directly moves the reviewer to the change.
 \newcommand{\RevALink}[1]{\hyperlink{R1-#1}{\RevA{#1}}}
@@ -500,7 +500,7 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
 
 \begin{table}[h!]
  \centering
- \caption{Parameters of processor components for each simulated model}
+ \caption{\protect \RevBTarget{6} Parameters of processor components for each simulated model}
  \label{table:cpu-models}
  \begin{tabular}{|c|c|c|c|}
    \hline
@@ -510,7 +510,7 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
    \hline
    \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{6\\8} & \makecell{8\\12}\\
    \hline
-   \textbf{\makecell{Functional\\ Units}} & \makecell{Int ALU:\\FP ALU:\\Int \& FP MulDiv\\Memory:} & \makecell{8\\6\\4\\6} & \makecell{10\\8\\6\\8}\\
+   \textcolor{blue}{\textbf{\makecell{Functional\\ Units}}} & \textcolor{blue}{\makecell{Int ALU:\\FP ALU:\\Int \& FP MulDiv\\Memory:}} & \textcolor{blue}{\makecell{8\\6\\4\\6}} & \textcolor{blue}{\makecell{10\\8\\6\\8}}\\
    \hline
    \textbf{\makecell{XS Store Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{128\\64\\2\\125k} & \makecell{256\\128\\2\\125k}\\
    \hline
@@ -603,7 +603,7 @@ Lastly we note that in select cases PG-MDP can lead to a small performance regre
 \subsection{Reducing MDP Read Ports}
 \label{sec:readports}
 
-\RevATarget{2} \RevBTarget{3} \textcolor{blue}{Section \ref{sec:introduction} establishes the high number of read ports as a constraint of MDP design. Additional read ports incur greater area costs, and so a given area budget can fit fewer table entries. Because PG-MDP reduces the MDP working set so significantly, it could permit designing MDPs with fewer read ports, and allow reinvestment of available area into more table entries.} To test this, we extend gem5 to model MDP read ports and evaluate how many ports are required to achieve maximum performance with and without PG-MDP. This is implemented by constraining the maximum number of both loads and stores which can be dispatched in a cycle before the pipeline stage blocks. We optimistically assume MDP queries always return within the current cycle, meaning this counter resets to zero every cycle. For example, 8 read ports mean any combination of 8 load or store instructions may be dispatched in a cycle, and encountering more will stall dispatch until the next cycle. Loads labeled by PG-MDP do not occupy a read port and so do not increment the counter.
+\RevATarget{2} \RevBTarget{2} \textcolor{blue}{Section \ref{sec:introduction} establishes the high number of read ports as a constraint of MDP design. Additional read ports incur greater area costs, and so a given area budget can fit fewer table entries. Because PG-MDP reduces the MDP working set so significantly, it could permit designing MDPs with fewer read ports, and allow reinvestment of available area into more table entries.} To test this, we extend gem5 to model MDP read ports and evaluate how many ports are required to achieve maximum performance with and without PG-MDP. This is implemented by constraining the maximum number of both loads and stores which can be dispatched in a cycle before the pipeline stage blocks. We optimistically assume MDP queries always return within the current cycle, meaning this counter resets to zero every cycle. For example, 8 read ports mean any combination of 8 load or store instructions may be dispatched in a cycle, and encountering more will stall dispatch until the next cycle. Loads labeled by PG-MDP do not occupy a read port and so do not increment the counter.
 
 \begin{figure*}[t]
   \centering

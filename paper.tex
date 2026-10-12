@@ -491,6 +491,7 @@ PG-MDP requires only a binary ISA annotation that distinguishes conventional loa
 \label{sec:models}
 
 We use an optimized gem5 fork \cite{gem5-phast} that includes an implementation of the XS Store Sets predictor to model the small and medium cores. The full parameters of each model are detailed in Table \ref{table:cpu-models}. %We evaluate each AArch64-compiled SPECspeed 2017 workload using up to 10 simpoints \cite{simpoints}, with an interval of 100M instructions and an additional warm-up of 10M instructions. \textcolor{blue}{Results show the weighted average of the intervals. Some benchmarks run with different inputs, represented with an input number at the end of their label.} 
+\RevB{6} \textcolor{blue}{Each cycle, up to 6 memory instructions (8 in the medium core) may compute their effective address, but the number of memory accesses is limited by the available L1D cache ports.}
 \RevATarget{3} \textcolor{blue}{We evaluate PG-MDP using the SPEC CPU 2017 Speed suite \cite{spec2017} with reference inputs. The benchmarks were compiled for AArch64 using GCC 13 with O3 and LTO. For benchmarks with multiple reference inputs, we assign an incremental suffix to each benchmark–input combination. To reduce simulation time, we use SimPoint \cite{simpoints} to select up to 10 intervals of 100 million instructions per benchmark–input combination with an additional 10 million instructions for warm-up before each interval. We report results as the weighted average across the selected intervals.}
 gem5 is modified to bypass MDP queries for labeled loads and to avoid creating new entries in the case of memory order violation. \RevCTarget{5} \textcolor{blue}{Memory ordering violations trigger a pipeline squash as soon as they are detected by an executing store} and violating labeled loads still roll back as normal to not alter program semantics.
 
@@ -508,9 +509,9 @@ The medium core is used to explore how PG-MDP's impact changes as MDP size and a
    \hline
    \textbf{\makecell{Instruction\\ Window}} & \makecell{ROB:\\IQ:\\LQ:\\SQ:} & \makecell{128\\77\\41\\26} & \makecell{256\\154\\85\\66}\\
    \hline
-   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/\\Commit:\\Issue:} & \makecell{6\\8} & \makecell{8\\12}\\
+   \textbf{\makecell{Pipeline\\ Width}} & \makecell{Fetch/Commit:\\Issue:} & \makecell{6\\8} & \makecell{8\\12}\\
    \hline
-   \textcolor{blue}{\textbf{\makecell{Functional\\ Units}}} & \textcolor{blue}{\makecell{Int ALU:\\FP ALU:\\Int \& FP MulDiv\\Memory:}} & \textcolor{blue}{\makecell{8\\6\\4\\6}} & \textcolor{blue}{\makecell{10\\8\\6\\8}}\\
+   \textcolor{blue}{\textbf{\makecell{Functional\\ Units}}} & \textcolor{blue}{\makecell{Int ALU:\\FP ALU:\\Int \& FP MulDiv\\Memory (AGU):}} & \textcolor{blue}{\makecell{8\\6\\4\\6}} & \textcolor{blue}{\makecell{10\\8\\6\\8}}\\
    \hline
    \textbf{\makecell{XS Store Sets}} & \makecell{SSIT:\\LFST:\\Slots:\\Clear:\\} & \makecell{128\\64\\2\\125k} & \makecell{256\\128\\2\\125k}\\
    \hline
@@ -641,7 +642,7 @@ This evaluation should not be confused with a claim of how many MDP read ports r
  \end{tabular}
 \end{table}
 
-\RevDTarget{1} \textcolor{blue}{ We evaluate additional MDP techniques on SPECspeed 2017 in Figure \ref{fig:mdp-comp} to show how PG-MDP applies beyond XS Store Sets and how it compares to similar techniques. We include blind speculation, no speculation, the original Store Sets \cite{storesets}, our existing XS Store Sets evaluation, XS Store Sets filtered with an Alpha 21264 load-wait table \cite{kessler1999alpha}, and a reproduction of work proposed in Feedback-Directed Memory Disambiguation Through Store Distance Analysis \cite{storedistance} (referred to as FDMD).}
+\RevDTarget{1} \textcolor{blue}{ We evaluate additional MDP techniques on SPECspeed 2017 in Figure \ref{fig:mdp-comp} to show how PG-MDP applies beyond XS Store Sets and how it compares to similar techniques. We include blind speculation, no speculation, the original Store Sets \cite{storesets}, our existing XS Store Sets evaluation, XS Store Sets filtered with an Alpha 21264 load-wait table \cite{kessler1999alpha}, and an idealized reproduction of work proposed in Feedback-Directed Memory Disambiguation Through Store Distance Analysis \cite{storedistance} (referred to as FDMD), which omits the implementation overheads of the original proposal.}
 
 \textcolor{blue}{'Always Speculate' and 'Never Speculate' represent runs with no predictor at all. It can be seen that using PG-MDP with no hardware speculation is able to outperform baseline XS Store Sets by 2.1\%, suggesting PG-MDP could feasibly be used to replace an MDP entirely.}
 

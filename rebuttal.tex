@@ -28,7 +28,7 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 
 \RevB{5} \textbf{Other Store Set optimization techniques.} We have not evaluated Onder and Gupta's scheme \cite{onder}. \RevD{1} details our expanded evaluation (which does include your requested comparison with \cite{storedistance}) where we prioritized breadth beyond Store Sets variants, of which we already evaluate two.
 
-\RevBLink{6} \textbf{How many memory units.} The modeled processor has 6 memory functional units, used for both reads and writes. We have added this to Table~\ref{table:cpu-models}.
+\RevBLink{6} \textbf{How many memory units.} The modeled processor has 6 memory functional units (AGU), used for both reads and writes, but the number of memory operations per cycle are limited by L1D ports. We have added this to Table~\ref{table:cpu-models} and Section~\ref{sec:models}.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -58,7 +58,8 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 
 \RevDLink{2} \textbf{Evaluation on additional workload classes.} We have evaluated PG-MDP on a subset of GAPBS \cite{gapbs}, which contains workloads with different memory-access characteristics. The missing workloads are still running and will be included for camera-ready. We have also included a comparison with all GAPBS workloads between ref and train profiles in Fig. \ref{fig:gapbs-pgo}. Current results indicate PG-MDP does generalize.
 
-\RevD{3} \textbf{PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
+\RevD{3} \textbf{PG-MDP Label Generation.} %Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
+See \RevC{2}.
 
 \RevDLink{4} \textbf{Independently varying core resources and predictor capacity.} We have expanded Fig. \ref{fig:ssit_sweep} to include plots for both the small and medium cores. The impact of ILP can now be isolated by looking at a single x-value for both plots.
 

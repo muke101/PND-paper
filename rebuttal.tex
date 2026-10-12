@@ -6,11 +6,11 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\RevALink{1} \textbf{Listing improperly floated.} Thanks for noticing. We have fixed this issue.
+\RevALink{1} \textbf{Listing improperly floated.} Thanks, we fixed this.
 
-\RevALink{2} \textbf{Figures 6 and 9} We have added an introduction to these figures and re-worked the text.
+\RevALink{2} \textbf{Figures 6 \& 9} We have added an introduction to these figures (now Figures \ref{fig:ssit_sweep} \& \ref{fig:readports}) and re-worked the text.
 
-\RevALink{3} \textbf{Simpoint methodology} They are not independent simpoint samples, but different inputs for the same benchmark (some SPEC 2017 benchmarks include multiple inputs that lead to different program behaviour). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section~\ref{sec:models}.
+\RevALink{3} \textbf{SimPoint methodology} They are not independent SimPoint samples, but different inputs for the same benchmark (some SPEC benchmarks include multiple inputs with different behavior). All SimPoint intervals for each benchmark-input pair are aggregated. We have clarified this in Section~\ref{sec:models}.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -18,17 +18,17 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\RevBLink{1} \textbf{Only improves performance in about half of the benchmarks} The apparent regressions in Figure 4 are due to the hatched bars being visually misleading. Actually, only two of the workloads have a performance regression of only 0.3\%. All other workloads improve or maintain IPC. We have annotated all bars regardless of \% change to make this clear.
+\RevBLink{1} \textbf{Only improves performance in about half of the benchmarks.} The apparent regressions in Fig. \ref{fig:ipc} are due to the hatched bars being visually misleading. Only two of the workloads have a performance regression of 0.3\% each. We have annotated all bars to make this clear.
 
-\RevBLink{2} \textbf{Why does saving on ports help in constrained processors?} 
-\aj{Reducing MDP port demand helps constrained out-of-order cores because narrow dispatch, ROB, IQ, and LSQ resources make memory-operation dispatch bandwidth a bottleneck. By labelling memory-independent loads to bypass the MDP, PG-MDP can preserve dispatch throughput with fewer read ports, avoiding extra wordline/bitline circuitry, routing, and access energy. This is particularly valuable in small cores, where the MDP is small but its access ports can constrain high-density memory workloads.} 
-\aj{Please review, have not inserted it in the paper. Once these answers are included in the paper, they can be removed from the first page to save space.}
+\RevBLink{2} \textbf{Why does saving on ports help in small MDPs?} Section \ref{sec:readports} has been expanded with this explanation.
 
-\RevBLink{3} \textbf{Re-routing memory instructions \& hardware cost of PG-MDP} PG-MDP requires no redirection of u-ops in the LSU. Labelled loads simply carry an additional bit, available since decode, which can hardwire to MDP to always return no dependency on lookup. The additional decode overhead is likewise trivial for AArch64 and RISCV (X86 is discussed in response to reviewer C), as the opcode hint is in a fixed position in the ISA and requires no additional critical path logic beyond what is already required to decode regular load instructions. This brings the total hardware overhead for PG-MDP for these architectures to a handful of additional logic gates.
+\RevBLink{3} \textbf{Re-routing memory instructions \& hardware cost of PG-MDP.} PG-MDP requires no redirection in the LSU. Section \ref{sec:hardware-overhead} now explains the hardware cost of PG-MDP.
 
-\RevB{4} \textbf{Applicability beyond Store Sets.} It is correct that most of the IPC gain comes from reducing table aliasing, which is specific to direct-mapped tables such as Store Sets. However it is important to understand that fundamentally PG-MDP reduces the predictor working set (Fig. \ref{fig:lookups}), with reduced aliasing being how this manifests for Store Sets specifically. Comparing to industry predictors found in \cite{ssbench}, there are direct-mapped predictors that would benefit this way. Of course other designs, such as the 21-entry fully-associative predictor found in Apple's efficiency core, already spends a large portion of its budget on avoiding aliasing. In these cases we expect a smaller IPC gain, which we have not been able to measure, but envision the applicability of PG-MDP to be enabling predictor co-design, where the benefits of filtering independent loads can be done in software while the hardware is focused to accurately predict truly dependent loads. Fig. \ref{fig:readports} also points towards how the reduced working set can reduce the necessary read ports, which would yield area able to be reinvested in more entries. 
+\RevBLink{4} \textbf{Applicability beyond Store Sets.} It is correct that most of the IPC gain comes from reducing table aliasing, which is specific to direct-mapped tables such as Store Sets. However, fundamentally PG-MDP reduces the predictor working set (see Fig. \ref{fig:lookups}), with reduced aliasing being how this manifests for Store Sets specifically. Comparing to industry predictors found in \cite{ssbench}, there are other direct-mapped predictors that would benefit this way. Other designs, such as the 21-entry fully-associative predictor in Apple's efficiency core, already spend a large portion of their budget on preventing aliasing. In these cases we expect a smaller immediate IPC gain, which we have not been able to measure, but envision the applicability of PG-MDP to be enabling predictor co-design, where the benefits of filtering independent loads is delivered in software so the hardware may focus on accurately predicting truly dependent loads. Section \ref{sec:readports} also aligns with this idea.
 
-\RevBLink{5} \textbf{How many memory units were simulated?} We modeled the processor with 6 load/store functional units. We have added this information to Table~\ref{table:cpu-models}. \textcolor{red}{ $\leftarrow$ TODO: check if correct, and add it.}
+\RevBLink{5} \textbf{Other Store Set optimization techniques.} We have not evaluated Onder and Gupta's scheme \cite{onder}. \RevD{1} details our expanded evaluation (which does include your requested comparison with \cite{storedistance}) where we prioritized breadth beyond Store Sets variants, of which we already evaluate two.
+
+\RevBLink{6} \textbf{How many memory units.} The modeled processor has 6 memory functional units, used for both reads and writes. We have added this to Table~\ref{table:cpu-models}.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -36,15 +36,16 @@ We thank the reviewers for their time and suggestions. This rebuttal addresses t
 \end{center}
 \vspace{-0.2cm}
 
-\RevC{1} \textbf{Profiling and evaluating SPEC.} Profiling was carried on using the training inputs of the Spec suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used (See Section III-B and III-C). 
+\RevCLink{1} \textbf{Effort of PGO.} We appreciate profiling adds workflow cost, but argue this is offset by how prevalent PGO pipelines already are for performance-critical software, as pointed to in Section \ref{sec:profiles}. We also outline possible trade-offs between profile time and coverage. Regarding growing the MDP instead, we discuss this at \RevE{2}.
 
-\RevCLink{2} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. We have included this information in Section~\ref{sec:XSstoresets}
+ \RevCLink{2} \textbf{Profiling and evaluating SPEC.} Profiling was carried out using the training inputs of the SPEC 2017 suite. Applications with several training inputs used all of them for training. For evaluation, the reference inputs were used.
 
-\RevCLink{3} \textbf{Load labelling on x86.} %\textcolor{red}{Encoding load labels in x86 is more challenging due to (1) its variable-length instruction encoding and (2) the diversity of instructions that support memory operands. Prior work on branch profiling~\cite{song22} proposed encoding a 2-bit hint using reserved instruction-encoding space. However, repurposing such space may introduce compatibility concerns with future ISA extensions. Alternatively, in 64-bit x86, load labels could potentially be encoded using otherwise ignored segment-override prefixes, at the cost of an additional byte per labeled instruction.} 
+\RevCLink{3} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. We have expanded Section \ref{sec:XSstoresets} to describe the allocation policy.
+% \RevCLink{2} \textbf{MDP used for experiments.} Yes, the MDP used in our experiments is XiangShan's version of Store Sets. The SSIT remains direct-access, so entries are overwritten on collision. The LFST supports multiple stores per set; on allocation, an invalid slot is selected if available, otherwise a victim is selected using round-robin replacement. We have included this information in Section~\ref{sec:XSstoresets}.
 
-TODO: going to rewrite III-D to make it clearer and expand with the option for byte prefixes. Then we should be able to just refer to that for this question.
+\RevCLink{4} \textbf{Load labelling on x86.} We have expanded this explanation in Section \ref{sec:encoding}. 
 
-\RevCLink{4} \textbf{When are MDP misprediction flushed.} Upon detection, when a store executes and discovers that a younger load has executed prematurely and violated memory ordering. We have included this information in the methodology (Section~\ref{sec:models}).
+\RevCLink{5} \textbf{When are MDP mispredictions flushed.} We have included this information in Section \ref{sec:models}.
 
 
 \vspace{-0.2cm}
@@ -53,15 +54,13 @@ TODO: going to rewrite III-D to make it clearer and expand with the option for b
 \end{center}
 \vspace{-0.2cm}
 
-\RevDLink{1} \textbf{Comparison to other approaches.} We have extended the evaluation to include comparison against more memory dependence prediction techniques. This includes the original Store Sets~\cite{storesets}, XS Store Sets filtered with a load-wait table~\cite{kessler1999alpha} (i.e. only loads that hit in the load-wait table index XS Store Sets), a reproduction of Feedback-Directed Memory Disambiguation Through Store Distance Analysis~\cite{storedistance}, and for completeness 'Always Speculate' and 'Never Speculate' runs. The evaluation shows that PG-MDP outperforms a load-wait table filter mechanism, even for a table with as much capacity as XS Store Sets itself. It further shows that \cite{storedistance} only delivers an additional 0.55\% IPC over PG-MDP despite incurring the cost of encoding an additional 5 bits in every load instruction (the fetch bandwidth performance penalty of which we have generously not modelled). 
+\RevDLink{1} \textbf{Comparison to other approaches.} We have extended the evaluation to include comparison against more MDP techniques. This includes blind speculation, no speculation, the original Store Sets \cite{storesets}, XS Store Sets filtered with a load-wait table~\cite{kessler1999alpha}, and an idealized reproduction of \cite{storedistance}. The evaluation shows that PG-MDP matches a load-wait table filter mechanism at no added hardware, even for a table with as much capacity as XS Store Sets itself. It shows that the idealized \cite{storedistance} only delivers an additional 0.55\% IPC over PG-MDP. It also shows that using PG-MDP with no speculation still outperforms baseline XS Store Sets by 2.1\%.
 
-% We have extended the evaluation with more memory dependence predictors: the original Store Sets~\cite{storesets}, Store Vectors~\cite{storevectors}, load wait table \textcolor{red}{CITE THE LOAD WAIT TABLE HERE}, and XS store sets filtered with a Load Wait Table (LWT) \textcolor{red}{Luke, check if the LWT meaning is correct} (Section \textcolor{red}{??}).
+\RevDLink{2} \textbf{Evaluation on additional workload classes.} We have evaluated PG-MDP on a subset of GAPBS \cite{gapbs}, which contains workloads with different memory-access characteristics. The missing workloads are still running and will be included for camera-ready. We have also included a comparison with all GAPBS workloads between ref and train profiles in Fig. \ref{fig:gapbs-pgo}. Current results indicate PG-MDP does generalize.
 
-\RevDLink{2} \textbf{Evaluation on additional workload classes.} 
+\RevDLink{3} \textbf{PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
 
-\RevD{3} \textbf{Clarification on PG-MDP Label Generation.} Yes, profiling was performed exclusively using the training inputs, while evaluation was conducted solely using the reference inputs.
-
-\RevDLink{4} \textbf{Independently varying core resources and predictor capacity.} We have expanded Fig. 6 to include plots for both the small and medium cores. The impact of IPC can now be isolated by looking at a single x-value for both plots.
+\RevDLink{4} \textbf{Independently varying core resources and predictor capacity.} We have expanded Fig. \ref{fig:ssit_sweep} to include plots for both the small and medium cores. The impact of ILP can now be isolated by looking at a single x-value for both plots.
 
 \vspace{-0.2cm}
 \begin{center}
@@ -69,8 +68,9 @@ TODO: going to rewrite III-D to make it clearer and expand with the option for b
 \end{center}
 \vspace{-0.2cm}
 
-\RevELink{1} \textbf{Performance Gains and Hardware Overhead of PG-MDP.} As stated in \RevB{3}, the hardware overhead of PG-MDP consists of a single bit that forces the MDP to always return no dependency upon lookup. Consequently, PG-MDP introduces negligible additional hardware complexity. We have also extended our evaluation to include additional benchmarks (see \RevD{2}) and memory dependence predictor designs (see \RevD{1}), providing a broader assessment of PG-MDP's performance benefits.
-\textcolor{red}{Regarding the area, power, and delay overhead of increasing the baseline MDP size relative to the entire core, although we acknowledge the importance of this comparison, developing and validating an appropriate core-level model was not feasible within the limited rebuttal period. Therefore, we cannot reliably quantify the overhead of scaling the MDP relative to the entire core}.  \textcolor{reviewer4}{$\leftarrow$ This is probably putting a nail in our coffin... Dependending on what we answer to \RevB{2}, we could add something here, but not compare against the full core...}
+\RevELink{1} \textbf{Concentration of IPC Gains.} We agree gains are concentrated in a minority of workloads. This is a property of MDP in general (as Reviewer C also notes), and not of PG-MDP specifically. Any MDP technique can only improve performance where load instruction scheduling falls on the critical path, such as interpreters ($600.perlbench\_s$) or video encoding ($625.x264\_s$). For these cases we reiterate that PG-MDP captures the majority of available performance (Fig. \ref{fig:ssit_sweep}, Fig. \ref{fig:mdp-comp}). Other workloads, for instance GAPBS \cite{gapbs} which is dominated by memory latency, change the available headroom, not how much of it PG-MDP recovers.
+%Our new evaluation of GAPBS (Section \ref{sec:gapbs}) presents a case where all workloads are dominated by memory latency and MDP has no opportunity to improve performance. Here, PG-MDP is neutral (+0.015\%) while still reducing queries by 62\%. Therefore a different workload class changes the available headroom, not how much of it PG-MDP recovers.
 
+\RevELink{2} \textbf{Cost of Scaling the MDP Instead.} We agree that a sufficiently large MDP has less need for PG-MDP. This is why we target a class of cores that have been demonstrated to allocate as little as 50-100 bytes of storage for MDP \cite{ssbench}. A design-space exploration of the relative area \& power overhead of scaling the MDP against opportunity cost in the total core would be useful, but for the purposes of this work we aim to deliver performance at the budget vendors have already determined to be optimal for their design.
 
 \clearpage

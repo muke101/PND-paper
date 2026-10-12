@@ -74,6 +74,7 @@
     "liu24"
     "liu26b"
     "song22"
-    "speccpu17"))
+    "speccpu17"
+    "onder"))
  '(or :bibtex :latex))
 
